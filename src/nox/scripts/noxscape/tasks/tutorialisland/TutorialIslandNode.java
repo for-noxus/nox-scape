@@ -17,6 +17,7 @@ public class TutorialIslandNode extends NoxScapeMasterNode {
     public TutorialIslandNode(ScriptContext ctx) {
         super(ctx);
         this.tracker = new TutorialIslandTracker();
+        this.nodeInformation = getMasterNodeInformation();
     }
 
     @Override
@@ -36,14 +37,17 @@ public class TutorialIslandNode extends NoxScapeMasterNode {
 
     @Override
     public MasterNodeInformation getMasterNodeInformation() {
-        MasterNodeInformation info = new MasterNodeInformation(
+        if (nodeInformation != null)
+            return nodeInformation;
+
+        nodeInformation = new MasterNodeInformation(
                 "Tutorial Island",
                 "Completes Tutorial Island",
                 Frequency.MANUAL,
                 Duration.COMPLETION,
                 MasterNodeType.QUEST);
 
-        return info;
+        return nodeInformation;
     }
 
     @Override

@@ -18,7 +18,7 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
 
     private NoxScapeNode currentNode;
 
-    final MasterNodeInformation nodeInformation;
+    protected MasterNodeInformation nodeInformation;
 
     private boolean isAborted;
     private String abortedReason;
