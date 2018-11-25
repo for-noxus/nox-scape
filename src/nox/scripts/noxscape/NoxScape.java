@@ -35,21 +35,19 @@ public class NoxScape extends Script {
     @Override
     public int onLoop() {
         try {
-            if (ctx != null){
-                NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
-                if (cmn == null || cmn.isCompleted()) {
-                    NoxScapeMasterNode newNode = decisionMaker.getNextMasterNode();
-                    log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
-                    ctx.setCurrentMasterNode(newNode);
-                    cmn = newNode;
-                }
-                if (cmn.isAborted()) {
-                    log(String.format("Node %s requested script abortion.\nReason: %s", cmn.getClass().getSimpleName(), cmn.getAbortedReason()));
-                    stop();
-                }
-                if (!cmn.isCompleted()) {
-                    return cmn.continueExecution();
-                }
+            NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
+            if (cmn == null || cmn.isCompleted()) {
+                NoxScapeMasterNode newNode = decisionMaker.getNextMasterNode();
+                log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
+                ctx.setCurrentMasterNode(newNode);
+                cmn = newNode;
+            }
+            if (cmn.isAborted()) {
+                log(String.format("Node %s requested script abortion.\nReason: %s", cmn.getClass().getSimpleName(), cmn.getAbortedReason()));
+                stop();
+            }
+            if (!cmn.isCompleted()) {
+                return cmn.continueExecution();
             }
             return 1001;
         } catch (Exception e) {
