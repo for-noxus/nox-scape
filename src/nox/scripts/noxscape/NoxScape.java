@@ -58,8 +58,7 @@ public class NoxScape extends Script {
     }
 
     private void logException(Exception e) {
-        if (e.getMessage() != null)
-            log(e.getMessage());
+        log(e);
         Arrays.stream(e.getStackTrace()).forEach(f -> log(f.toString()));
     }
 
