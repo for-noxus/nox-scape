@@ -4,6 +4,7 @@ import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import org.osbot.rs07.api.HintArrow;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -23,6 +24,7 @@ public class NoxScape extends Script {
 
     @Override
     public void onStart() {
+
         try {
             ctx = new ScriptContext(this, new File(getDirectoryData()+getName()+File.separator+"log.txt"));
             decisionMaker = new DecisionMaker(ctx);
@@ -45,6 +47,7 @@ public class NoxScape extends Script {
             if (cmn.isAborted()) {
                 log(String.format("Node %s requested script abortion.\nReason: %s", cmn.getClass().getSimpleName(), cmn.getAbortedReason()));
                 stop();
+                return -1;
             }
             if (!cmn.isCompleted()) {
                 return cmn.continueExecution();
