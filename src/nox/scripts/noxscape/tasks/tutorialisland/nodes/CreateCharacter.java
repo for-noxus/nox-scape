@@ -1,16 +1,12 @@
 package nox.scripts.noxscape.tasks.tutorialisland;
 
-import com.sun.scenario.effect.impl.prism.PrEffectHelper;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.filter.Filter;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -38,7 +34,7 @@ public class CreateCharacter extends NoxScapeNode {
         RS2Widget lookupNameWidget = ctx.getWidgets().getWidgetContainingText(TutorialIslandConstants.WIDGET_ROOT_DISPLAYNAME, TutorialIslandConstants.TEXT_LOOKUP_DISPLAYTNAME);
         if (lookupNameWidget != null && lookupNameWidget.interact()) {
             ctx.logClass(this, "Setting the character's name..");
-            Sleep.sleepUntil(() -> ctx.getWidgets().getWidgetContainingText(TutorialIslandConstants.WIDGET_CHATBOX, TutorialIslandConstants.TEXT_DISPLAYNAME_INSTRUCTIONS) != null, 2000, 500);
+            Sleep.sleepUntil(() -> ctx.getWidgets().getWidgetContainingText(TutorialIslandConstants.WIDGET_ROOT_CHATBOX, TutorialIslandConstants.TEXT_DISPLAYNAME_INSTRUCTIONS) != null, 2000, 500);
             String generatedName = generateName();
             ctx.logClass(this, "Attempting to use name (" + generatedName + ")");
             ctx.getKeyboard().typeString(generatedName);
@@ -63,7 +59,7 @@ public class CreateCharacter extends NoxScapeNode {
                 }
             }
         } else { //Otherwise, we must be in the designer phase
-            RS2Widget appearanceWidget = ctx.getWidgets().getWidgetContainingText(TutorialIslandConstants.WIDGET_CHATBOX_DESIGNER_INSTRUCTIONS, TutorialIslandConstants.TEXT_DESIGNER_INSTRUCTIONS);
+            RS2Widget appearanceWidget = ctx.getWidgets().getWidgetContainingText(TutorialIslandConstants.WIDGET_ROOT_CHATBOX_INSTRUCTIONS, TutorialIslandConstants.TEXT_DESIGNER_INSTRUCTIONS);
             if (appearanceWidget == null) {
                 ctx.logClass(this, "Couldn't find an entrypoint to name or design character..");
                 ctx.getMouse().moveOutsideScreen();
