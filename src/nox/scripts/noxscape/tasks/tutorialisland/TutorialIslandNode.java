@@ -1,6 +1,5 @@
 package nox.scripts.noxscape.tasks.tutorialisland;
 
-import nox.scripts.noxscape.NoxScape;
 import nox.scripts.noxscape.core.MasterNodeInformation;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.NoxScapeNode;
@@ -8,11 +7,14 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
+import nox.scripts.noxscape.tasks.tutorialisland.nodes.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TutorialIslandNode extends NoxScapeMasterNode {
+
+    public final static int WIDGET_ROOT_PROGRESS = 614;
 
     public TutorialIslandNode(ScriptContext ctx) {
         super(ctx);
@@ -22,15 +24,26 @@ public class TutorialIslandNode extends NoxScapeMasterNode {
 
     @Override
     public boolean canExecute() {
-        return ctx.getWidgets().isVisible(TutorialIslandConstants.WIDGET_ROOT_PROGRESS);
+        return ctx.getWidgets().isVisible(WIDGET_ROOT_PROGRESS);
     }
 
     @Override
     public void initializeNodes() {
-        CreateCharacter createCharacter = new CreateCharacter(null, ctx, "Creating your character.", tracker);
+        FishingGuide fishingGuide = new FishingGuide(null, ctx, "Handling fishing guide", tracker);
+        WalkToFishingGuide walkToFishingGuide = new WalkToFishingGuide(fishingGuide, ctx, "Walking to fishing guide", tracker);
+        ClickOptionsMenu clickOptionsMenu = new ClickOptionsMenu(null, ctx, "Clicking options menu", tracker);
+        TalkToGuide talkToGuide = new TalkToGuide(Arrays.asList(clickOptionsMenu, walkToFishingGuide), ctx, "Talking to Guide", tracker);
+        CreateCharacter createCharacter = new CreateCharacter(talkToGuide, ctx, "Creating your character.", tracker);
 
-        nodes = new ArrayList(Arrays.asList(createCharacter));
+        clickOptionsMenu.setChildNode(talkToGuide);
+
+        nodes = new ArrayList(Arrays.asList(createCharacter, talkToGuide, clickOptionsMenu, walkToFishingGuide, fishingGuide));
+
         setEntryPoint();
+
+        if (this.getCurrentNode() == null) {
+            this.abort("Unable to find a valid entrypoint.");
+        }
 
         ctx.logClass(this, String.format("Initialized %d nodes.", nodes.size()));
     }
