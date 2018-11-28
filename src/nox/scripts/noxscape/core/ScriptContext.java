@@ -1,10 +1,13 @@
 package nox.scripts.noxscape.core;
 
+import nox.scripts.noxscape.util.CachedWidget;
+import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class ScriptContext extends MethodProvider {
 
@@ -39,6 +42,10 @@ public class ScriptContext extends MethodProvider {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void logSafe(Object clazz, Object... objects) {
+        logClass(clazz, objects == null ? "null" : (String) Arrays.stream(objects).reduce("", (a, b) -> a + (b == null ? " null" : " " + b.toString())));
     }
 
     public void logClass(Object o, String message) {
