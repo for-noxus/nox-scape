@@ -35,4 +35,8 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
     public NoxScapeNode getNext() {
         return super.getNext();
     }
+
+    protected void logError(String error) {
+        ctx.logClass(this, error);
+    }
 }

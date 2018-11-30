@@ -20,7 +20,6 @@ public class CreateCharacter extends NoxScapeNode {
     private final int WIDGET_ROOT_DESIGNER = 269;
     private final int WIDGET_ROOT_CHATBOX = 162;
     private final int WIDGET_ROOT_CHATBOX_INSTRUCTIONS = 263;
-    private final int WIDGET_SPRITE_LOOKUPNAME_OPEN = 1040;
 
     private final String TEXT_DISPLAYNAME_INSTRUCTIONS = "What name would you like to check";
     private final String TEXT_DISPLAYNAME_UNAVAILABLE = "Sorry, this display name";

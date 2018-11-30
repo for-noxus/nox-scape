@@ -6,15 +6,17 @@ import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.HintArrow;
-import org.osbot.rs07.api.NPCS;
-import org.osbot.rs07.api.Widgets;
+import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.event.WalkingEvent;
+import org.osbot.rs07.listener.LoginResponseCodeListener;
 import org.osbot.rs07.script.MethodProvider;
 
-import javax.print.attribute.standard.MediaSize;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class FishingGuide extends NoxScapeNode {
@@ -33,6 +35,8 @@ public class FishingGuide extends NoxScapeNode {
     private final String INSTRUCTIONS_COOK = "time to get cooking";
     private final String INSTRUCTIONS_MOVEON = "Click on the gate shown";
     private final String INSTRUCTIONS_MOVEON_PASTGATE = "Follow the path until you get to the door with the yellow arrow";
+
+    private final Area validChopArea = new Area(3098, 3098, 3107, 3091);
 
     public FishingGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
         super(child, ctx, message, tracker);
@@ -76,16 +80,24 @@ public class FishingGuide extends NoxScapeNode {
                     Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
                     TutorialIslandUtil.clickToContinue(ctx);
                 }
-                Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_SKILLS_CLICK), 3000, 500);
+                Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget( ctx) != null, 4000, 500);
                 ctx.getTabs().open(Tab.SKILLS);
                 break;
             }
             case CHOPCOOK: {
                 if (!ctx.getInventory().contains("Logs")) {
-                    ctx.getObjects().closest("Tree").interact("Chop down");
+                    List<RS2Object> trees = ctx.getObjects().filter(f -> f.getName().equals("Tree") && validChopArea.contains(f));
+                    if (trees == null && trees.size() == 0)
+                        logError("Error locating tree to cut");
+                    trees.get(0).interact("Chop down");
                     Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
                     TutorialIslandUtil.clickToContinue(ctx);
                     Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_LIGHT_FIRE, INSTRUCTIONS_COOK), 3000, 500);
+                }
+                while (isEntityAtPosition(ctx.myPosition())) {
+                    Position newPosition = ctx.myPosition().translate(MethodProvider.random(4) - 2, MethodProvider.random(4 ) - 2);
+                    if (newPosition.interact(ctx.getBot(), "Walk here"))
+                        ctx.logClass(this, "Successfully relocated to cook a fire");
                 }
                 if (ctx.getInventory().interact("Use", "Logs") && ctx.getInventory().interact("Use", "Tinderbox")) {
                     Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_COOK) && ctx.getObjects().closest("Fire") != null, 9000, 500);
@@ -99,20 +111,25 @@ public class FishingGuide extends NoxScapeNode {
             }
             case MOVEON: {
                 HintArrow arrow = ctx.getHintArrow();
-                if (arrow == null || !ctx.getWalking().walk(arrow.getPosition()))
-                    ctx.logClass(this, "Error moving on from fishing uide");
-                Sleep.sleepUntil(() -> arrow.getPosition().distance(ctx.myPosition()) < 4, 8000, 800);
-                if (arrow.getPosition().interact(ctx.getBot(), "Open")) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON_PASTGATE), 3000, 500);
-                    break;
+                if (arrow != null || ctx.getWalking().walk(arrow.getPosition())) {
+                    Sleep.sleepUntil(() -> arrow.getPosition().distance(ctx.myPosition()) < 4 && !ctx.myPlayer().isMoving(), 8000, 800);
+                    if (arrow.getPosition().interact(ctx.getBot(), "Open")) {
+                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON_PASTGATE), 3000, 500);
+                        break;
+                    }
                 }
             }
             default:
-            case NA: {
+            case UNDEFINED: {
                 return 2000;
             }
         }
         return MethodProvider.random(500, 3000);
+    }
+
+    private boolean isEntityAtPosition(Position p) {
+        List<RS2Object> objects = ctx.getObjects().get(p.getX(), p.getY());
+        return objects != null && objects.size() > 0;
     }
 
     private FishState getState() {
@@ -124,15 +141,15 @@ public class FishingGuide extends NoxScapeNode {
             return FishState.INVEN_CLICK;
          else if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_FISH, INSTRUCTIONS_SKILLS_CLICK))
              return FishState.FISH;
-         else if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CHOP, INSTRUCTIONS_COOK))
+         else if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CHOP, INSTRUCTIONS_COOK, INSTRUCTIONS_LIGHT_FIRE))
              return FishState.CHOPCOOK;
          else if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON))
             return FishState.MOVEON;
-        return FishState.NA;
+        return FishState.UNDEFINED;
     }
 
     private enum FishState {
-        NA,
+        UNDEFINED,
         TALKTO,
         INVEN_CLICK,
         FISH,
