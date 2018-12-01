@@ -21,7 +21,8 @@ public class WalkToFishingGuide extends NoxScapeNode {
 
     private final Position POS_EXIT_DOOR = new Position(3098, 3107, 0);
 
-    private final String INSTRUCTIONS_MOVEON = "will walk you to that point";
+    private final String INSTRUCTIONS_MOVEON = "time to meet your first instructor";
+    private final String INSTRUCTIONS_MOVEON2 = "will walk you to that point";
 
     public WalkToFishingGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
         super(child, ctx, message, tracker);
@@ -30,7 +31,7 @@ public class WalkToFishingGuide extends NoxScapeNode {
     @Override
     public boolean isValid() {
         NPC expert = ctx.getNpcs().closest(NPC_NAME_SURVIALEXPERT);
-        return TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_MOVEON) && !ctx.getMap().isWithinRange(expert, 5);
+        return TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_MOVEON, INSTRUCTIONS_MOVEON2) && !ctx.getMap().isWithinRange(expert, 5);
     }
 
     @Override

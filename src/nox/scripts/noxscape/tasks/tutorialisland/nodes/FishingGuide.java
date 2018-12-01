@@ -102,10 +102,13 @@ public class FishingGuide extends NoxScapeNode {
                 if (ctx.getInventory().interact("Use", "Logs") && ctx.getInventory().interact("Use", "Tinderbox")) {
                     Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_COOK) && ctx.getObjects().closest("Fire") != null, 9000, 500);
                     RS2Object fire = ctx.getObjects().closest("Fire");
-                    if (fire == null || !(ctx.getInventory().interact("Use", "Raw shrimps") && fire.interact()))
-                        ctx.logClass(this, "Unable to cook shrimps..");
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
-                    TutorialIslandUtil.clickToContinue(ctx);
+                    if (fire != null) {
+                        ctx.getCamera().toEntity(fire);
+                        if (!(ctx.getInventory().interact("Use", "Raw shrimps") && fire.interact()))
+                            ctx.logClass(this, "Unable to cook shrimps..");
+                        Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 6000, 500);
+                        TutorialIslandUtil.clickToContinue(ctx);
+                    }
                 }
                 break;
             }
