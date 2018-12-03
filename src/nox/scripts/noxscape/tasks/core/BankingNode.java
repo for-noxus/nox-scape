@@ -1,17 +1,13 @@
-package nox.scripts.noxscape.tasks.banking;
+package nox.scripts.noxscape.tasks.core;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
+import nox.scripts.noxscape.tasks.core.banking.BankItem;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.filter.Filter;
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.constants.Banks;
-import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class BankingNode extends NoxScapeNode {
 

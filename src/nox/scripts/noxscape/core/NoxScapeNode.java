@@ -1,15 +1,21 @@
 package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
+import nox.scripts.noxscape.NoxScape;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode> {
 
-    protected final ScriptContext ctx;
+    protected ScriptContext ctx;
 
     private k tracker;
+
+    public NoxScapeNode() {
+        super(null, null);
+    }
 
     public NoxScapeNode(List<NoxScapeNode> children, ScriptContext ctx, String message, k tracker) {
         super(children, message);
@@ -22,6 +28,12 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
         this.ctx = ctx;
         this.tracker = tracker;
     }
+
+    public NoxScapeNode<k> hasChild(Node child) { this.children = Arrays.asList(child); return this; }
+    public NoxScapeNode<k> hasChildren(List<Node> children) { this.children = children; return this; }
+    public NoxScapeNode<k> hasMessage(String message) { this.message = message; return this; }
+    public NoxScapeNode<k> trackedBy(k tracker) { this.tracker = tracker; return this; }
+    public NoxScapeNode<k> withContext(ScriptContext ctx) { this.ctx = ctx; return this; }
 
     public String toDebugString() {
         String ret = "Message: " + this.getMessage();

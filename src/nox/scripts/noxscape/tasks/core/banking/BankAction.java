@@ -1,4 +1,4 @@
-package nox.scripts.noxscape.tasks.banking;
+package nox.scripts.noxscape.tasks.core.banking;
 
 public enum BankAction {
     DEPOSIT,

@@ -1,6 +1,4 @@
-package nox.scripts.noxscape.tasks.banking;
-
-import org.osbot.rs07.api.model.Item;
+package nox.scripts.noxscape.tasks.core.banking;
 
 public class BankItem {
 
