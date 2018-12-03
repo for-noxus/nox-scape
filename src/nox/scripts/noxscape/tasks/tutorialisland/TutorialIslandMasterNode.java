@@ -11,11 +11,11 @@ import nox.scripts.noxscape.tasks.tutorialisland.nodes.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class TutorialIslandNode extends NoxScapeMasterNode {
+public class TutorialIslandMasterNode extends NoxScapeMasterNode {
 
     public final static int WIDGET_ROOT_PROGRESS = 614;
 
-    public TutorialIslandNode(ScriptContext ctx) {
+    public TutorialIslandMasterNode(ScriptContext ctx) {
         super(ctx);
         this.tracker = new TutorialIslandTracker();
         this.nodeInformation = getMasterNodeInformation();

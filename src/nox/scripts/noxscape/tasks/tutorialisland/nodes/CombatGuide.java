@@ -126,7 +126,7 @@ public class CombatGuide extends NoxScapeNode {
                     HintArrow arr = ctx.getHintArrow();
                     if (arr != null && arr.getPosition() != null) {
                         if (ctx.getObjects().closest(f -> f.getPosition().equals(POSITION_GATE_2)).interact("Open")) {
-                            if (ctx.getObjects().closest("Gate").interact("Open")) {
+                            if (ctx.getObjects().closest(f -> f.getName().equals("Gate") && f.getPosition().distance(POSITION_GATE_1) <= 4).interact("Open")) {
                                 Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_ATTACK_RAT), 8500, 800);
                             }
                         }

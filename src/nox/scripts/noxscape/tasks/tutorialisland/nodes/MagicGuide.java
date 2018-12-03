@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
+import com.thoughtworks.xstream.mapper.LocalConversionMapper;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.Tracker;
@@ -22,6 +23,7 @@ public class MagicGuide extends NoxScapeNode {
     private final String INSTRUCTIONS_CHICKEN_HIT = "Look for the Wind Strike spell";
     private final String INSTRUCTIONS_MAGIC_CLICK = "Open up the magic interface";
     private final String INSTRUCTIONS_MOVEON = "leading to your final instructor";
+    private final String INSTRUCTIONS_FINAL = "When you get to Lumbridge";
 
     private final Position POSITION_MAGIC_GUIDE = new Position(3141, 3086, 0);
 
@@ -38,7 +40,7 @@ public class MagicGuide extends NoxScapeNode {
         boolean talkingToMagicGuide = magicrGuide != null && magicrGuide.isInteracting(ctx.myPlayer());
 
         return isArrowOverGuide || talkingToMagicGuide  ||
-                TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO, INSTRUCTIONS_TALKTO2, INSTRUCTIONS_TALKTO3, INSTRUCTIONS_MAGIC_CLICK, INSTRUCTIONS_MOVEON, INSTRUCTIONS_CHICKEN_HIT, INSTRUCTIONS_MOVEON);
+                TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_FINAL, INSTRUCTIONS_TALKTO, INSTRUCTIONS_TALKTO2, INSTRUCTIONS_TALKTO3, INSTRUCTIONS_MAGIC_CLICK, INSTRUCTIONS_MOVEON, INSTRUCTIONS_CHICKEN_HIT, INSTRUCTIONS_MOVEON);
     }
 
     @Override
@@ -58,8 +60,8 @@ public class MagicGuide extends NoxScapeNode {
                     ctx.getWalking().walk(POSITION_MAGIC_GUIDE);
                     Sleep.sleepUntil(() -> ctx.getMap().distance(POSITION_MAGIC_GUIDE) < 3, 10000, 1000);
                 }
-                NPC prayerGuide = ctx.getNpcs().closest(NPC_NAME_MAGICGUIDE);
-                if (prayerGuide != null && prayerGuide.interact("Talk-to")) {
+                NPC magicGuide = ctx.getNpcs().closest(NPC_NAME_MAGICGUIDE);
+                if (magicGuide != null && magicGuide.interact("Talk-to")) {
                     Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
                 } else {
                     logError("Error talking to prayer guide");
@@ -82,6 +84,12 @@ public class MagicGuide extends NoxScapeNode {
                 }
                 break;
             }
+            case TELEPORT: {
+                if (TutorialIslandUtil.clickToContinue(ctx)) {
+                    Sleep.sleepUntil(() -> ctx.getNpcs().closest("Lubridge Guide") != null, 10000, 1000);
+                    ctx.logClass(this, "Successfully completed Tutorial Island");
+                }
+            }
             case HANDLED:
                 break;
             case UNDEFINED:
@@ -101,6 +109,9 @@ public class MagicGuide extends NoxScapeNode {
     }
 
     private MagicState getState() {
+        if (ctx.getWidgets().getWidgetContainingText(193, INSTRUCTIONS_FINAL) != null) {
+            return MagicState.TELEPORT;
+        }
         if (TutorialIslandUtil.getClickToContinueWidget(ctx) != null) {
             TutorialIslandUtil.clickToContinue(ctx);
             return MagicState.HANDLED;
@@ -119,5 +130,6 @@ public class MagicGuide extends NoxScapeNode {
         HANDLED,
         TALKTO,
         CHICKEN_HIT,
+        TELEPORT
     }
 }
