@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
+import nox.scripts.noxscape.NoxScape;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
@@ -36,22 +37,42 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
     public abstract void initializeNodes();
 
     protected void setEntryPoint() {
-        this.currentNode = nodes.stream().filter(Node::isValid).findFirst().orElse(null);
+        this.currentNode = getEntryPoint();
+    }
+
+    protected NoxScapeNode getEntryPoint() {
+        return nodes.stream().filter(Node::isValid).findFirst().orElse(null);
     }
 
     public int continueExecution() throws InterruptedException {
+        // Store the current node in a tmp
         NoxScapeNode lastNode = currentNode;
+
+        // Track how many times we attempt to find a new node
         int attempts = 0;
-        while (!currentNode.isValid()) {
+        // Our current node is invalid or completed. Find a new one
+        while (!currentNode.isValid() || currentNode.isCompleted()) {
             if (attempts == 0)
-                ctx.logClass(this, "Node (" + lastNode.getClass().getSimpleName() + ") is invalid. Scanning for next node");
+                ctx.logClass(this, String.format("Node (%s) is invalid. Scanning for next node", lastNode.getClass().getSimpleName()));
             attempts++;
+            // Attempt to find the next node
             currentNode = currentNode.getNext();
+            // If we found a new node..
             if (currentNode != null) {
-                ctx.logClass(this, "Checking node (" + currentNode.getClass().getSimpleName() + ") for validity.." + currentNode.isValid());
+                ctx.logClass(this, String.format("Checking node (%s) for validity..%s", currentNode.getClass().getSimpleName(), currentNode.isValid()));
             } else {
-                ctx.logClass(this, "There were no more nodes. MasterNode (" + nodeInformation.getFriendlyName() +") will abort.");
+                // Unable to find any new nodes to execute from our current node
+                ctx.logClass(this, String.format("%s had no valid children. Attempting to find a valid entrypoint in MasterNode..", lastNode.getClass().getSimpleName()));
+                // Attempt to cycle through all nodes to find a new point of entry
+                setEntryPoint();
+                if (currentNode == null) {
+                    ctx.logClass(this, String.format("There were no more nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
+                    return 0;
+                } else {
+                    ctx.logClass(this, String.format("We were able to locate a valid entrypoint (%s).", currentNode.getClass().getSimpleName()));
+                }
             }
+            // No nodes in our children were valid to execute
             if (attempts > nodes.size() || currentNode == null) {
                 this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution. Last node that was valid: " + lastNode.getClass().getSimpleName());
                 return 0;
