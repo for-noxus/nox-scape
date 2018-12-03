@@ -1,10 +1,8 @@
 package nox.scripts.noxscape.core;
 
-import nox.scripts.noxscape.NoxScape;
 import nox.scripts.noxscape.core.enums.Frequency;
-import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandNode;
+import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DecisionMaker {
@@ -64,9 +62,9 @@ public class DecisionMaker {
     }
 
     private void initializeNodes() {
-        addMasterNode(TutorialIslandNode.class);
+        addMasterNode(TutorialIslandMasterNode.class);
 
-        NoxScapeMasterNode tutIsland = findExistingNode(TutorialIslandNode.class);
+        NoxScapeMasterNode tutIsland = findExistingNode(TutorialIslandMasterNode.class);
         if (tutIsland.canExecute()) {
             addPriorityItem(tutIsland);
         }
