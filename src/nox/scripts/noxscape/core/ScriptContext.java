@@ -1,13 +1,12 @@
 package nox.scripts.noxscape.core;
 
-import nox.scripts.noxscape.util.CachedWidget;
-import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Random;
 
 public class ScriptContext extends MethodProvider {
 
@@ -42,6 +41,10 @@ public class ScriptContext extends MethodProvider {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sleep(int lowerBounds, int higherBounds) throws InterruptedException {
+        MethodProvider.sleep(new Random().nextInt(higherBounds - lowerBounds) + lowerBounds);
     }
 
     public void logSafe(Object clazz, Object... objects) {
