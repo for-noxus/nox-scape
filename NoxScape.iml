@@ -8,6 +8,9 @@
     <content url="file://$MODULE_DIR$/../ScriptAPI/src">
       <sourceFolder url="file://$MODULE_DIR$/../ScriptAPI/src" isTestSource="false" />
     </content>
+    <content url="file://$MODULE_DIR$/../script-api/src">
+      <sourceFolder url="file://$MODULE_DIR$/../script-api/src" isTestSource="false" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="OSBot" level="project" />
