@@ -13,10 +13,6 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
 
     private k tracker;
 
-    public NoxScapeNode() {
-        super(null, null);
-    }
-
     public NoxScapeNode(List<NoxScapeNode> children, ScriptContext ctx, String message, k tracker) {
         super(children, message);
         this.ctx = ctx;
@@ -29,9 +25,10 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
         this.tracker = tracker;
     }
 
-    public NoxScapeNode<k> hasChild(Node child) { this.children = Arrays.asList(child); return this; }
-    public NoxScapeNode<k> hasChildren(List<Node> children) { this.children = children; return this; }
-    public NoxScapeNode<k> hasMessage(String message) { this.message = message; return this; }
+    public NoxScapeNode() {
+        super((NoxScapeNode) null, "");
+    }
+
     public NoxScapeNode<k> trackedBy(k tracker) { this.tracker = tracker; return this; }
     public NoxScapeNode<k> withContext(ScriptContext ctx) { this.ctx = ctx; return this; }
 

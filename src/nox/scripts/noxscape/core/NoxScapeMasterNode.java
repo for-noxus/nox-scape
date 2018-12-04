@@ -52,8 +52,12 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         int attempts = 0;
         // Our current node is invalid or completed. Find a new one
         while (!currentNode.isValid() || currentNode.isCompleted()) {
-            if (attempts == 0)
+            // If we've completed our current node gracefully..
+            if (currentNode.isCompleted()) {
+                ctx.logClass(this, String.format("Node (%s) has completed successfully. Finding next node", lastNode.getClass().getSimpleName()));
+            } else if (attempts == 0) {
                 ctx.logClass(this, String.format("Node (%s) is invalid. Scanning for next node", lastNode.getClass().getSimpleName()));
+            }
             attempts++;
             // Attempt to find the next node
             currentNode = currentNode.getNext();
