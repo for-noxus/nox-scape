@@ -9,14 +9,6 @@ import java.util.List;
 
 public class WoodcuttingNode extends EntitySkillingNode {
 
-    public WoodcuttingNode(List children, ScriptContext ctx, String message, Tracker tracker) {
-        super(children, ctx, message, tracker);
-    }
-
-    public WoodcuttingNode(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
-    }
-
     @Override
     public boolean isValid() {
         return false;
