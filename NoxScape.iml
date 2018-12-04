@@ -2,14 +2,14 @@
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
+    <content url="file://D:/ScriptAPI/src">
+      <sourceFolder url="file://D:/ScriptAPI/src" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/../ScriptAPI/src">
-      <sourceFolder url="file://$MODULE_DIR$/../ScriptAPI/src" isTestSource="false" />
-    </content>
-    <content url="file://$MODULE_DIR$/../script-api/src">
-      <sourceFolder url="file://$MODULE_DIR$/../script-api/src" isTestSource="false" />
+    <content url="file://D:/script-api/src">
+      <sourceFolder url="file://D:/script-api/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

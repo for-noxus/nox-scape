@@ -1,14 +1,11 @@
-package nox.scripts.noxscape.tasks.core;
+package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
-import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
 
-import java.util.List;
 import java.util.function.BooleanSupplier;
 
 public class EntitySkillingNode extends NoxScapeNode {

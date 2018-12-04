@@ -1,8 +1,8 @@
-package nox.scripts.noxscape.tasks.core;
+package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.tasks.core.banking.BankItem;
+import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.script.MethodProvider;
@@ -50,7 +50,7 @@ public class BankingNode extends NoxScapeNode {
         if (!ctx.getBank().close())
             logError("Error closing bank;");
         else
-            this.complete();
+            this.complete("Successfully handled banking");
 
         return MethodProvider.random(50, 800);
     }
