@@ -13,6 +13,10 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
 
     private k tracker;
 
+    public NoxScapeNode(ScriptContext ctx) {
+        this.ctx = ctx;
+    }
+
     public NoxScapeNode(List<NoxScapeNode> children, ScriptContext ctx, String message, k tracker) {
         super(children, message);
         this.ctx = ctx;
@@ -30,7 +34,24 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
     }
 
     public NoxScapeNode<k> trackedBy(k tracker) { this.tracker = tracker; return this; }
-    public NoxScapeNode<k> withContext(ScriptContext ctx) { this.ctx = ctx; return this; }
+
+    @Override
+    public NoxScapeNode hasChild(NoxScapeNode child) {
+        super.hasChild(child);
+        return this;
+    }
+
+    @Override
+    public NoxScapeNode hasChildren(List<NoxScapeNode> children) {
+        super.hasChildren(children);
+        return this;
+    }
+
+    @Override
+    public NoxScapeNode hasMessage(String message) {
+         super.hasMessage(message);
+         return this;
+    }
 
     public String toDebugString() {
         String ret = "Message: " + this.getMessage();

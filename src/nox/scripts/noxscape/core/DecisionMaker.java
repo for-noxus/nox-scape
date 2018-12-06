@@ -75,7 +75,7 @@ public class DecisionMaker {
     }
 
     private NoxScapeMasterNode findPriorityNode(Class<? extends NoxScapeMasterNode> clazz) {
-        return masterNodes.stream().filter(f -> f.getClass().equals(clazz)).findFirst().orElse(null);
+        return priorityNodes.stream().filter(f -> f.getClass().equals(clazz)).findFirst().orElse(null);
     }
 
     private int getStandardizedWeight(Frequency freq) {

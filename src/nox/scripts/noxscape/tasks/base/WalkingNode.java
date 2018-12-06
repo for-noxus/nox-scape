@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
+import nox.scripts.noxscape.core.ScriptContext;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.event.Event;
@@ -10,6 +11,7 @@ import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.utility.Condition;
 
+import java.util.Arrays;
 import java.util.function.BooleanSupplier;
 
 public class WalkingNode extends NoxScapeNode {
@@ -20,6 +22,10 @@ public class WalkingNode extends NoxScapeNode {
     private PathPreferenceProfile pathPreferenceProfile;
     private boolean isWebWalk;
 
+    public WalkingNode(ScriptContext ctx) {
+        super(ctx);
+    }
+
     public WalkingNode toPosition(Position pos) {
         this.destinationPosition = pos;
         return this;
@@ -27,6 +33,16 @@ public class WalkingNode extends NoxScapeNode {
 
     public WalkingNode toArea(Area area) {
         this.destinationArea = area;
+        return this;
+    }
+
+    public WalkingNode toClosestBankFrom(Area... bankAreas) {
+        if (bankAreas.length > 0) {
+            WebWalkEvent wwe = new WebWalkEvent(bankAreas);
+            wwe.prefetchRequirements(ctx);
+            destinationArea = Arrays.stream(bankAreas).filter(f -> f.contains(wwe.getDestination())).findFirst().orElse(null);
+        }
+
         return this;
     }
 

@@ -3,7 +3,7 @@ package nox.scripts.noxscape.tasks.woodcutting;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
 import org.osbot.rs07.api.ui.Skill;
 
-public enum WoodcuttingEntities implements ISkillable {
+public enum WoodcuttingEntity implements ISkillable {
     TREE("Tree", 1),
     OAK("Oak", 15),
     WILLOW("Willow", 30),
@@ -14,7 +14,7 @@ public enum WoodcuttingEntities implements ISkillable {
     private String name;
     private int requiredLevel;
 
-    WoodcuttingEntities(String name, int requiredLevel) {
+    WoodcuttingEntity(String name, int requiredLevel) {
         this.name = name;
         this.requiredLevel = requiredLevel;
     }
@@ -38,4 +38,5 @@ public enum WoodcuttingEntities implements ISkillable {
     public String getName() {
         return this.name;
     }
+
 }

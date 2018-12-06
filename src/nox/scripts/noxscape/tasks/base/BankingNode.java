@@ -5,26 +5,39 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.event.WebWalkEvent;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.util.Arrays;
 
 public class BankingNode extends NoxScapeNode {
 
-    private final Area bankArea;
-    private final BankItem[] items;
+    private Area bankArea;
+    private BankItem[] items;
 
+    public BankingNode(ScriptContext ctx) {
+        super(ctx);
+    }
 
-    public BankingNode(NoxScapeNode child, ScriptContext ctx, String message, Area bankArea, BankItem... items) {
-        super(child, ctx, message, null);
+    public BankingNode bankingAt(Area bankArea) {
         this.bankArea = bankArea;
+        return this;
+    }
+
+    public BankingNode handlingItems(BankItem... items) {
         this.items = items;
+        return this;
     }
 
     @Override
     public boolean isValid() {
         if (items == null || items.length == 0) {
             abort("Banking node added but no items were added for deposit/withdrawal");
+            return false;
+        }
+
+        if (bankArea == null) {
+            abort("There was no destination set for this banking node!");
             return false;
         }
 
