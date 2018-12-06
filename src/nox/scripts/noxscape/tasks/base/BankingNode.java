@@ -63,32 +63,56 @@ public class BankingNode extends NoxScapeNode {
         if (!ctx.getBank().close())
             logError("Error closing bank;");
         else
-            this.complete("Successfully handled banking");
+            complete("Successfully handled banking");
 
         return MethodProvider.random(50, 800);
     }
 
     private void depositItem(BankItem item) {
-        if (item.getName() != null) {
-            if (!ctx.getBank().deposit(item.getName(), item.getAmount()))
+        if (item.getName() != null && ctx.getInventory().contains(item.getName())) {
+            if (ctx.getInventory().getAmount(item.getName()) <= item.getAmount()){
+              if (!ctx.getBank().depositAll(item.getName())) {
+                  logBankError(item);
+              }
+            } else if(!ctx.getBank().deposit(item.getName(), item.getAmount())) {
                 logBankError(item);
-        } else if (item.getId() == 0) {
-            if (!ctx.getBank().deposit(item.getId(), item.getAmount()))
+            }
+        } else if (item.getId() == 0 && ctx.getInventory().contains(item.getId())) {
+            if (ctx.getInventory().getAmount(item.getId()) <= item.getAmount()){
+                if (!ctx.getBank().depositAll(item.getId())) {
+                    logBankError(item);
+                }
+            } else if(!ctx.getBank().deposit(item.getId(), item.getAmount())) {
                 logBankError(item);
+            }
         }
     }
 
     private void withdrawItem(BankItem item) {
         if (item.getName() != null) {
-            if (!ctx.getBank().contains(item.getName()))
+            if (!ctx.getBank().contains(item.getName())) {
                 abort(String.format("Bank does not contain item (%s)", item.getName()));
-            else if (!ctx.getBank().withdraw(item.getName(), item.getAmount()))
-                logBankError(item);
-        } else if (item.getId() == 0) {
-            if (!ctx.getBank().contains(item.getId()))
+            } else {
+                if (ctx.getInventory().getEmptySlotCount() <= item.getAmount()) {
+                    if (!ctx.getBank().withdrawAll(item.getName()))
+                        logBankError(item);
+                } else {
+                    if (!ctx.getBank().withdraw(item.getName(), item.getAmount()))
+                        logBankError(item);
+                }
+            }
+        } else if (item.getId() != 0) {
+            if (!ctx.getBank().contains(item.getId())) {
                 abort(String.format("Bank does not contain item (%s)", item.getId()));
-            else if (!ctx.getBank().withdraw(item.getId(), item.getAmount()))
-                logBankError(item);
+            } else {
+                if (ctx.getInventory().getEmptySlotCount() <= item.getAmount()) {
+                    if (!ctx.getBank().withdrawAll(item.getId()))
+                        logBankError(item);
+                } else {
+                    if (!ctx.getBank().withdraw(item.getId(), item.getAmount()))
+                        logBankError(item);
+                }
+            }
         }
     }
 

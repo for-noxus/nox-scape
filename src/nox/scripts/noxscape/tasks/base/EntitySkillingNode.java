@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
+import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.RS2Object;
@@ -18,24 +19,28 @@ public class EntitySkillingNode extends NoxScapeNode {
     private boolean powerFarming;
     private String[] dropAllExcept;
 
-    protected EntitySkillingNode afterInteractingWaitFor(BooleanSupplier postInteractWaitCondition, int timeout, int interval) {
+    public EntitySkillingNode(ScriptContext ctx) {
+        super(ctx);
+    }
+
+    public EntitySkillingNode afterInteractingWaitFor(BooleanSupplier postInteractWaitCondition, int timeout, int interval) {
         this.postInteractWaitCondition = postInteractWaitCondition;
         this.postInteractWaitTimeout = timeout;
         this.postInteractWaitInterval = interval;
         return this;
     }
 
-    protected EntitySkillingNode interactWith(ISkillable skillableEntity) {
+    public EntitySkillingNode interactWith(ISkillable skillableEntity) {
         this.skillableEntity = skillableEntity;
         return this;
     }
 
-    protected EntitySkillingNode shouldPowerFarm(boolean powerFarming) {
+    public EntitySkillingNode shouldPowerFarm(boolean powerFarming) {
         this.powerFarming = powerFarming;
         return this;
     }
 
-    protected EntitySkillingNode dropAllExcept(String[] itemNames) {
+    public EntitySkillingNode dropAllExcept(String[] itemNames) {
         this.dropAllExcept = itemNames;
         return this;
     }

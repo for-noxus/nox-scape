@@ -8,4 +8,8 @@ public interface ISkillable extends INameable {
     int getRequiredLevel();
 
     String getInteractAction();
+
+    String producesItemName();
+
+    String[] requiredItemNames();
 }
