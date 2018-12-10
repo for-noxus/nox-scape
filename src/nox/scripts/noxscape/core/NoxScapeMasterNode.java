@@ -1,27 +1,26 @@
 package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
-import nox.scripts.noxscape.NoxScape;
-import nox.scripts.noxscape.core.enums.Duration;
-import nox.scripts.noxscape.core.enums.Frequency;
-import nox.scripts.noxscape.core.enums.MasterNodeType;
 
-import javax.swing.plaf.ColorUIResource;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class NoxScapeMasterNode<k extends Tracker> {
 
     protected k tracker;
     protected ScriptContext ctx;
-    protected ArrayList<NoxScapeNode> nodes;
+    protected List<NoxScapeNode> nodes;
 
     private long expirationTime;
 
     private NoxScapeNode currentNode;
+    private NoxScapeNode postExecutionNode;
+    private NoxScapeNode preExecutionNode;
+    private NoxScapeNode returnToBankNode;
 
     protected MasterNodeInformation nodeInformation;
 
+    private boolean completedPreExecution = false;
     private boolean isAborted;
     private String abortedReason;
 
@@ -36,54 +35,79 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
 
     public abstract void initializeNodes();
 
-    protected void setEntryPoint() {
+    protected void setDefaultEntryPoint() {
         this.currentNode = getEntryPoint();
+
+        if (this.getCurrentNode() == null) {
+            this.abort("Unable to find a valid entrypoint. All child nodes were null");
+        }
     }
 
     protected NoxScapeNode getEntryPoint() {
         return nodes.stream().filter(Node::isValid).findFirst().orElse(null);
     }
 
+    public abstract boolean requiresPreExecution();
+
+    protected void setPreExecutionNode(NoxScapeNode node) {
+        this.preExecutionNode = node;
+    }
+
     public int continueExecution() throws InterruptedException {
         // Store the current node in a tmp
         NoxScapeNode lastNode = currentNode;
 
-        // Track how many times we attempt to find a new node
-        int attempts = 0;
         // Our current node is invalid or completed. Find a new one
-        while (!currentNode.isValid() || currentNode.isCompleted()) {
+        if (currentNode == null || !currentNode.isValid() || currentNode.isCompleted()) {
+
+            if (!completedPreExecution && requiresPreExecution()) {
+                currentNode = preExecutionNode;
+                if (currentNode == null)  {
+                    abort("MasterNode requires PreExecution, but there was none specified");
+                }
+            } else {
+                // Attempt to find the next node from our current node's children
+                currentNode = currentNode.getNext();
+            }
+
             // If we've completed our current node gracefully..
             if (currentNode.isCompleted()) {
                 ctx.logClass(this, String.format("Node (%s) has completed successfully. Finding next node", lastNode.getClass().getSimpleName()));
-            } else if (attempts == 0) {
+            } else {
                 ctx.logClass(this, String.format("Node (%s) is invalid. Scanning for next node", lastNode.getClass().getSimpleName()));
             }
-            attempts++;
-            // Attempt to find the next node
-            currentNode = currentNode.getNext();
             // If we found a new node..
             if (currentNode != null) {
-                ctx.logClass(this, String.format("Checking node (%s) for validity..%s", currentNode.getClass().getSimpleName(), currentNode.isValid()));
+                currentNode.reactivate();
+                ctx.logClass(this, String.format("Node (%s) found as a valid next node", currentNode.getClass().getSimpleName()));
             } else {
                 // Unable to find any new nodes to execute from our current node
                 ctx.logClass(this, String.format("%s had no valid children. Attempting to find a valid entrypoint in MasterNode..", lastNode.getClass().getSimpleName()));
                 // Attempt to cycle through all nodes to find a new point of entry
-                setEntryPoint();
+                setDefaultEntryPoint();
                 if (currentNode == null) {
-                    ctx.logClass(this, String.format("There were no more nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
+                    ctx.logClass(this, String.format("There were no more valid nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
+                    this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution. Last node that was valid: " + lastNode.getClass().getSimpleName());
                     return 0;
                 } else {
                     ctx.logClass(this, String.format("We were able to locate a valid entrypoint (%s).", currentNode.getClass().getSimpleName()));
                 }
             }
-            // No nodes in our children were valid to execute
-            if (attempts > nodes.size() || currentNode == null) {
-                this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution. Last node that was valid: " + lastNode.getClass().getSimpleName());
-                return 0;
-            }
         }
         ctx.log(String.format("%s: Executing Node (%s)", nodeInformation.getFriendlyName(), currentNode.getClass().getSimpleName()));
         return currentNode.execute();
+    }
+
+    public int continuePostExecution() throws InterruptedException {
+        if (postExecutionNode != null && !postExecutionNode.isCompleted()) {
+            return postExecutionNode.execute();
+        } else {
+            return returnToBankNode.execute();
+        }
+    }
+
+    protected void setReturnToBankNode(NoxScapeNode node) {
+        this.returnToBankNode = node;
     }
 
     public long getExpirationTime() {
@@ -103,6 +127,11 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
     }
 
     public boolean isCompleted() {
+        // Nodes aren't required to have a PostExecutionNode, but they are required to have a Node to return to bank
+        return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted();
+    }
+
+    public boolean shouldComplete() {
         return System.currentTimeMillis() > expirationTime;
     }
 
