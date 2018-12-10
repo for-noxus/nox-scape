@@ -5,15 +5,17 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.event.WebWalkEvent;
 import org.osbot.rs07.script.MethodProvider;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BankingNode extends NoxScapeNode {
 
     private Area bankArea;
     private BankItem[] items;
+    private boolean depositAllBackpackItems = false;
+    private boolean depositallWornItems = false;
 
     public BankingNode(ScriptContext ctx) {
         super(ctx);
@@ -26,6 +28,16 @@ public class BankingNode extends NoxScapeNode {
 
     public BankingNode handlingItems(BankItem... items) {
         this.items = items;
+        return this;
+    }
+
+    public BankingNode depositAllWornItems() {
+        this.depositallWornItems = true;
+        return this;
+    }
+
+    public BankingNode depositAllBackpackItems() {
+        this.depositAllBackpackItems = true;
         return this;
     }
 
@@ -54,11 +66,27 @@ public class BankingNode extends NoxScapeNode {
             Sleep.sleepUntil(() -> ctx.getBank().isOpen(), 6000, 600);
         }
 
-        // Deposit all deposit-items
-        Arrays.stream(items).filter(BankItem::isDeposit).forEach(this::depositItem);
-        ctx.sleep(0, 80);
-        // Withdraw all withdraw-items
-        Arrays.stream(items).filter(BankItem::isWithdraw).forEach(this::withdrawItem);
+        if (depositallWornItems)
+            ctx.getBank().depositWornItems();
+
+        if (depositAllBackpackItems)
+            ctx.getBank().depositAll();
+
+        if (items != null) {
+
+            // Split our items into two sets based on whether or not you can withdraw them
+            Map<Boolean, List<BankItem>> belongsToSet = Arrays.stream(items).collect(Collectors.partitioningBy(item -> item.getSet() != null));
+
+            // Handle item sets
+            belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).forEach(this::withdrawItemSet);
+
+            // Deposit all deposit-items
+            belongsToSet.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
+
+            ctx.sleep(0, 80);
+            // Withdraw all withdraw-items
+            belongsToSet.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
+        }
 
         if (!ctx.getBank().close())
             logError("Error closing bank;");
@@ -68,21 +96,26 @@ public class BankingNode extends NoxScapeNode {
         return MethodProvider.random(50, 800);
     }
 
+    private void withdrawItemSet(String key, List<BankItem> set) {
+        set.sort(Comparator.comparingInt(o -> o.getPriority()));
+
+        Optional<BankItem> itemToWithdraw = set.stream().filter(item -> ctx.getBank().contains(item.getName())).findFirst();
+
+        if (itemToWithdraw.isPresent()) {
+            if (!ctx.getBank().withdraw(itemToWithdraw.get().getName(), itemToWithdraw.get().getAmount()))
+                logError(String.format("Error withdrawing item (%s) belonging to set (%s).", itemToWithdraw.get().getName(), itemToWithdraw.get().getSet()));
+        } else {
+            abort(String.format("Unable to locate any items belonging to set (%s)", itemToWithdraw.get().getSet()));
+        }
+    }
+
     private void depositItem(BankItem item) {
         if (item.getName() != null && ctx.getInventory().contains(item.getName())) {
-            if (ctx.getInventory().getAmount(item.getName()) <= item.getAmount()){
-              if (!ctx.getBank().depositAll(item.getName())) {
-                  logBankError(item);
-              }
-            } else if(!ctx.getBank().deposit(item.getName(), item.getAmount())) {
-                logBankError(item);
-            }
-        } else if (item.getId() == 0 && ctx.getInventory().contains(item.getId())) {
-            if (ctx.getInventory().getAmount(item.getId()) <= item.getAmount()){
-                if (!ctx.getBank().depositAll(item.getId())) {
+            if (ctx.getInventory().getAmount(item.getName()) <= item.getAmount()) {
+                if (!ctx.getBank().depositAll(item.getName())) {
                     logBankError(item);
                 }
-            } else if(!ctx.getBank().deposit(item.getId(), item.getAmount())) {
+            } else if (!ctx.getBank().deposit(item.getName(), item.getAmount())) {
                 logBankError(item);
             }
         }
@@ -101,22 +134,10 @@ public class BankingNode extends NoxScapeNode {
                         logBankError(item);
                 }
             }
-        } else if (item.getId() != 0) {
-            if (!ctx.getBank().contains(item.getId())) {
-                abort(String.format("Bank does not contain item (%s)", item.getId()));
-            } else {
-                if (ctx.getInventory().getEmptySlotCount() <= item.getAmount()) {
-                    if (!ctx.getBank().withdrawAll(item.getId()))
-                        logBankError(item);
-                } else {
-                    if (!ctx.getBank().withdraw(item.getId(), item.getAmount()))
-                        logBankError(item);
-                }
-            }
         }
     }
 
     private void logBankError(BankItem item) {
-        logError(String.format("Error handling banking action (%s) for item %s", item.getAction().name(), item.getName() != null ? item.getName() : item.getId() + "."));
+        logError(String.format("Error handling banking action (%s) for item %s.", item.getAction().name(), item.getName()));
     }
 }
