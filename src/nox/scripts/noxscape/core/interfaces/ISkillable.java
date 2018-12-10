@@ -10,6 +10,4 @@ public interface ISkillable extends INameable {
     String getInteractAction();
 
     String producesItemName();
-
-    String[] requiredItemNames();
 }
