@@ -33,7 +33,7 @@ public enum WoodcuttingEntity implements ISkillable {
 
     @Override
     public String getInteractAction() {
-        return "Chop-down";
+        return "Chop down";
     }
 
     @Override
