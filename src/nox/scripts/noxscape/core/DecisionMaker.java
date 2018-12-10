@@ -2,6 +2,7 @@ package nox.scripts.noxscape.core;
 
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
+import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 
 import java.util.*;
 
@@ -63,6 +64,7 @@ public class DecisionMaker {
 
     private void initializeNodes() {
         addMasterNode(TutorialIslandMasterNode.class);
+        addMasterNode(WoodcuttingMasterNode.class);
 
         NoxScapeMasterNode tutIsland = findExistingNode(TutorialIslandMasterNode.class);
         if (tutIsland.canExecute()) {
@@ -79,7 +81,7 @@ public class DecisionMaker {
     }
 
     private int getStandardizedWeight(Frequency freq) {
-        return (int) (freq.getWeight() * 100);
+        return (int) (freq.getWeight() * 100.0);
     }
 
     private NoxScapeMasterNode locateMasterNodeFromSelectedValue(int value) {
