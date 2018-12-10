@@ -2,18 +2,12 @@ package nox.scripts.noxscape;
 
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
-import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import org.osbot.rs07.api.HintArrow;
-import org.osbot.rs07.api.ui.Message;
-import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @ScriptManifest(name = "NoxScape", author = "Nox", version = 1.0, info = "", logo = "")
@@ -35,7 +29,7 @@ public class NoxScape extends Script {
     }
 
     @Override
-    public int onLoop() {
+    public int onLoop() throws InterruptedException {
         try {
             NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
             if (cmn == null || cmn.isCompleted()) {
@@ -49,12 +43,14 @@ public class NoxScape extends Script {
                 stop();
                 return -1;
             }
-            if (!cmn.isCompleted()) {
+            if (cmn.shouldComplete()) {
+                return cmn.continuePostExecution();
+            } else {
                 return cmn.continueExecution();
             }
-            return 1001;
         } catch (Exception e) {
             logException(e);
+            sleep(5000);
             stop();
         }
         return -1;
