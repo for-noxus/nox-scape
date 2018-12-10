@@ -70,4 +70,10 @@ public enum MiningEntities implements ISkillable {
     public String getInteractAction() {
         return "Mine";
     }
+
+    @Override
+    public String producesItemName() {
+        return null;
+    }
+
 }

@@ -24,7 +24,7 @@ public class MiningMasterNode extends NoxScapeMasterNode {
     @Override
     public void initializeNodes() {
 
-        setEntryPoint();
+        setDefaultEntryPoint();
 
         if (this.getCurrentNode() == null) {
             this.abort("Unable to find a valid entrypoint.");
@@ -49,7 +49,7 @@ public class MiningMasterNode extends NoxScapeMasterNode {
     }
 
     @Override
-    public boolean isCompleted() {
+    public boolean shouldComplete() {
         return !canExecute();
     }
 }
