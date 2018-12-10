@@ -33,6 +33,16 @@ public abstract class NoxScapeNode<k extends Tracker> extends Node<NoxScapeNode>
         super((NoxScapeNode) null, "");
     }
 
+    @Override
+    public void setChildNodes(List<NoxScapeNode> nodes) {
+        super.setChildNodes(nodes);
+    }
+
+    @Override
+    public void setChildNode(NoxScapeNode node) {
+        super.setChildNode(node);
+    }
+
     public NoxScapeNode<k> trackedBy(k tracker) { this.tracker = tracker; return this; }
 
     @Override
