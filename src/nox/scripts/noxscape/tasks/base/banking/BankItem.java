@@ -1,22 +1,31 @@
 package nox.scripts.noxscape.tasks.base.banking;
 
-public class BankItem {
+import nox.scripts.noxscape.core.interfaces.INameable;
+
+public class BankItem implements INameable {
 
     private String name;
-    protected BankAction action;
-    protected int amount;
-    protected int id;
-
-    public BankItem(int id, BankAction action, int amount) {
-        this.id = id;
-        this.action = action;
-        this.amount = amount;
-    }
+    private BankAction action;
+    private int amount;
+    private String set;
+    private int priority;
+    private boolean equip;
 
     public BankItem(String name, BankAction action, int amount) {
+        this(name, action, amount, null, 0);
+    }
+
+    public BankItem(String name, BankAction action, int amount, String set, int priority) {
+        this(name, action, amount, null, priority, false);
+    }
+
+    public BankItem(String name, BankAction action, int amount, String set, int priority, boolean equip) {
         this.name = name;
         this.action = action;
         this.amount = amount;
+        this.set = set;
+        this.priority = priority;
+        this.equip = equip;
     }
 
     public String getName() {
@@ -31,15 +40,23 @@ public class BankItem {
         return amount;
     }
 
-    public int getId() {
-        return id;
-    }
-
     public boolean isDeposit() {
         return this.action == BankAction.DEPOSIT;
     }
 
     public boolean isWithdraw() {
         return !this.isDeposit();
+    }
+
+    public String getSet() {
+        return set;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public boolean shouldEquip() {
+        return equip;
     }
 }
