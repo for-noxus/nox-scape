@@ -5,6 +5,7 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.listener.LoginResponseCodeListener;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.util.*;
@@ -88,10 +89,11 @@ public class BankingNode extends NoxScapeNode {
             belongsToSet.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
         }
 
-        if (!ctx.getBank().close())
+        if (!ctx.getBank().close()) {
             logError("Error closing bank;");
-        else
+        } else {
             complete("Successfully handled banking");
+        }
 
         return MethodProvider.random(50, 800);
     }
@@ -102,8 +104,8 @@ public class BankingNode extends NoxScapeNode {
         Optional<BankItem> itemToWithdraw = set.stream().filter(item -> ctx.getBank().contains(item.getName())).findFirst();
 
         if (itemToWithdraw.isPresent()) {
-            if (!ctx.getBank().withdraw(itemToWithdraw.get().getName(), itemToWithdraw.get().getAmount()))
-                logError(String.format("Error withdrawing item (%s) belonging to set (%s).", itemToWithdraw.get().getName(), itemToWithdraw.get().getSet()));
+            if (!withdrawItem(itemToWithdraw.get()))
+                abort(String.format("Error withdrawing item (%s) belonging to set (%s).", itemToWithdraw.get().getName(), itemToWithdraw.get().getSet()));
         } else {
             abort(String.format("Unable to locate any items belonging to set (%s)", itemToWithdraw.get().getSet()));
         }
@@ -121,20 +123,45 @@ public class BankingNode extends NoxScapeNode {
         }
     }
 
-    private void withdrawItem(BankItem item) {
-        if (item.getName() != null) {
-            if (!ctx.getBank().contains(item.getName())) {
-                abort(String.format("Bank does not contain item (%s)", item.getName()));
-            } else {
-                if (ctx.getInventory().getEmptySlotCount() <= item.getAmount()) {
-                    if (!ctx.getBank().withdrawAll(item.getName()))
-                        logBankError(item);
-                } else {
-                    if (!ctx.getBank().withdraw(item.getName(), item.getAmount()))
-                        logBankError(item);
-                }
+    private boolean withdrawItem(BankItem item) {
+        if (item.getName() == null)
+            abort("Attempted to withdraw a null BankItem");
+
+        int amountToWithdraw = item.getAmount() - ((int) ctx.getInventory().getAmount(item.getName()));
+
+        // It appears this item already exists in the inventory
+        if (amountToWithdraw <= 0) {
+            ctx.logClass(this, String.format("Not withdrawing (%s), inventory contains sufficient amount", item.getName()));
+            return true;
+        }
+
+        // We already have the required item equipped
+        if (ctx.getEquipment().contains(item.getName())) {
+            ctx.logClass(this, String.format("Not withdrawing (%s), item already equipped", item.getName()));
+            return true;
+        }
+
+        // We don't have the item we're looking for
+        if (!ctx.getBank().contains(item.getName()))
+            abort(String.format("Bank does not contain item (%s)", item.getName()));
+
+        // We're unable to withdraw the item we're looking for
+        if (ctx.getInventory().getEmptySlotCount() == 0)
+            abort("Had no inventory space to withdraw " + item.getName());
+
+        if (ctx.getInventory().getEmptySlotCount() <=  amountToWithdraw) {
+            if (!ctx.getBank().withdrawAll(item.getName())) {
+                logBankError(item);
+                return false;
+            }
+        } else {
+            if (!ctx.getBank().withdraw(item.getName(), amountToWithdraw)) {
+                logBankError(item);
+                return false;
             }
         }
+
+        return !isAborted();
     }
 
     private void logBankError(BankItem item) {
