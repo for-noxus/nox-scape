@@ -30,7 +30,12 @@ public class MiningMasterNode extends NoxScapeMasterNode {
             this.abort("Unable to find a valid entrypoint.");
         }
 
-        ctx.logClass(this, String.format("Initialized %d nodes.", nodes.size()));
+        ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
+    }
+
+    @Override
+    public boolean requiresPreExecution() {
+        return false;
     }
 
     @Override
