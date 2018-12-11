@@ -90,7 +90,6 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(entity)
-                .afterInteractingWaitFor(() -> !ctx.myPlayer().isAnimating(), 20000, 1000)
                 .hasMessage("Chopping " + entity.getName());
 
         toTreeNode.setChildNode(interactNode);
@@ -100,11 +99,11 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         preExecutioBankNode.setChildNode(toTreeNode);
         preExecutionWalkNode.setChildNode(preExecutioBankNode);
 
-        nodes = Arrays.asList(toTreeNode, interactNode, toBankNode, bankNode, preExecutioBankNode, preExecutionWalkNode);
-
+        setNodes(Arrays.asList(toTreeNode, interactNode, toBankNode, bankNode, preExecutioBankNode, preExecutionWalkNode));
+        setPreExecutionNode(preExecutionWalkNode);
         setReturnToBankNode(toBankNode);
 
-        ctx.logClass(this, String.format("Initialized %d nodes.", nodes.size()));
+        ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
     }
 
     @Override
