@@ -15,7 +15,7 @@ public class CachedItem implements INameable {
 
     public CachedItem(String name, Pair<Skill, Integer>... requiredLevels) {
         this.name = name;
-        this.requiredLevels = Arrays.asList(requiredLevels);
+        this.requiredLevels = new ArrayList<>(Arrays.asList(requiredLevels));
     }
 
     public String getName() {
