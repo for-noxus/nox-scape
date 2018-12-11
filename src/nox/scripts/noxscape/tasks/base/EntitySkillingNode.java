@@ -55,12 +55,16 @@ public class EntitySkillingNode extends NoxScapeNode {
         if (ctx.getInventory().isFull()) {
             if (powerFarming) {
                 ctx.getInventory().dropAllExcept(dropAllExcept);
-                ctx.sleep(0, 100);
+                ctx.sleep(0, 200);
             } else {
                 this.complete("Inventory full, unable to acquire more " + skillableEntity.getName() + ".");
                 return MethodProvider.random(50, 1000);
             }
         }
+
+        if (isBusy())
+            return 1000;
+
         RS2Object entity = ctx.getObjects().closest(skillableEntity.getName());
 
         if (entity == null) {
@@ -75,8 +79,10 @@ public class EntitySkillingNode extends NoxScapeNode {
             abort(String.format("Error interacting interact with entity (%s) and action (%s)", entity.getName(), skillableEntity.getInteractAction()));
         }
 
-        Sleep.sleepUntil(postInteractWaitCondition, postInteractWaitTimeout, postInteractWaitInterval);
-
         return MethodProvider.random(100, 1000);
+    }
+
+    private boolean isBusy() {
+        return ctx.myPlayer().isMoving() || ctx.myPlayer().isAnimating();
     }
 }
