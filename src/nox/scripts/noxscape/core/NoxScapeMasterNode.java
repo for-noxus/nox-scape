@@ -67,7 +67,7 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         NoxScapeNode lastNode = currentNode;
 
         if (currentNode == null) {
-            ctx.logClass(this, String.format("Assigning entrpoiny to MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
+            ctx.logClass(this, String.format("Assigning entrypoint to MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
 
             if (!completedPreExecution && requiresPreExecution()) {
                 currentNode = preExecutionNode;
