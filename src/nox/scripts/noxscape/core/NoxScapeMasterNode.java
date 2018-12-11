@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
+import nox.scripts.noxscape.NoxScape;
 
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +10,7 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
 
     protected k tracker;
     protected ScriptContext ctx;
-    protected List<NoxScapeNode> nodes;
+    protected MasterNodeInformation nodeInformation;
 
     private long expirationTime;
 
@@ -18,7 +19,7 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
     private NoxScapeNode preExecutionNode;
     private NoxScapeNode returnToBankNode;
 
-    protected MasterNodeInformation nodeInformation;
+    private List<NoxScapeNode> nodes;
 
     private boolean completedPreExecution = false;
     private boolean isAborted;
@@ -43,6 +44,14 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         }
     }
 
+    public void setNodes(List<NoxScapeNode> nodes) {
+        this.nodes = nodes;
+    }
+
+    public List<NoxScapeNode> getNodes() {
+        return this.nodes;
+    }
+
     protected NoxScapeNode getEntryPoint() {
         return nodes.stream().filter(Node::isValid).findFirst().orElse(null);
     }
@@ -57,25 +66,29 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         // Store the current node in a tmp
         NoxScapeNode lastNode = currentNode;
 
-        // Our current node is invalid or completed. Find a new one
-        if (currentNode == null || !currentNode.isValid() || currentNode.isCompleted()) {
+        if (currentNode == null) {
+            ctx.logClass(this, String.format("Assigning entrpoiny to MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
 
             if (!completedPreExecution && requiresPreExecution()) {
                 currentNode = preExecutionNode;
                 if (currentNode == null)  {
                     abort("MasterNode requires PreExecution, but there was none specified");
                 }
+                ctx.logClass(this, String.format("Executing PreExecution pipeline for MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
             } else {
                 // Attempt to find the next node from our current node's children
                 currentNode = currentNode.getNext();
             }
-
+        } else if (!currentNode.isValid() || currentNode.isCompleted()) {
             // If we've completed our current node gracefully..
             if (currentNode.isCompleted()) {
                 ctx.logClass(this, String.format("Node (%s) has completed successfully. Finding next node", lastNode.getClass().getSimpleName()));
             } else {
                 ctx.logClass(this, String.format("Node (%s) is invalid. Scanning for next node", lastNode.getClass().getSimpleName()));
             }
+
+            currentNode = currentNode.getNext();
+
             // If we found a new node..
             if (currentNode != null) {
                 currentNode.reactivate();
@@ -94,6 +107,7 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
                 }
             }
         }
+
         ctx.log(String.format("%s: Executing Node (%s)", nodeInformation.getFriendlyName(), currentNode.getClass().getSimpleName()));
         return currentNode.execute();
     }
