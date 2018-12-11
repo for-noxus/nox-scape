@@ -18,7 +18,8 @@ public final class NRandom {
 
     public static int humanized(Double efficiency) {
         double boundedCoefficient = Math.max(0.1, efficiency);
-        double lambda = 20/boundedCoefficient;
+        double stdCoefficient = getStandardizedCoefficient(boundedCoefficient);
+        double lambda = 10/stdCoefficient;
         int poiss = poisson(lambda);
         return exact((int)Math.floor(0.9*BASE_REACTION_TIME), BASE_REACTION_TIME + 10*poiss);
     }
@@ -34,5 +35,9 @@ public final class NRandom {
         } while (p > L);
 
         return k - 1;
+    }
+
+    private static double getStandardizedCoefficient(double coeff) {
+        return Math.pow(coeff, 2);
     }
 }
