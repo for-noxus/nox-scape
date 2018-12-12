@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.core;
 
+import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.io.File;
@@ -41,6 +42,14 @@ public class ScriptContext extends MethodProvider {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sleepH() throws InterruptedException {
+        MethodProvider.sleep((long) NRandom.humanized());
+    }
+
+    public void sleepHQuick() throws InterruptedException {
+        MethodProvider.sleep((long) (NRandom.humanized() * 0.7));
     }
 
     public void sleep(int lowerBounds, int higherBounds) throws InterruptedException {
