@@ -2,6 +2,7 @@ package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
 import nox.scripts.noxscape.NoxScape;
+import sun.text.normalizer.ReplaceableUCharacterIterator;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,12 +37,24 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
 
     public abstract void initializeNodes();
 
-    protected void setDefaultEntryPoint() {
+    protected boolean setDefaultEntryPoint(NoxScapeNode lastNode) {
         this.currentNode = getEntryPoint();
 
-        if (this.getCurrentNode() == null) {
-            this.abort("Unable to find a valid entrypoint. All child nodes were null");
+        if (this.currentNode == null) {
+            ctx.logClass(this, String.format("There were no more valid nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
+
+            if (lastNode != null)
+                ctx.logClass(this, "Last node that was valid: " + lastNode.getClass().getSimpleName());
+
+            this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution.");
+            return false;
         }
+
+        return true;
+    }
+
+    protected boolean setDefaultEntryPoint() {
+        return setDefaultEntryPoint(null);
     }
 
     public void setNodes(List<NoxScapeNode> nodes) {
@@ -66,26 +79,35 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         // Store the current node in a tmp
         NoxScapeNode lastNode = currentNode;
 
+        // If we don't yet have a node..
         if (currentNode == null) {
+
             ctx.logClass(this, String.format("Assigning entrypoint to MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
 
-            if (!completedPreExecution && requiresPreExecution()) {
-                currentNode = preExecutionNode;
-                if (currentNode == null)  {
-                    abort("MasterNode requires PreExecution, but there was none specified");
+            // If we haven't completed our PreExecution yet
+            if (!completedPreExecution) {
+                // Sometimes we don't need to
+                if (!requiresPreExecution()) {
+                    ctx.logClass(this, String.format("MasterNode (%s) already satisfies PreExecution condition, moving right along..", getMasterNodeInformation().getFriendlyName()));
+                    completedPreExecution = true;
+                    setDefaultEntryPoint();
+                } else {
+                    currentNode = preExecutionNode;
+                    if (currentNode == null)  {
+                        abort("MasterNode requires PreExecution, but there was none specified");
+                    }
+                    ctx.logClass(this, String.format("Executing PreExecution pipeline for MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
                 }
-                ctx.logClass(this, String.format("Executing PreExecution pipeline for MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
             } else {
                 // Attempt to find the next node from our current node's children
                 currentNode = currentNode.getNext();
             }
         } else if (!currentNode.isValid() || currentNode.isCompleted()) {
             // If we've completed our current node gracefully..
-            if (currentNode.isCompleted()) {
+            if (currentNode.isCompleted())
                 ctx.logClass(this, String.format("Node (%s) has completed successfully. Finding next node", lastNode.getClass().getSimpleName()));
-            } else {
+            else
                 ctx.logClass(this, String.format("Node (%s) is invalid. Scanning for next node", lastNode.getClass().getSimpleName()));
-            }
 
             currentNode = currentNode.getNext();
 
@@ -96,20 +118,21 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
             } else {
                 // Unable to find any new nodes to execute from our current node
                 ctx.logClass(this, String.format("%s had no valid children. Attempting to find a valid entrypoint in MasterNode..", lastNode.getClass().getSimpleName()));
+
                 // Attempt to cycle through all nodes to find a new point of entry
-                setDefaultEntryPoint();
-                if (currentNode == null) {
-                    ctx.logClass(this, String.format("There were no more valid nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
-                    this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution. Last node that was valid: " + lastNode.getClass().getSimpleName());
+                if (!setDefaultEntryPoint(lastNode))
                     return 0;
-                } else {
+                else
                     ctx.logClass(this, String.format("We were able to locate a valid entrypoint (%s).", currentNode.getClass().getSimpleName()));
-                }
             }
         }
 
-        ctx.log(String.format("%s: Executing Node (%s)", nodeInformation.getFriendlyName(), currentNode.getClass().getSimpleName()));
-        return currentNode.execute();
+        if (currentNode != null) {
+            ctx.log(String.format("%s: Executing Node (%s)", nodeInformation.getFriendlyName(), currentNode.getClass().getSimpleName()));
+            return currentNode.execute();
+        }
+
+        return 0;
     }
 
     public int continuePostExecution() throws InterruptedException {
