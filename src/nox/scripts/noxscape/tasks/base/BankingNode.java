@@ -3,10 +3,9 @@ package nox.scripts.noxscape.tasks.base;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
+import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.listener.LoginResponseCodeListener;
-import org.osbot.rs07.script.MethodProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,8 +66,10 @@ public class BankingNode extends NoxScapeNode {
             Sleep.sleepUntil(() -> ctx.getBank().isOpen(), 6000, 600);
         }
 
-        if (depositallWornItems)
+        if (depositallWornItems) {
             ctx.getBank().depositWornItems();
+            ctx.sleepHQuick();
+        }
 
         if (depositAllBackpackItems)
             ctx.getBank().depositAll();
@@ -79,14 +80,40 @@ public class BankingNode extends NoxScapeNode {
             Map<Boolean, List<BankItem>> belongsToSet = Arrays.stream(items).collect(Collectors.partitioningBy(item -> item.getSet() != null));
 
             // Handle item sets
-            belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).forEach(this::withdrawItemSet);
+            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::getOwnedItemFromSet).toArray(BankItem[]::new);
+            belongsToSet.get(false).addAll(Arrays.asList(setItemsToWithdraw));
 
             // Deposit all deposit-items
             belongsToSet.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
 
             ctx.sleep(0, 80);
+
+            Map<Boolean, List<BankItem>> shouldEquip = belongsToSet.get(false).stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
+
+            // Withdraw and equip all equip-items first
+            if (shouldEquip.get(true).size() > 0) {
+
+                shouldEquip.get(true).forEach(this::withdrawItem);
+
+                ctx.sleepHQuick();
+
+                if (ctx.getBank().close()) {
+                    shouldEquip.get(true).forEach(this::equipItem);
+                }
+
+                ctx.sleepHQuick();
+            }
+
             // Withdraw all withdraw-items
-            belongsToSet.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
+            if (shouldEquip.get(false).size() > 0) {
+                if (!ctx.getBank().isOpen()) {
+                    if (ctx.getBank().open()) {
+                        shouldEquip.get(false).forEach(this::withdrawItem);
+                    } else {
+                        abort("Error opening bank to withdraw items");
+                    }
+                }
+            }
         }
 
         if (!ctx.getBank().close()) {
@@ -95,19 +122,30 @@ public class BankingNode extends NoxScapeNode {
             complete("Successfully handled banking");
         }
 
-        return MethodProvider.random(50, 800);
+        return NRandom.humanized();
     }
 
-    private void withdrawItemSet(String key, List<BankItem> set) {
-        set.sort(Comparator.comparingInt(o -> o.getPriority()));
+    private void equipItem(BankItem i) {
+        if (!ctx.getInventory().getItem(i.getName()).interact())
+            abort(String.format("Failed to equip item %s", i.getName()));
 
-        Optional<BankItem> itemToWithdraw = set.stream().filter(item -> ctx.getBank().contains(item.getName())).findFirst();
+        try {
+            ctx.sleepHQuick();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private BankItem getOwnedItemFromSet(List<BankItem> set) {
+        set.sort(Comparator.comparingInt(BankItem::getPriority));
+
+        Optional<BankItem> itemToWithdraw = set.stream().filter(item -> ctx.getBank().contains(item.getName()) || ctx.getInventory().contains(item.getName()) || ctx.getEquipment().contains(item.getName())).findFirst();
 
         if (itemToWithdraw.isPresent()) {
-            if (!withdrawItem(itemToWithdraw.get()))
-                abort(String.format("Error withdrawing item (%s) belonging to set (%s).", itemToWithdraw.get().getName(), itemToWithdraw.get().getSet()));
+            return itemToWithdraw.get();
         } else {
-            abort(String.format("Unable to locate any items belonging to set (%s)", itemToWithdraw.get().getSet()));
+            abort(String.format("Unable to locate any items belonging to set (%s)", set.get(0).getSet()));
+            return null;
         }
     }
 
