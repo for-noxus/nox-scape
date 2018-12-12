@@ -90,6 +90,7 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(entity)
+                .afterInteractingWaitFor(ent -> ctx.getObjects().closest(obj -> obj.getPosition().equals(ent.getPosition()) && obj.getName().equals("Tree stump")) != null, 5000, 1000)
                 .hasMessage("Chopping " + entity.getName());
 
         toTreeNode.setChildNode(interactNode);
@@ -109,7 +110,7 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
     @Override
     public boolean requiresPreExecution() {
         String[] axeNames = WoodcuttingItems.axes().stream().map(CachedItem::getName).toArray(String[]::new);
-        return !ctx.getInventory().contains(axeNames) || !ctx.getEquipment().isWieldingWeaponThatContains(axeNames);
+        return !ctx.getInventory().contains(axeNames) && !ctx.getEquipment().isWieldingWeaponThatContains(axeNames);
     }
 
     @Override
