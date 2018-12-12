@@ -5,7 +5,7 @@ import java.util.Random;
 public final class NRandom {
 
     private static int BASE_REACTION_TIME = 300;
-    private static double DEFAULT_EFFICIENCY = 0.95;
+    private static double DEFAULT_EFFICIENCY = 0.8;
 
     public static int exact(int lowerBounds, int higherBounds) {
         int generated = new Random().nextInt(higherBounds - lowerBounds);
