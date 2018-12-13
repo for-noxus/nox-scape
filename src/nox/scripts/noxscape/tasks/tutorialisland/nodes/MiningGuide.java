@@ -2,7 +2,6 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.HintArrow;
@@ -29,8 +28,8 @@ public class MiningGuide extends NoxScapeNode {
 
     private final Position POSITION_INSTRUCTOR = new Position(3080, 9504, 0);
 
-    public MiningGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
+    public MiningGuide(NoxScapeNode child, ScriptContext ctx, String message) {
+        super(child, ctx, message);
     }
 
     @Override

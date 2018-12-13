@@ -2,17 +2,11 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.HintArrow;
 import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.api.model.NPC;
-import org.osbot.rs07.api.model.RS2Object;
-import org.osbot.rs07.api.ui.RS2Widget;
 
-import java.util.Arrays;
 import java.util.Random;
 
 public class WalkToFishingGuide extends NoxScapeNode {
@@ -24,8 +18,8 @@ public class WalkToFishingGuide extends NoxScapeNode {
     private final String INSTRUCTIONS_MOVEON = "time to meet your first instructor";
     private final String INSTRUCTIONS_MOVEON2 = "will walk you to that point";
 
-    public WalkToFishingGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
+    public WalkToFishingGuide(NoxScapeNode child, ScriptContext ctx, String message) {
+        super(child, ctx, message);
     }
 
     @Override

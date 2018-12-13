@@ -1,14 +1,13 @@
 package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
+import com.sun.demo.jvmti.hprof.Tracker;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.HintArrow;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
-import org.osbot.rs07.api.util.CachedWidget;
 
 import java.util.List;
 import java.util.Random;
@@ -19,12 +18,8 @@ public class TalkToGuide extends NoxScapeNode {
     public final String[] DIALOGUE_GUIDE_OPTIONS = { "I am brand new", "I am an experienced", "played in the past" };
     public final String DIALOGUE_GUIDE_OPTIONS_TITLE = "What's your experience";
 
-    public TalkToGuide(NoxScapeNode next, ScriptContext ctx, String message, Tracker tracker) {
-        super(next, ctx, message, tracker);
-    }
-
-    public TalkToGuide(List children, ScriptContext ctx, String message, Tracker tracker) {
-        super(children, ctx, message, tracker);
+    public TalkToGuide(List children, ScriptContext ctx, String message) {
+        super(children, ctx, message);
     }
 
     @Override

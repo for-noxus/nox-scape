@@ -2,12 +2,10 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.WidgetActionFilter;
 import org.osbot.rs07.api.HintArrow;
-import org.osbot.rs07.api.Widgets;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.script.MethodProvider;
@@ -29,8 +27,8 @@ public class ClickOptionsMenu extends NoxScapeNode {
 
     public WidgetActionFilter fixedFilter = new WidgetActionFilter("Fixed mode");
 
-    public ClickOptionsMenu(List children, ScriptContext ctx, String message, Tracker tracker) {
-        super(children, ctx, message, tracker);
+    public ClickOptionsMenu(List children, ScriptContext ctx, String message) {
+        super(children, ctx, message);
     }
 
     @Override

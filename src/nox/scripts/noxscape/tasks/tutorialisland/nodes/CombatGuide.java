@@ -2,7 +2,6 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.WidgetActionFilter;
@@ -39,8 +38,8 @@ public class CombatGuide extends NoxScapeNode {
 
     private final WidgetActionFilter equipmentFilter = new WidgetActionFilter("View equipment stats");
 
-    public CombatGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
+    public CombatGuide(NoxScapeNode child, ScriptContext ctx, String message) {
+        super(child, ctx, message);
     }
 
     @Override

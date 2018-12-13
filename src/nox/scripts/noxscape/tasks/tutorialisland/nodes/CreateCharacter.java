@@ -2,13 +2,10 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.WidgetActionFilter;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
-import sun.management.ThreadInfoCompositeData;
-import sun.plugin2.message.GetNameSpaceMessage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,8 +30,8 @@ public class CreateCharacter extends NoxScapeNode {
     private final String[] DESIGNER_COLOR_OPTIONS = new String[] { "Recolour hair", "Recolour torso", "Recolour legs", "Recolour feet", "Recolour skin" };
     private final String DESIGNER_GENDER_OPTION_FEMALE = "Female";
 
-    public CreateCharacter(NoxScapeNode next, ScriptContext ctx, String message, Tracker tracker) {
-        super(next, ctx, message, tracker);
+    public CreateCharacter(NoxScapeNode next, ScriptContext ctx, String message) {
+        super(next, ctx, message);
     }
 
     @Override

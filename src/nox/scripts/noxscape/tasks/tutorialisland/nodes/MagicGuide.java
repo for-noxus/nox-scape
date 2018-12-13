@@ -1,9 +1,7 @@
 package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
-import com.thoughtworks.xstream.mapper.LocalConversionMapper;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.HintArrow;
@@ -27,8 +25,8 @@ public class MagicGuide extends NoxScapeNode {
 
     private final Position POSITION_MAGIC_GUIDE = new Position(3141, 3086, 0);
 
-    public MagicGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
+    public MagicGuide(NoxScapeNode child, ScriptContext ctx, String message) {
+        super(child, ctx, message);
     }
 
     @Override

@@ -2,7 +2,6 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.HintArrow;
@@ -23,8 +22,8 @@ public class QuestGuide extends NoxScapeNode {
     private final String INSTRUCTIONS_QUEST_JOURNAL = "Talk to the quest guide again";
     private final String INSTRUCTIONS_MOVEON = "time to enter some caves.";
 
-    public QuestGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
+    public QuestGuide(NoxScapeNode child, ScriptContext ctx, String message) {
+        super(child, ctx, message);
     }
 
     @Override

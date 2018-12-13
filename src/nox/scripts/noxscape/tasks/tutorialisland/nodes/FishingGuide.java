@@ -2,7 +2,6 @@ package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.Tracker;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.HintArrow;
@@ -12,11 +11,8 @@ import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Tab;
-import org.osbot.rs07.event.WalkingEvent;
-import org.osbot.rs07.listener.LoginResponseCodeListener;
 import org.osbot.rs07.script.MethodProvider;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 public class FishingGuide extends NoxScapeNode {
@@ -38,8 +34,8 @@ public class FishingGuide extends NoxScapeNode {
 
     private final Area validChopArea = new Area(3098, 3098, 3107, 3091);
 
-    public FishingGuide(NoxScapeNode child, ScriptContext ctx, String message, Tracker tracker) {
-        super(child, ctx, message, tracker);
+    public FishingGuide(NoxScapeNode child, ScriptContext ctx, String message) {
+        super(child, ctx, message);
     }
 
     @Override

@@ -17,7 +17,6 @@ public class TutorialIslandMasterNode extends NoxScapeMasterNode {
 
     public TutorialIslandMasterNode(ScriptContext ctx) {
         super(ctx);
-        this.tracker = new TutorialIslandTracker();
         this.nodeInformation = getMasterNodeInformation();
     }
 
@@ -28,24 +27,22 @@ public class TutorialIslandMasterNode extends NoxScapeMasterNode {
 
     @Override
     public void initializeNodes() {
-        MagicGuide magicGuide = new MagicGuide(null, ctx, "Handling magic guide", tracker);
-        PrayerGuide  prayerGuide = new PrayerGuide(magicGuide, ctx, "Handling prayer guide", tracker);
-        BankGuide bankGuide = new BankGuide(prayerGuide, ctx, "Handling bank guide", tracker);
-        CombatGuide combatGuide = new CombatGuide(bankGuide, ctx, "Handling combat guide", tracker);
-        MiningGuide miningGuide = new MiningGuide(combatGuide, ctx, "Handling mining guide", tracker);
-        QuestGuide questGuide = new QuestGuide(miningGuide, ctx, "Handling quest guide", tracker);
-        CookGuide cookGuide = new CookGuide(questGuide, ctx, "Handling cooking guide", tracker);
-        FishingGuide fishingGuide = new FishingGuide(cookGuide, ctx, "Handling fishing guide", tracker);
-        WalkToFishingGuide walkToFishingGuide = new WalkToFishingGuide(fishingGuide, ctx, "Walking to fishing guide", tracker);
-        ClickOptionsMenu clickOptionsMenu = new ClickOptionsMenu(null, ctx, "Clicking options menu", tracker);
-        TalkToGuide talkToGuide = new TalkToGuide(Arrays.asList(clickOptionsMenu, walkToFishingGuide), ctx, "Talking to Guide", tracker);
-        CreateCharacter createCharacter = new CreateCharacter(talkToGuide, ctx, "Creating your character.", tracker);
+        MagicGuide magicGuide = new MagicGuide(null, ctx, "Handling magic guide");
+        PrayerGuide  prayerGuide = new PrayerGuide(magicGuide, ctx, "Handling prayer guide");
+        BankGuide bankGuide = new BankGuide(prayerGuide, ctx, "Handling bank guide");
+        CombatGuide combatGuide = new CombatGuide(bankGuide, ctx, "Handling combat guide");
+        MiningGuide miningGuide = new MiningGuide(combatGuide, ctx, "Handling mining guide");
+        QuestGuide questGuide = new QuestGuide(miningGuide, ctx, "Handling quest guide");
+        CookGuide cookGuide = new CookGuide(questGuide, ctx, "Handling cooking guide");
+        FishingGuide fishingGuide = new FishingGuide(cookGuide, ctx, "Handling fishing guide");
+        WalkToFishingGuide walkToFishingGuide = new WalkToFishingGuide(fishingGuide, ctx, "Walking to fishing guide");
+        ClickOptionsMenu clickOptionsMenu = new ClickOptionsMenu(null, ctx, "Clicking options menu");
+        TalkToGuide talkToGuide = new TalkToGuide(Arrays.asList(clickOptionsMenu, walkToFishingGuide), ctx, "Talking to Guide");
+        CreateCharacter createCharacter = new CreateCharacter(talkToGuide, ctx, "Creating your character.");
 
         clickOptionsMenu.setChildNode(talkToGuide);
 
         setNodes(new ArrayList<>(Arrays.asList(createCharacter, talkToGuide, clickOptionsMenu, walkToFishingGuide, fishingGuide, cookGuide, questGuide, miningGuide, combatGuide, bankGuide, prayerGuide, magicGuide)));
-
-        setDefaultEntryPoint();
 
         if (this.getCurrentNode() == null) {
             this.abort("Unable to find a valid entrypoint.");
@@ -72,10 +69,5 @@ public class TutorialIslandMasterNode extends NoxScapeMasterNode {
                 MasterNodeType.QUEST);
 
         return nodeInformation;
-    }
-
-    @Override
-    public boolean shouldComplete() {
-        return !canExecute();
     }
 }

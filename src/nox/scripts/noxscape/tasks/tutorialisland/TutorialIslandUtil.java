@@ -2,8 +2,6 @@ package nox.scripts.noxscape.tasks.tutorialisland;
 
 import nox.scripts.noxscape.core.ScriptContext;
 import org.osbot.rs07.api.ui.RS2Widget;
-import org.osbot.rs07.api.util.CachedWidget;
-import org.osbot.rs07.script.MethodProvider;
 
 public final class TutorialIslandUtil {
 
