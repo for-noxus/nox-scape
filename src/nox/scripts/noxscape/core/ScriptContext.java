@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.core;
 
+import nox.scripts.noxscape.NoxScape;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -8,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public class ScriptContext extends MethodProvider {
 
@@ -23,6 +25,10 @@ public class ScriptContext extends MethodProvider {
             logFile.createNewFile();
         }
         logClass(this, "Script context initialized.");
+    }
+
+    public <T> void recommendNode(Class<T> clazz, Consumer<T> nodeConfiguration) {
+
     }
 
     public NoxScapeMasterNode getCurrentMasterNode() {

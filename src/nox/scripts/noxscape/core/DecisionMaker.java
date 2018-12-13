@@ -1,14 +1,16 @@
 package nox.scripts.noxscape.core;
 
 import nox.scripts.noxscape.core.enums.Frequency;
+import nox.scripts.noxscape.core.interfaces.IAmountable;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class DecisionMaker {
-
-    private Random random;
+public final class DecisionMaker {
 
     private ArrayList<NoxScapeMasterNode> masterNodes = new ArrayList<>();
     private ArrayList<NoxScapeMasterNode> priorityNodes = new ArrayList<>();
@@ -17,7 +19,6 @@ public class DecisionMaker {
 
     public DecisionMaker(ScriptContext ctx) {
         this.ctx = ctx;
-        this.random = new Random();
         initializeNodes();
         ctx.logClass(this, "DecisionMaker has been initialized with " + masterNodes.size() + " nodes.");
     }
@@ -32,7 +33,7 @@ public class DecisionMaker {
         }
 
         int nodesSelectionRange = masterNodes.stream().map(m -> getStandardizedWeight(m.nodeInformation.getFrequency())).reduce(0, Integer::sum);
-        int selectedValue = random.nextInt(nodesSelectionRange);
+        int selectedValue = new Random().nextInt(nodesSelectionRange);
         NoxScapeMasterNode nextNode = locateMasterNodeFromSelectedValue(selectedValue);
 
         ctx.logClass(this, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
@@ -41,8 +42,16 @@ public class DecisionMaker {
         return nextNode;
     }
 
-    public void addPriorityItem(Class<? extends NoxScapeMasterNode> node) {
+    public void addPriorityItem(Class<? extends NoxScapeMasterNode> node, Supplier<StopWatcher> stopWatchCreation) {
         NoxScapeMasterNode existing = masterNodes.stream().filter(f -> f.getClass().equals(node)).findFirst().orElseThrow(IllegalArgumentException::new);
+
+        if (existing == null) {
+            ctx.logClass(this, String.format("Attempted to add a priority node that was not a registered masternode (%s)", node.getSimpleName()));
+            return;
+        }
+
+        existing.setStopWatcher(stopWatchCreation.get());
+
         addPriorityItem(existing);
     }
 
