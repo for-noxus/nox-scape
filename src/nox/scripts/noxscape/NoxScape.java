@@ -32,28 +32,36 @@ public class NoxScape extends Script {
     public int onLoop() throws InterruptedException {
         try {
             NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
+            // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
                 NoxScapeMasterNode newNode = decisionMaker.getNextMasterNode();
                 log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
                 ctx.setCurrentMasterNode(newNode);
                 cmn = newNode;
             }
+            // If any nodes in our CMN, or our CMN itself is requesting abortion
             if (cmn.isAborted()) {
                 log(String.format("Node %s requested script abortion.\nReason: %s", cmn.getClass().getSimpleName(), cmn.getAbortedReason()));
-                stop();
-                return -1;
+                ctx.setCurrentMasterNode(null);
+                // Loop back to the top to get assigned a new node
+                return 3000;
             }
-            if (cmn.shouldComplete()) {
+            // Begin the process of configureStopWatcher our current node
+            if (cmn.getStopWatcher().shouldStop()) {
                 return cmn.continuePostExecution();
             } else {
+                // Carry on as usual
                 return cmn.continueExecution();
             }
         } catch (Exception e) {
             logException(e);
             sleep(5000);
-            stop();
+            stop(false);
         }
-        return -1;
+        // This should never happen..........
+        log("Captain we've got no fkin clue why we exited");
+        stop();
+        return 11;
     }
 
     private void logException(Exception e) {
