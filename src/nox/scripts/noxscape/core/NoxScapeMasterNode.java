@@ -2,16 +2,18 @@ package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
 import nox.scripts.noxscape.NoxScape;
-import sun.text.normalizer.ReplaceableUCharacterIterator;
+import nox.scripts.noxscape.core.interfaces.IAmountable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-public abstract class NoxScapeMasterNode<k extends Tracker> {
+public abstract class NoxScapeMasterNode {
 
-    protected k tracker;
     protected ScriptContext ctx;
     protected MasterNodeInformation nodeInformation;
+    protected StopWatcher stopWatcher;
 
     private long expirationTime;
 
@@ -31,48 +33,25 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         nodeInformation = getMasterNodeInformation();
     }
 
-    public abstract boolean canExecute();
-
-    public abstract MasterNodeInformation getMasterNodeInformation();
-
-    public abstract void initializeNodes();
-
-    protected boolean setDefaultEntryPoint(NoxScapeNode lastNode) {
-        this.currentNode = getEntryPoint();
-
-        if (this.currentNode == null) {
-            ctx.logClass(this, String.format("There were no more valid nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
-
-            if (lastNode != null)
-                ctx.logClass(this, "Last node that was valid: " + lastNode.getClass().getSimpleName());
-
-            this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution.");
-            return false;
-        }
-
-        return true;
+    public MasterNodeInformation getMasterNodeInformation() {
+        return nodeInformation;
     }
 
-    protected boolean setDefaultEntryPoint() {
-        return setDefaultEntryPoint(null);
+    public StopWatcher getStopWatcher() {
+        return stopWatcher;
     }
 
-    public void setNodes(List<NoxScapeNode> nodes) {
-        this.nodes = nodes;
+    public NoxScapeMasterNode configureStopWatcher(Function<IAmountable, StopWatcher> config) {
+        stopWatcher = config.apply(StopWatcher.create(ctx));
+        return this;
     }
 
     public List<NoxScapeNode> getNodes() {
         return this.nodes;
     }
 
-    protected NoxScapeNode getEntryPoint() {
-        return nodes.stream().filter(Node::isValid).findFirst().orElse(null);
-    }
-
-    public abstract boolean requiresPreExecution();
-
-    protected void setPreExecutionNode(NoxScapeNode node) {
-        this.preExecutionNode = node;
+    public void setNodes(List<NoxScapeNode> nodes) {
+        this.nodes = nodes;
     }
 
     public int continueExecution() throws InterruptedException {
@@ -93,7 +72,7 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
                     setDefaultEntryPoint();
                 } else {
                     currentNode = preExecutionNode;
-                    if (currentNode == null)  {
+                    if (currentNode == null) {
                         abort("MasterNode requires PreExecution, but there was none specified");
                     }
                     ctx.logClass(this, String.format("Executing PreExecution pipeline for MasterNode (%s)", getMasterNodeInformation().getFriendlyName()));
@@ -143,23 +122,21 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         }
     }
 
+    public abstract boolean canExecute();
+
+    public abstract void initializeNodes();
+
+    public abstract boolean requiresPreExecution();
+
     protected void setReturnToBankNode(NoxScapeNode node) {
         this.returnToBankNode = node;
     }
 
-    public long getExpirationTime() {
-        return expirationTime;
+    protected void setPreExecutionNode(NoxScapeNode node) {
+        this.preExecutionNode = node;
     }
 
-    public void setExpirationTime(long expirationTime) {
-        this.expirationTime = expirationTime;
-    }
-
-    public void setCurrentNode(NoxScapeNode currentNode) {
-        this.currentNode = currentNode;
-    }
-
-    public NoxScapeNode getCurrentNode() {
+    protected NoxScapeNode getCurrentNode() {
         return currentNode;
     }
 
@@ -168,15 +145,11 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted();
     }
 
-    public boolean shouldComplete() {
-        return System.currentTimeMillis() > expirationTime;
-    }
-
     public boolean isAborted() {
         return nodes.stream().anyMatch(Node::isAborted) || isAborted;
     }
 
-    public void abort(String abortedReason) {
+    protected void abort(String abortedReason) {
         isAborted = true;
         this.abortedReason = abortedReason;
     }
@@ -185,6 +158,36 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
         return abortedReason == null ?
                 nodes.stream().filter(Node::isAborted).map(Node::getAbortedReason).findFirst().orElse(null) :
                 abortedReason;
+    }
+
+    private String getChildNodeNames() {
+        if (this.nodes == null || this.nodes.size() == 0)
+            return "";
+        return this.nodes.stream().map(m -> m.getClass().getSimpleName() + ": " + m.toDebugString()).reduce("", (a, b) -> a + b) + "\n\n";
+    }
+
+    private boolean setDefaultEntryPoint(NoxScapeNode lastNode) {
+        this.currentNode = getEntryPoint();
+
+        if (this.currentNode == null) {
+            ctx.logClass(this, String.format("There were no more valid nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
+
+            if (lastNode != null)
+                ctx.logClass(this, "Last node that was valid: " + lastNode.getClass().getSimpleName());
+
+            this.abort(nodeInformation.getFriendlyName() + ": Unable to locate a valid node to continue execution.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean setDefaultEntryPoint() {
+        return setDefaultEntryPoint(null);
+    }
+
+    private NoxScapeNode getEntryPoint() {
+        return nodes.stream().filter(Node::isValid).findFirst().orElse(null);
     }
 
     @Override
@@ -197,17 +200,11 @@ public abstract class NoxScapeMasterNode<k extends Tracker> {
                 '}';
     }
 
-    private String getChildNodeNames() {
-        if (this.nodes == null || this.nodes.size() == 0)
-            return "";
-        return this.nodes.stream().map(m -> m.getClass().getSimpleName() + ": " + m.toDebugString()).reduce("", (a, b) -> a + b) + "\n\n";
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        NoxScapeMasterNode<?> that = (NoxScapeMasterNode<?>) o;
+        NoxScapeMasterNode that = (NoxScapeMasterNode) o;
         return Objects.equals(nodeInformation, that.nodeInformation);
     }
 
