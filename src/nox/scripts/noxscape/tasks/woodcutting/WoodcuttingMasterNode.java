@@ -1,9 +1,6 @@
 package nox.scripts.noxscape.tasks.woodcutting;
 
-import nox.scripts.noxscape.core.MasterNodeInformation;
-import nox.scripts.noxscape.core.NoxScapeMasterNode;
-import nox.scripts.noxscape.core.NoxScapeNode;
-import nox.scripts.noxscape.core.ScriptContext;
+import nox.scripts.noxscape.core.*;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
@@ -14,7 +11,6 @@ import nox.scripts.noxscape.tasks.base.EntitySkillingNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
-import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandTracker;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
@@ -24,10 +20,22 @@ import java.util.Comparator;
 
 public class WoodcuttingMasterNode extends NoxScapeMasterNode {
 
+    private WoodcuttingEntity entityToChop;
+
     public WoodcuttingMasterNode(ScriptContext ctx) {
         super(ctx);
-        this.tracker = new TutorialIslandTracker();
-        this.nodeInformation = getMasterNodeInformation();
+        this.entityToChop = entityToChop;
+        nodeInformation = new MasterNodeInformation(
+                "Woodcutting",
+                "Completes Tutorial Island",
+                Frequency.COMMON,
+                Duration.COMPLETION,
+                MasterNodeType.SKILLING);
+    }
+
+    public WoodcuttingMasterNode chopping(WoodcuttingEntity ent) {
+        this.entityToChop = ent;
+        return this;
     }
 
     @Override
@@ -42,7 +50,8 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         BankItem[] axesToWithdraw = WoodcuttingItems.axes().stream().map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), true)).toArray(BankItem[]::new);
 
         // Get the highest level tree we can currently cut
-        WoodcuttingEntity entity = Arrays.stream(WoodcuttingEntity.values())
+        if (entityToChop == null)
+            entityToChop = Arrays.stream(WoodcuttingEntity.values())
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.WOODCUTTING))
                 .max(Comparator.comparingInt(WoodcuttingEntity::getRequiredLevel))
                 .get();
@@ -50,11 +59,11 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         // Get the closest WoodCutting location to ours
         final Position curPos = ctx.myPosition();
         WoodcuttingLocation location = Arrays.stream(WoodcuttingLocation.values())
-                .filter(f -> f.containsTree(entity))
+                .filter(f -> f.containsTree(entityToChop))
                 .min(Comparator.comparingInt(a -> a.distanceToCenterPoint(curPos)))
                 .get();
 
-        BankItem logsToBank = new BankItem(entity.producesItemName(), BankAction.DEPOSIT, 100);
+        BankItem logsToBank = new BankItem(entityToChop.producesItemName(), BankAction.DEPOSIT, 100);
 
         PathPreferenceProfile ppp = new PathPreferenceProfile()
                 .checkBankForItems(true)
@@ -76,7 +85,7 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         NoxScapeNode toTreeNode = new WalkingNode(ctx)
                 .toPosition(location.centerPoint())
                 .isWebWalk(true)
-                .hasMessage("Walking to Trees (" + entity.getName() + ")");
+                .hasMessage("Walking to Trees (" + entityToChop.getName() + ")");
 
         NoxScapeNode toBankNode = new WalkingNode(ctx)
                 .toClosestBankFrom(location.getBank())
@@ -86,12 +95,12 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         NoxScapeNode bankNode = new BankingNode(ctx)
                 .bankingAt(location.getBank())
                 .handlingItems(logsToBank)
-                .hasMessage("Banking " + entity.producesItemName());
+                .hasMessage("Banking " + entityToChop.producesItemName());
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
-                .interactWith(entity)
+                .interactWith(entityToChop)
                 .afterInteractingWaitFor(ent -> ctx.getObjects().closest(obj -> obj.getPosition().equals(ent.getPosition()) && obj.getName().equals("Tree stump")) != null, 5000, 1000)
-                .hasMessage("Chopping " + entity.getName());
+                .hasMessage("Chopping " + entityToChop.getName());
 
         toTreeNode.setChildNode(interactNode);
         interactNode.setChildNode(toBankNode);
@@ -111,25 +120,5 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
     public boolean requiresPreExecution() {
         String[] axeNames = WoodcuttingItems.axes().stream().map(CachedItem::getName).toArray(String[]::new);
         return !ctx.getInventory().contains(axeNames) && !ctx.getEquipment().isWieldingWeaponThatContains(axeNames);
-    }
-
-    @Override
-    public MasterNodeInformation getMasterNodeInformation() {
-        if (nodeInformation != null)
-            return nodeInformation;
-
-        nodeInformation = new MasterNodeInformation(
-                "Woodcutting",
-                "Completes Tutorial Island",
-                Frequency.COMMON,
-                Duration.COMPLETION,
-                MasterNodeType.SKILLING);
-
-        return nodeInformation;
-    }
-
-    @Override
-    public boolean shouldComplete() {
-        return !canExecute();
     }
 }

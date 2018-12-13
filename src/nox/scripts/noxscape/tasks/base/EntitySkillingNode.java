@@ -5,12 +5,8 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.RS2Object;
-import org.osbot.rs07.script.MethodProvider;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class EntitySkillingNode extends NoxScapeNode {

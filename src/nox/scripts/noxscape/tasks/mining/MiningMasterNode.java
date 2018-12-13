@@ -6,13 +6,11 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
-import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandTracker;
 
 public class MiningMasterNode extends NoxScapeMasterNode {
 
     public MiningMasterNode(ScriptContext ctx) {
         super(ctx);
-        this.tracker = new TutorialIslandTracker();
         this.nodeInformation = getMasterNodeInformation();
     }
 
@@ -23,8 +21,6 @@ public class MiningMasterNode extends NoxScapeMasterNode {
 
     @Override
     public void initializeNodes() {
-
-        setDefaultEntryPoint();
 
         if (this.getCurrentNode() == null) {
             this.abort("Unable to find a valid entrypoint.");
@@ -51,10 +47,5 @@ public class MiningMasterNode extends NoxScapeMasterNode {
                 MasterNodeType.QUEST);
 
         return nodeInformation;
-    }
-
-    @Override
-    public boolean shouldComplete() {
-        return !canExecute();
     }
 }

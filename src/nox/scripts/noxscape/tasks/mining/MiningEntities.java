@@ -1,6 +1,5 @@
 package nox.scripts.noxscape.tasks.mining;
 
-import nox.scripts.noxscape.core.interfaces.INameable;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.api.ui.Skill;
