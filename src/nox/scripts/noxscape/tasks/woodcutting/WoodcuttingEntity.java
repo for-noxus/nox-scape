@@ -11,6 +11,8 @@ public enum WoodcuttingEntity implements ISkillable {
     YEW("Yew", 60, "Yew logs"),
     MAGIC("Magic", 75, "Magic logs");
 
+    public static final String HARVEST_MESSAGE = "You acquire some logs";
+
     private String name;
     private int requiredLevel;
     private String producedItem;
