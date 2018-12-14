@@ -18,24 +18,16 @@ import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class WoodcuttingMasterNode extends NoxScapeMasterNode {
-
-    private WoodcuttingEntity entityToChop;
+public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMasterNode.Configuration> {
 
     public WoodcuttingMasterNode(ScriptContext ctx) {
         super(ctx);
-        this.entityToChop = entityToChop;
         nodeInformation = new MasterNodeInformation(
                 "Woodcutting",
                 "Completes Tutorial Island",
                 Frequency.COMMON,
                 Duration.COMPLETION,
                 MasterNodeType.SKILLING);
-    }
-
-    public WoodcuttingMasterNode chopping(WoodcuttingEntity ent) {
-        this.entityToChop = ent;
-        return this;
     }
 
     @Override
@@ -50,8 +42,8 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         BankItem[] axesToWithdraw = WoodcuttingItems.axes().stream().map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), true)).toArray(BankItem[]::new);
 
         // Get the highest level tree we can currently cut
-        if (entityToChop == null)
-            entityToChop = Arrays.stream(WoodcuttingEntity.values())
+        if (configuration.treeToChop == null)
+            configuration.treeToChop = Arrays.stream(WoodcuttingEntity.values())
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.WOODCUTTING))
                 .max(Comparator.comparingInt(WoodcuttingEntity::getRequiredLevel))
                 .get();
@@ -59,11 +51,11 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         // Get the closest WoodCutting location to ours
         final Position curPos = ctx.myPosition();
         WoodcuttingLocation location = Arrays.stream(WoodcuttingLocation.values())
-                .filter(f -> f.containsTree(entityToChop))
+                .filter(f -> f.containsTree(configuration.treeToChop))
                 .min(Comparator.comparingInt(a -> a.distanceToCenterPoint(curPos)))
                 .get();
 
-        BankItem logsToBank = new BankItem(entityToChop.producesItemName(), BankAction.DEPOSIT, 100);
+        BankItem logsToBank = new BankItem(configuration.treeToChop.producesItemName(), BankAction.DEPOSIT, 100);
 
         PathPreferenceProfile ppp = new PathPreferenceProfile()
                 .checkBankForItems(true)
@@ -85,7 +77,7 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         NoxScapeNode toTreeNode = new WalkingNode(ctx)
                 .toPosition(location.centerPoint())
                 .isWebWalk(true)
-                .hasMessage("Walking to Trees (" + entityToChop.getName() + ")");
+                .hasMessage("Walking to Trees (" + configuration.treeToChop.getName() + ")");
 
         NoxScapeNode toBankNode = new WalkingNode(ctx)
                 .toClosestBankFrom(location.getBank())
@@ -95,12 +87,12 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
         NoxScapeNode bankNode = new BankingNode(ctx)
                 .bankingAt(location.getBank())
                 .handlingItems(logsToBank)
-                .hasMessage("Banking " + entityToChop.producesItemName());
+                .hasMessage("Banking " + configuration.treeToChop.producesItemName());
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
-                .interactWith(entityToChop)
+                .interactWith(configuration.treeToChop)
                 .afterInteractingWaitFor(ent -> ctx.getObjects().closest(obj -> obj.getPosition().equals(ent.getPosition()) && obj.getName().equals("Tree stump")) != null, 5000, 1000)
-                .hasMessage("Chopping " + entityToChop.getName());
+                .hasMessage("Chopping " + configuration.treeToChop.getName());
 
         toTreeNode.setChildNode(interactNode);
         interactNode.setChildNode(toBankNode);
@@ -120,5 +112,13 @@ public class WoodcuttingMasterNode extends NoxScapeMasterNode {
     public boolean requiresPreExecution() {
         String[] axeNames = WoodcuttingItems.axes().stream().map(CachedItem::getName).toArray(String[]::new);
         return !ctx.getInventory().contains(axeNames) && !ctx.getEquipment().isWieldingWeaponThatContains(axeNames);
+    }
+
+    public static class Configuration {
+        protected WoodcuttingEntity treeToChop;
+
+        public void setTreeToChop(WoodcuttingEntity treeToChop) {
+            this.treeToChop = treeToChop;
+        }
     }
 }

@@ -9,13 +9,12 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class NoxScapeMasterNode {
+public abstract class NoxScapeMasterNode<k> {
 
     protected ScriptContext ctx;
     protected MasterNodeInformation nodeInformation;
+    protected k configuration;
     protected StopWatcher stopWatcher;
-
-    private long expirationTime;
 
     private NoxScapeNode currentNode;
     private NoxScapeNode postExecutionNode;
@@ -30,7 +29,6 @@ public abstract class NoxScapeMasterNode {
 
     public NoxScapeMasterNode(ScriptContext ctx) {
         this.ctx = ctx;
-        nodeInformation = getMasterNodeInformation();
     }
 
     public MasterNodeInformation getMasterNodeInformation() {
