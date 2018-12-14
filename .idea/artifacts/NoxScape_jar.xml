@@ -3,6 +3,7 @@
     <output-path>$USER_HOME$/OSBot/Scripts</output-path>
     <root id="archive" name="NoxScape.jar">
       <element id="module-output" name="NoxScape" />
+      <element id="library" level="project" name="gson" />
     </root>
   </artifact>
 </component>
