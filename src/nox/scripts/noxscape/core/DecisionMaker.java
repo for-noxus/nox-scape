@@ -1,8 +1,10 @@
 package nox.scripts.noxscape.core;
 
+import javafx.fxml.Initializable;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.interfaces.IAmountable;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
+import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 
 import java.util.*;
@@ -12,88 +14,97 @@ import java.util.function.Supplier;
 
 public final class DecisionMaker {
 
-    private ArrayList<NoxScapeMasterNode> masterNodes = new ArrayList<>();
-    private ArrayList<NoxScapeMasterNode> priorityNodes = new ArrayList<>();
+    private static ArrayList<NoxScapeMasterNode> masterNodes = new ArrayList<>();
+    private static Stack<QueuedNode> priorityNodes = new Stack<>();
 
-    private ScriptContext ctx;
+    private static ScriptContext ctx;
 
-    public DecisionMaker(ScriptContext ctx) {
-        this.ctx = ctx;
+    public static void init() {
+        System.out.println("Warning! This will fail if you use this in production you fucking moron.");
         initializeNodes();
-        ctx.logClass(this, "DecisionMaker has been initialized with " + masterNodes.size() + " nodes.");
     }
 
-    public NoxScapeMasterNode getNextMasterNode() {
-        NoxScapeMasterNode priorityNode  = priorityNodes.stream().filter(NoxScapeMasterNode::canExecute).findFirst().orElse(null);
-        if (priorityNode != null) {
-            priorityNodes.remove(priorityNode);
-            priorityNode.initializeNodes();
-            ctx.logClass(this, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
-            return priorityNode;
+    public static void init(ScriptContext context) {
+        ctx = context;
+        initializeNodes();
+        NoxScapeMasterNode tutIsland = findExistingNode(TutorialIslandMasterNode.class);
+        if (tutIsland.canExecute()) {
+            addPriorityTask(TutorialIslandMasterNode.class, null, null);
+        }
+        ctx.logClass(DecisionMaker.class, "DecisionMaker has been initialized with " + masterNodes.size() + " nodes.");
+    }
+
+    private DecisionMaker() { }
+
+    public static NoxScapeMasterNode getNextMasterNode() {
+
+        if (!priorityNodes.empty()) {
+            QueuedNode nodeInfo = priorityNodes.pop();
+            NoxScapeMasterNode priorityNode = findExistingNode(nodeInfo.clazz);
+            if (priorityNode != null) {
+                priorityNodes.remove(priorityNode);
+                priorityNode.initializeNodes();
+                ctx.logClass(DecisionMaker.class, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
+                return priorityNode;
+            }
         }
 
         int nodesSelectionRange = masterNodes.stream().map(m -> getStandardizedWeight(m.nodeInformation.getFrequency())).reduce(0, Integer::sum);
         int selectedValue = new Random().nextInt(nodesSelectionRange);
         NoxScapeMasterNode nextNode = locateMasterNodeFromSelectedValue(selectedValue);
 
-        ctx.logClass(this, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
+        ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
 
         nextNode.initializeNodes();
         return nextNode;
     }
 
-    public void addPriorityItem(Class<? extends NoxScapeMasterNode> node, Supplier<StopWatcher> stopWatchCreation) {
-        NoxScapeMasterNode existing = masterNodes.stream().filter(f -> f.getClass().equals(node)).findFirst().orElseThrow(IllegalArgumentException::new);
+    public static void addPriorityTask(Class<? extends NoxScapeMasterNode> node, Object configuration, StopWatcher stopWatcher) {
+        boolean exists = masterNodes.stream().anyMatch(f -> f.getClass().equals(node));
 
-        if (existing == null) {
-            ctx.logClass(this, String.format("Attempted to add a priority node that was not a registered masternode (%s)", node.getSimpleName()));
+        if (!exists) {
+            ctx.logClass(DecisionMaker.class, String.format("Attempted to add a priority node that was not a registered masternode (%s)", node.getSimpleName()));
             return;
         }
 
-        existing.setStopWatcher(stopWatchCreation.get());
+        QueuedNode newtask = new QueuedNode();
+        newtask.clazz = node;
+        newtask.configuration = configuration;
+        newtask.stopWatcher = stopWatcher;
 
-        addPriorityItem(existing);
+        priorityNodes.push(newtask);
     }
 
-    public void addPriorityItem(NoxScapeMasterNode node) {
-        priorityNodes.add(node);
+    public static Stack<QueuedNode> getQueuedTasks() {
+        return priorityNodes;
     }
 
-    public void addMasterNode(Class<? extends NoxScapeMasterNode> clazz) {
+    private static void initializeNodes() {
+        addMasterNode(TutorialIslandMasterNode.class);
+        addMasterNode(WoodcuttingMasterNode.class);
+    }
+
+    private static NoxScapeMasterNode findExistingNode(Class<? extends NoxScapeMasterNode> clazz) {
+        return masterNodes.stream().filter(f -> f.getClass().equals(clazz)).findFirst().orElse(null);
+    }
+
+    private static void addMasterNode(Class<? extends NoxScapeMasterNode> clazz) {
         NoxScapeMasterNode existing = findExistingNode(clazz);
         if (existing == null) {
             try {
                 NoxScapeMasterNode node = clazz.getConstructor(ScriptContext.class).newInstance(ctx);
                 masterNodes.add(node);
-                ctx.logClass(this, "Successfully added MasterNode: " + node.getMasterNodeInformation().getFriendlyName());
+                ctx.logClass(DecisionMaker.class, "Successfully added MasterNode: " + node.getMasterNodeInformation().getFriendlyName());
             } catch (Exception e) {
             }
         }
     }
 
-    private void initializeNodes() {
-        addMasterNode(TutorialIslandMasterNode.class);
-        addMasterNode(WoodcuttingMasterNode.class);
-
-        NoxScapeMasterNode tutIsland = findExistingNode(TutorialIslandMasterNode.class);
-        if (tutIsland.canExecute()) {
-            addPriorityItem(tutIsland);
-        }
-    }
-
-    private NoxScapeMasterNode findExistingNode(Class<? extends NoxScapeMasterNode> clazz) {
-        return masterNodes.stream().filter(f -> f.getClass().equals(clazz)).findFirst().orElse(null);
-    }
-
-    private NoxScapeMasterNode findPriorityNode(Class<? extends NoxScapeMasterNode> clazz) {
-        return priorityNodes.stream().filter(f -> f.getClass().equals(clazz)).findFirst().orElse(null);
-    }
-
-    private int getStandardizedWeight(Frequency freq) {
+    private static int getStandardizedWeight(Frequency freq) {
         return (int) (freq.getWeight() * 100.0);
     }
 
-    private NoxScapeMasterNode locateMasterNodeFromSelectedValue(int value) {
+    private static NoxScapeMasterNode locateMasterNodeFromSelectedValue(int value) {
         int runningTotal = 0;
         for (NoxScapeMasterNode node: masterNodes) {
             runningTotal += getStandardizedWeight(node.nodeInformation.getFrequency());

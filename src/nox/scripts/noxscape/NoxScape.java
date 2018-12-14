@@ -15,13 +15,10 @@ public class NoxScape extends Script {
 
     private ScriptContext ctx;
 
-    private DecisionMaker decisionMaker;
-
     @Override
     public void onStart() {
         try {
             ctx = new ScriptContext(this, new File(getDirectoryData()+getName()+File.separator+"log.txt"));
-            decisionMaker = new DecisionMaker(ctx);
         } catch (Exception e) {
             log("Script failed to start.");
             logException(e);
@@ -34,7 +31,7 @@ public class NoxScape extends Script {
             NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
             // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
-                NoxScapeMasterNode newNode = decisionMaker.getNextMasterNode();
+                NoxScapeMasterNode newNode = DecisionMaker.getNextMasterNode();
                 log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
                 ctx.setCurrentMasterNode(newNode);
                 cmn = newNode;
