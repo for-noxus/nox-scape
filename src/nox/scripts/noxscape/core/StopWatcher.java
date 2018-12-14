@@ -46,7 +46,12 @@ public class StopWatcher implements MessageListener {
         }
     }
 
-    public static class Builder implements IConditionable, IAmountable {
+    public void begin() {
+        trackedAmount = 0;
+        builder.initTime = System.currentTimeMillis();
+    }
+
+    protected static class Builder implements IConditionable, IAmountable {
         private long initTime;
         private StopCondition condition;
         private Skill skill;
@@ -96,6 +101,14 @@ public class StopWatcher implements MessageListener {
             this.amount = amount;
             return this;
         }
+
+        @Override
+        public IConditionable stopAfter(int amount, Skill skill) {
+            this.amount = amount;
+            this.skill = skill;
+            return this;
+        }
+
     }
 }
 
