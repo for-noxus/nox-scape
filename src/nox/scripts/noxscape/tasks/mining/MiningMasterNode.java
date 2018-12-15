@@ -16,7 +16,7 @@ public class MiningMasterNode extends NoxScapeMasterNode {
 
     @Override
     public boolean canExecute() {
-        return true;
+        return false;
     }
 
     @Override
