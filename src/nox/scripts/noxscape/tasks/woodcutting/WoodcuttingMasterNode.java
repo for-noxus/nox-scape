@@ -28,6 +28,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 Frequency.COMMON,
                 Duration.COMPLETION,
                 MasterNodeType.SKILLING);
+        configuration = new Configuration();
     }
 
     @Override
