@@ -3,17 +3,10 @@ package nox.scripts.noxscape;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import org.osbot.rs07.api.filter.Filter;
-import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.api.model.NPC;
-import org.osbot.rs07.api.model.RS2Object;
-import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import java.awt.*;
-import java.io.File;
 import java.util.Arrays;
 
 @ScriptManifest(name = "NoxScape", author = "Nox", version = 1.0, info = "", logo = "")
@@ -24,7 +17,7 @@ public class NoxScape extends Script {
     @Override
     public void onStart() {
         try {
-            ctx = new ScriptContext(this, new File(getDirectoryData()+getName()+File.separator+"log.txt"));
+            ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
         } catch (Exception e) {
             log("Script failed to start.");
