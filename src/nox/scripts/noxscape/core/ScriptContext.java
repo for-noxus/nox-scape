@@ -1,34 +1,23 @@
 package nox.scripts.noxscape.core;
 
-import nox.scripts.noxscape.NoxScape;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.script.MethodProvider;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.function.Consumer;
 
 public class ScriptContext extends MethodProvider {
 
     private NoxScapeMasterNode currentMasterNode;
 
-    private File logFile;
+    public final String logDir;
 
-    public ScriptContext(MethodProvider api, File logFile) throws IOException {
+    public ScriptContext(MethodProvider api, String logDir) {
+        this.logDir = logDir;
         exchangeContext(api.getBot());
-        if (!logFile.exists()) {
-            logFile.mkdirs();
-            log("Creating logfile at: " + logFile.getAbsolutePath());
-            logFile.createNewFile();
-        }
         logClass(this, "Script context initialized.");
-    }
-
-    public <T> void recommendNode(Class<T> clazz, Consumer<T> nodeConfiguration) {
-
     }
 
     public NoxScapeMasterNode getCurrentMasterNode() {
@@ -40,15 +29,6 @@ public class ScriptContext extends MethodProvider {
     }
 
     public NoxScapeNode getCurrentNode() { return currentMasterNode.getCurrentNode(); }
-
-    public void logToFile(String text) {
-        try {
-            FileWriter out = new FileWriter(logFile, true);
-            out.append(text + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void sleepH() throws InterruptedException {
         MethodProvider.sleep((long) NRandom.humanized());
