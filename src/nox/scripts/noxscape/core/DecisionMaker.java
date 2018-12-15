@@ -1,16 +1,17 @@
 package nox.scripts.noxscape.core;
 
-import javafx.fxml.Initializable;
+import com.google.gson.Gson;
 import nox.scripts.noxscape.core.enums.Frequency;
-import nox.scripts.noxscape.core.interfaces.IAmountable;
+import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
-import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
+import nox.scripts.noxscape.util.QueuedNodeDeserializer;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Stack;
 
 public final class DecisionMaker {
 
@@ -31,10 +32,10 @@ public final class DecisionMaker {
         if (tutIsland.canExecute()) {
             addPriorityTask(TutorialIslandMasterNode.class, null, null);
         }
-        ctx.logClass(DecisionMaker.class, "DecisionMaker has been initialized with " + masterNodes.size() + " nodes.");
     }
 
-    private DecisionMaker() { }
+    private DecisionMaker() {
+    }
 
     public static NoxScapeMasterNode getNextMasterNode() {
 
@@ -69,10 +70,16 @@ public final class DecisionMaker {
 
         QueuedNode newtask = new QueuedNode();
         newtask.className = node.getTypeName();
+        try {
+            newtask.configClassName = node.getDeclaredClasses()[0].getTypeName();
+        } catch (Exception e) {
+        }
         newtask.configuration = configuration;
         newtask.stopWatcher = stopWatcher;
 
         priorityNodes.push(newtask);
+
+        writeTasksToFile();
     }
 
     public static Stack<QueuedNode> getQueuedTasks() {
@@ -82,6 +89,15 @@ public final class DecisionMaker {
     private static void initializeNodes() {
         addMasterNode(TutorialIslandMasterNode.class);
         addMasterNode(WoodcuttingMasterNode.class);
+        addMasterNode(MiningMasterNode.class);
+
+        priorityNodes = readTaskFile();
+
+        if (ctx != null)
+            ctx.logClass(DecisionMaker.class, String.format("DecisionMaker has been initialized with %d nodes and %d priorityNodes.", masterNodes.size(), priorityNodes.size()));
+        else
+            System.out.println(String.format("DecisionMaker has been initialized with %d nodes and %d priorityNodes.", masterNodes.size(), priorityNodes.size()));
+
     }
 
     private static NoxScapeMasterNode findExistingNode(Class<? extends NoxScapeMasterNode> clazz) {
@@ -106,10 +122,62 @@ public final class DecisionMaker {
 
     private static NoxScapeMasterNode locateMasterNodeFromSelectedValue(int value) {
         int runningTotal = 0;
-        for (NoxScapeMasterNode node: masterNodes) {
+        for (NoxScapeMasterNode node : masterNodes) {
             runningTotal += getStandardizedWeight(node.nodeInformation.getFrequency());
             if (value <= runningTotal) return node;
         }
         return null;
+    }
+
+    private static Stack<QueuedNode> readTaskFile() {
+        try {
+            File logFile = getTaskFile();
+
+            Reader fileReader = new FileReader(logFile);
+
+            Gson gson = new Gson().newBuilder().registerTypeAdapter(QueuedNode.class, new QueuedNodeDeserializer()).create();
+
+            Stack<QueuedNode> stack = new Stack<>();
+            QueuedNode[] nodes = gson.fromJson(fileReader, QueuedNode[].class);
+
+            stack.addAll(Arrays.asList(nodes));
+
+            return stack;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new Stack<>();
+    }
+
+    private static void writeTasksToFile() {
+        try {
+            File logFile = getTaskFile();
+            String json = new Gson().newBuilder().setPrettyPrinting().create().toJson(priorityNodes);
+
+            BufferedWriter out = new BufferedWriter(new FileWriter(logFile, false));
+            out.write(json);
+            out.close();
+
+        } catch (Exception e) {
+
+        }
+    }
+
+    private static File getTaskFile() {
+        File logFile = null;
+        try {
+            if (ctx == null) {
+                logFile = new File("tasks" + File.separator + "tasks.txt");
+            } else {
+                logFile = new File(ctx.logDir + File.separator + "tasks" + File.separator + "tasks.txt");
+            }
+            logFile.getParentFile().mkdirs();
+            logFile.createNewFile();
+        } catch (Exception e) {
+
+        }
+        return logFile;
     }
 }
