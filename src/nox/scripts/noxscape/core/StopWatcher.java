@@ -62,7 +62,6 @@ public class StopWatcher implements MessageListener {
         public Builder(StopWatcher stopWatcher) {
             this.stopWatcher = stopWatcher;
             this.stopWatcher.builder = this;
-            initTime = System.currentTimeMillis();
         }
 
         @Override
