@@ -3,6 +3,12 @@ package nox.scripts.noxscape;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import org.osbot.rs07.api.filter.Filter;
+import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.NPC;
+import org.osbot.rs07.api.model.RS2Object;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -19,6 +25,7 @@ public class NoxScape extends Script {
     public void onStart() {
         try {
             ctx = new ScriptContext(this, new File(getDirectoryData()+getName()+File.separator+"log.txt"));
+            DecisionMaker.init(ctx);
         } catch (Exception e) {
             log("Script failed to start.");
             logException(e);
@@ -36,6 +43,7 @@ public class NoxScape extends Script {
                 ctx.setCurrentMasterNode(newNode);
                 cmn = newNode;
             }
+
             // If any nodes in our CMN, or our CMN itself is requesting abortion
             if (cmn.isAborted()) {
                 log(String.format("Node %s requested script abortion.\nReason: %s", cmn.getClass().getSimpleName(), cmn.getAbortedReason()));
@@ -43,8 +51,8 @@ public class NoxScape extends Script {
                 // Loop back to the top to get assigned a new node
                 return 3000;
             }
-            // Begin the process of configureStopWatcher our current node
-            if (cmn.getStopWatcher().shouldStop()) {
+            // Watch our current node's stopwatcher
+            if (cmn.getStopWatcher() != null && cmn.getStopWatcher().shouldStop()) {
                 return cmn.continuePostExecution();
             } else {
                 // Carry on as usual

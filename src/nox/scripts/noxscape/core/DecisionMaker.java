@@ -40,7 +40,7 @@ public final class DecisionMaker {
 
         if (!priorityNodes.empty()) {
             QueuedNode nodeInfo = priorityNodes.pop();
-            NoxScapeMasterNode priorityNode = findExistingNode(nodeInfo.clazz);
+            NoxScapeMasterNode priorityNode = null;// findExistingNode(nodeInfo.clazz);
             if (priorityNode != null) {
                 priorityNodes.remove(priorityNode);
                 priorityNode.initializeNodes();
@@ -68,7 +68,7 @@ public final class DecisionMaker {
         }
 
         QueuedNode newtask = new QueuedNode();
-        newtask.clazz = node;
+        newtask.className = node.getTypeName();
         newtask.configuration = configuration;
         newtask.stopWatcher = stopWatcher;
 
