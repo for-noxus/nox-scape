@@ -10,12 +10,11 @@ import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import java.util.Stack;
 
 public class NodeSerializerTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         DecisionMaker.init();
 
         WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
         cfg.setTreeToChop(WoodcuttingEntity.YEW);
-
         StopWatcher stopWatcher = StopWatcher.create(null).stopAfter(5).levelsGained();
 
         DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, stopWatcher);
@@ -23,5 +22,8 @@ public class NodeSerializerTest {
         Stack<QueuedNode> nodes = DecisionMaker.getQueuedTasks();
 
         String json = new Gson().newBuilder().setPrettyPrinting().create().toJson(nodes);
+        Class test = Class.forName(cfg.getClass().getName());
+
+        QueuedNode[] deserialized = new Gson().fromJson(json, QueuedNode[].class);
     }
 }

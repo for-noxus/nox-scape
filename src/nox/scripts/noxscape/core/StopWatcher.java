@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public class StopWatcher implements MessageListener {
 
-    protected ScriptContext ctx;
+    protected transient ScriptContext ctx;
     private Builder builder;
     private int trackedAmount;
 
@@ -57,10 +57,11 @@ public class StopWatcher implements MessageListener {
         private Skill skill;
         private String actionsMessage;
         private int amount;
-        private StopWatcher stopWatcher;
+        private transient StopWatcher stopWatcher;
 
         public Builder(StopWatcher stopWatcher) {
             this.stopWatcher = stopWatcher;
+            this.stopWatcher.builder = this;
             initTime = System.currentTimeMillis();
         }
 
