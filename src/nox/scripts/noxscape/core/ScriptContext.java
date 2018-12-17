@@ -49,4 +49,10 @@ public class ScriptContext extends MethodProvider {
     public void logClass(Object o, String message) {
         log(o.getClass().getSimpleName() + ": " + message);
     }
+
+    public String currentNodeMessage() {
+        if (currentMasterNode != null && currentMasterNode.getCurrentNode() != null && currentMasterNode.getCurrentNode().getMessage() != null)
+            return currentMasterNode.getCurrentNode().getMessage();
+        return "No message given";
+    }
 }
