@@ -5,13 +5,12 @@ import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
+import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.QueuedNodeDeserializer;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class DecisionMaker {
 
@@ -40,19 +39,34 @@ public final class DecisionMaker {
     public static NoxScapeMasterNode getNextMasterNode() {
 
         if (!priorityNodes.empty()) {
-            QueuedNode nodeInfo = priorityNodes.pop();
-            NoxScapeMasterNode priorityNode = null;// findExistingNode(nodeInfo.clazz);
-            if (priorityNode != null) {
-                priorityNodes.remove(priorityNode);
-                priorityNode.initializeNodes();
-                ctx.logClass(DecisionMaker.class, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
-                return priorityNode;
+            try {
+                QueuedNode nodeInfo = priorityNodes.pop();
+                Class nodeClass = Class.forName(nodeInfo.className);
+                NoxScapeMasterNode priorityNode = findExistingNode(nodeClass);
+
+                if (priorityNode != null) {
+                    priorityNodes.remove(priorityNode);
+                    priorityNode.initializeNodes();
+                    ctx.logClass(DecisionMaker.class, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
+                    return priorityNode;
+                }
+            } catch (ClassNotFoundException e) {
+                // Having issues with that priorityNode, let's just uhh...not use it
+                e.printStackTrace();
+                return getNextMasterNode();
             }
         }
 
-        int nodesSelectionRange = masterNodes.stream().map(m -> getStandardizedWeight(m.nodeInformation.getFrequency())).reduce(0, Integer::sum);
+        List<Pair<NoxScapeMasterNode, Integer>> availableNodes = masterNodes.stream().filter(NoxScapeMasterNode::canExecute).map(m -> new Pair<>(m, getStandardizedWeight(m.nodeInformation.getFrequency()))).collect(Collectors.toList());
+        int nodesSelectionRange = availableNodes.stream().map(Pair::getB).reduce(0, Integer::sum);
         int selectedValue = new Random().nextInt(nodesSelectionRange);
-        NoxScapeMasterNode nextNode = locateMasterNodeFromSelectedValue(selectedValue);
+
+        NoxScapeMasterNode nextNode = null;
+        int runningTotal = 0;
+        for (Pair<NoxScapeMasterNode, Integer> p: availableNodes) {
+            runningTotal += p.b;
+            if (runningTotal >= selectedValue) nextNode = p.a;
+        }
 
         ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
 
@@ -118,15 +132,6 @@ public final class DecisionMaker {
 
     private static int getStandardizedWeight(Frequency freq) {
         return (int) (freq.getWeight() * 100.0);
-    }
-
-    private static NoxScapeMasterNode locateMasterNodeFromSelectedValue(int value) {
-        int runningTotal = 0;
-        for (NoxScapeMasterNode node : masterNodes) {
-            runningTotal += getStandardizedWeight(node.nodeInformation.getFrequency());
-            if (value <= runningTotal) return node;
-        }
-        return null;
     }
 
     private static Stack<QueuedNode> readTaskFile() {
