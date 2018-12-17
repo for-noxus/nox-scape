@@ -36,7 +36,13 @@ public class CachedItem implements INameable {
     }
 
     public boolean canEquip(MethodProvider api) {
-        return requiredLevels == null || !requiredLevels.stream().anyMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b);
+        List<Skill>  equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
+        return requiredLevels == null || !requiredLevels.stream().filter(f -> equipSkills.contains(f.a)).anyMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b);
+    }
+
+    public boolean canUse(MethodProvider api) {
+        List<Skill>  equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
+        return requiredLevels == null || !requiredLevels.stream().filter(f -> !equipSkills.contains(f.a)).anyMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b);
     }
 
     public int requiredLevelSum() {
