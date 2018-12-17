@@ -17,6 +17,8 @@ import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMasterNode.Configuration> {
 
@@ -24,7 +26,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
         super(ctx);
         nodeInformation = new MasterNodeInformation(
                 "Woodcutting",
-                "Completes Tutorial Island",
+                "Cuts trees for logs at various locations",
                 Frequency.COMMON,
                 Duration.COMPLETION,
                 MasterNodeType.SKILLING);
@@ -33,7 +35,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
     @Override
     public boolean canExecute() {
-        return true;
+        return false;
     }
 
     @Override
@@ -67,13 +69,15 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
         NoxScapeNode preExecutionWalkNode = new WalkingNode(ctx)
                 .isWebWalk(true)
                 .setPathProfile(ppp)
-                .toArea(location.getBank());
+                .toArea(location.getBank().getBankArea())
+                .hasMessage(String.format("Walk to %s bank for the first time", location.getBank().getName()));
 
-        NoxScapeNode preExecutioBankNode = new BankingNode(ctx)
+        NoxScapeNode preExecutionBankNode = new BankingNode(ctx)
                 .bankingAt(location.getBank())
                 .depositAllWornItems()
                 .depositAllBackpackItems()
-                .handlingItems(axesToWithdraw);
+                .handlingItems(axesToWithdraw)
+                .hasMessage("Getting player ready to cut some trees");
 
         NoxScapeNode toTreeNode = new WalkingNode(ctx)
                 .toPosition(location.centerPoint())
@@ -81,7 +85,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 .hasMessage("Walking to Trees (" + configuration.treeToChop.getName() + ")");
 
         NoxScapeNode toBankNode = new WalkingNode(ctx)
-                .toClosestBankFrom(location.getBank())
+                .toClosestBankFrom(location.getBank().getBankArea())
                 .isWebWalk(true)
                 .hasMessage("Walking to Bank");
 
@@ -92,17 +96,17 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(configuration.treeToChop)
-                .afterInteractingWaitFor(ent -> ctx.getObjects().closest(obj -> obj.getPosition().equals(ent.getPosition()) && obj.getName().equals("Tree stump")) != null, 5000, 1000)
+                .entityInvalidWhen(ent -> ctx.getObjects().closest(obj -> obj.getPosition().equals(ent.getPosition()) && obj.getName().equals("Tree stump")) != null, 5000, 1000)
                 .hasMessage("Chopping " + configuration.treeToChop.getName());
 
         toTreeNode.setChildNode(interactNode);
         interactNode.setChildNode(toBankNode);
         toBankNode.setChildNode(bankNode);
         bankNode.setChildNode(toTreeNode);
-        preExecutioBankNode.setChildNode(toTreeNode);
-        preExecutionWalkNode.setChildNode(preExecutioBankNode);
+        preExecutionBankNode.setChildNode(toTreeNode);
+        preExecutionWalkNode.setChildNode(preExecutionBankNode);
 
-        setNodes(Arrays.asList(toTreeNode, interactNode, toBankNode, bankNode, preExecutioBankNode, preExecutionWalkNode));
+        setNodes(Arrays.asList(toTreeNode, interactNode, toBankNode, bankNode, preExecutionBankNode, preExecutionWalkNode));
         setPreExecutionNode(preExecutionWalkNode);
         setReturnToBankNode(toBankNode);
 
@@ -111,8 +115,14 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
     @Override
     public boolean requiresPreExecution() {
-        String[] axeNames = WoodcuttingItems.axes().stream().map(CachedItem::getName).toArray(String[]::new);
-        return !ctx.getInventory().contains(axeNames) && !ctx.getEquipment().isWieldingWeaponThatContains(axeNames);
+        String[] axeNames = WoodcuttingItems.axes().stream().filter(f -> f.canUse(ctx)).map(CachedItem::getName).toArray(String[]::new);
+        Set<String> axeset = Arrays.stream(axeNames).collect(Collectors.toSet());
+
+        boolean inventoryHasAxe = ctx.getInventory().contains(axeNames);
+        boolean wieldingAxe = ctx.getEquipment().isWieldingWeaponThatContains(axeNames);
+        boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && Arrays.stream(ctx.getInventory().getItems()).noneMatch(a -> a!= null && !axeset.contains(a.getName()) && a.getName().equals(configuration.treeToChop.producesItemName()));
+
+        return !(inventoryHasAxe || wieldingAxe) || ctx.getInventory().isFull() || hasStuffInInventory;
     }
 
     public static class Configuration {
