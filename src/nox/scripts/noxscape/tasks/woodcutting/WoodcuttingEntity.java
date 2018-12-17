@@ -1,9 +1,11 @@
 package nox.scripts.noxscape.tasks.woodcutting;
 
+import nox.scripts.noxscape.core.interfaces.IInteractable;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 
-public enum WoodcuttingEntity implements ISkillable {
+public enum WoodcuttingEntity implements ISkillable, IInteractable {
     TREE("Tree", 1, "Logs"),
     OAK("Oak", 15, "Oak logs"),
     WILLOW("Willow", 30, "Willow logs"),
@@ -48,4 +50,8 @@ public enum WoodcuttingEntity implements ISkillable {
         return this.name;
     }
 
+    @Override
+    public Position getPosition() {
+        return null;
+    }
 }
