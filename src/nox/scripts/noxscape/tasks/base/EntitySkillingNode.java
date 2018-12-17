@@ -6,12 +6,16 @@ import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.RS2Object;
+import org.osbot.rs07.script.MethodProvider;
 
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class EntitySkillingNode extends NoxScapeNode {
 
-    private Predicate<RS2Object> postInteractWaitCondition;
+    private Predicate<RS2Object> entityValidationCondition;
+    private Function<MethodProvider, RS2Object> fnFindEntity;
 
     private ISkillable skillableEntity;
     private int postInteractWaitTimeout;
@@ -19,14 +23,21 @@ public class EntitySkillingNode extends NoxScapeNode {
     private boolean powerFarming;
     private String[] dropAllExcept;
 
+    private RS2Object previouslyInteractedEntity;
+
     public EntitySkillingNode(ScriptContext ctx) {
         super(ctx);
     }
 
-    public EntitySkillingNode afterInteractingWaitFor(Predicate<RS2Object> postInteractWaitCondition, int timeout, int interval) {
-        this.postInteractWaitCondition = postInteractWaitCondition;
+    public EntitySkillingNode entityInvalidWhen(Predicate<RS2Object> entityValidationCondition, int timeout, int interval) {
+        this.entityValidationCondition = entityValidationCondition;
         this.postInteractWaitTimeout = timeout;
         this.postInteractWaitInterval = interval;
+        return this;
+    }
+
+    public EntitySkillingNode findEntityWith(Function<MethodProvider, RS2Object> fnFindEntity) {
+        this.fnFindEntity = fnFindEntity;
         return this;
     }
 
@@ -45,9 +56,12 @@ public class EntitySkillingNode extends NoxScapeNode {
         return this;
     }
 
+    // Todo: Make this area-aware so that it can wait if no entities are available
+    // Todo: if inventory isn't full && inSkillableArea....
     @Override
     public boolean isValid() {
-        return ctx.getObjects().closest(skillableEntity.getName()) != null;
+        boolean foundWithCustom = fnFindEntity == null || fnFindEntity.apply(ctx) != null;
+        return foundWithCustom || ctx.getObjects().closest(skillableEntity.getName()) != null;
     }
 
     @Override
@@ -62,10 +76,12 @@ public class EntitySkillingNode extends NoxScapeNode {
             }
         }
 
-        if (isBusy())
-            return NRandom.humanized();
+        if (isBusy() && (previouslyInteractedEntity == null || !entityValidationCondition.test(previouslyInteractedEntity)))
+            return NRandom.humanized() * 2;
 
-        RS2Object entity = ctx.getObjects().closest(skillableEntity.getName());
+        RS2Object entity = fnFindEntity != null ?
+                fnFindEntity.apply(ctx) :
+                ctx.getObjects().closest(skillableEntity.getName());
 
         if (entity == null) {
             abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
@@ -80,8 +96,10 @@ public class EntitySkillingNode extends NoxScapeNode {
             abort(String.format("Error interacting interact with entity (%s) and action (%s)", entity.getName(), skillableEntity.getInteractAction()));
         }
 
-        if (postInteractWaitCondition != null) {
-            Sleep.sleepUntil(() -> postInteractWaitCondition.test(entity), postInteractWaitTimeout, postInteractWaitInterval);
+        if (entityValidationCondition != null) {
+            previouslyInteractedEntity = entity;
+            Sleep.sleepUntil(() -> entityValidationCondition.test(ctx.getObjects().closest(f -> f.getPosition().equals(entity.getPosition()))), postInteractWaitTimeout, postInteractWaitInterval);
+            ctx.logClass(this, "Rock has been mined out, switching...");
         }
 
         return NRandom.humanized();
