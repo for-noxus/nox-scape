@@ -24,6 +24,11 @@ public final class NRandom {
         return exact((int)Math.floor(0.9*BASE_REACTION_TIME), BASE_REACTION_TIME + 10*poiss);
     }
 
+    public static <T> T fromArray(T[] array) {
+        int generated = new Random().nextInt(array.length);
+        return array[generated];
+    }
+
     private static int poisson(double lambda) {
         double L = Math.exp(-lambda);
         double p = 1.0;
