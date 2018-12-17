@@ -82,7 +82,7 @@ public abstract class NoxScapeMasterNode<k> {
         } else if (!currentNode.isValid() || currentNode.isCompleted()) {
             // If we've completed our current node gracefully..
             if (currentNode.isCompleted())
-                ctx.logClass(this, String.format("Node (%s) has completed successfully. Finding next node", lastNode.getClass().getSimpleName()));
+                ctx.logClass(this, String.format("Node (%s) has completed successfully (%s). Finding next node", lastNode.getClass().getSimpleName(), lastNode.getCompletedMessage()));
             else
                 ctx.logClass(this, String.format("Node (%s) is invalid. Scanning for next node", lastNode.getClass().getSimpleName()));
 
