@@ -3,6 +3,7 @@ package nox.scripts.noxscape.tasks.base;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
+import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class BankingNode extends NoxScapeNode {
 
-    private Area bankArea;
+    private BankLocation bankLocation;
     private BankItem[] items;
     private boolean depositAllBackpackItems = false;
     private boolean depositallWornItems = false;
@@ -21,8 +22,8 @@ public class BankingNode extends NoxScapeNode {
         super(ctx);
     }
 
-    public BankingNode bankingAt(Area bankArea) {
-        this.bankArea = bankArea;
+    public BankingNode bankingAt(BankLocation bankLocation) {
+        this.bankLocation = bankLocation;
         return this;
     }
 
@@ -48,31 +49,45 @@ public class BankingNode extends NoxScapeNode {
             return false;
         }
 
-        if (bankArea == null) {
+        if (bankLocation == null) {
             abort("There was no destination set for this banking node!");
             return false;
         }
 
-        return bankArea.contains(ctx.myPosition());
+        return bankLocation.getBankArea().contains(ctx.myPosition());
     }
 
     @Override
     public int execute() throws InterruptedException {
         // Ensure bank screen is open
-        if (!ctx.getBank().isOpen()) {
+        if (bankLocation.isDepositBox()) {
+            if (!ctx.getDepositBox().isOpen()) {
+                if (!ctx.getDepositBox().open())
+                    logError("Error opening deposit box at location " + bankLocation.getName());
+            }
+            Sleep.sleepUntil(() -> ctx.getDepositBox().isOpen(), 6000, 600);
+        } else if (!ctx.getBank().isOpen()) {
             if (!ctx.getBank().open()) {
-                logError("Error opening bank at location");
+                logError("Error opening bank at location " + bankLocation.getName());
             }
             Sleep.sleepUntil(() -> ctx.getBank().isOpen(), 6000, 600);
         }
 
         if (depositallWornItems) {
-            ctx.getBank().depositWornItems();
+            if (bankLocation.isDepositBox())
+                ctx.getDepositBox().depositWornItems();
+            else
+                ctx.getBank().depositWornItems();
             ctx.sleepHQuick();
         }
 
-        if (depositAllBackpackItems)
-            ctx.getBank().depositAll();
+        if (depositAllBackpackItems) {
+            if (bankLocation.isDepositBox())
+                ctx.getDepositBox().depositAll();
+            else
+                ctx.getBank().depositAll();
+            ctx.sleepHQuick();
+        }
 
         if (items != null) {
 
@@ -85,6 +100,13 @@ public class BankingNode extends NoxScapeNode {
 
             // Deposit all deposit-items
             belongsToSet.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
+
+            // Deposit all items in inventory that aren't specified to be withdrawn
+            Set<String> bankItemNames = Arrays.stream(items).map(BankItem::getName).collect(Collectors.toSet());
+            if (bankLocation.isDepositBox())
+                ctx.getDepositBox().depositAll(item -> !bankItemNames.contains(item.toString()));
+            else
+                ctx.getBank().depositAll(item -> !bankItemNames.contains(item.toString()));
 
             ctx.sleep(0, 80);
 
@@ -116,10 +138,10 @@ public class BankingNode extends NoxScapeNode {
             }
         }
 
-        if (!ctx.getBank().close()) {
+        if ((bankLocation.isDepositBox() && !ctx.getDepositBox().close()) || !ctx.getBank().close()) {
             logError("Error closing bank;");
         } else {
-            complete("Successfully handled banking");
+            complete("Successfully handled banking at " + bankLocation.getName());
         }
 
         return NRandom.humanized();
@@ -152,11 +174,14 @@ public class BankingNode extends NoxScapeNode {
     private void depositItem(BankItem item) {
         if (item.getName() != null && ctx.getInventory().contains(item.getName())) {
             if (ctx.getInventory().getAmount(item.getName()) <= item.getAmount()) {
-                if (!ctx.getBank().depositAll(item.getName())) {
+                if (bankLocation.isDepositBox()) {
+                    if (!ctx.getDepositBox().depositAll(item.getName()))
+                        logBankError(item);
+                } else if (!ctx.getBank().depositAll(item.getName()))
                     logBankError(item);
-                }
-            } else if (!ctx.getBank().deposit(item.getName(), item.getAmount())) {
-                logBankError(item);
+            } else {
+                if ((bankLocation.isDepositBox() && !ctx.getDepositBox().deposit(item.getName(), item.getAmount())) || !ctx.getBank().deposit(item.getName(), item.getAmount()))
+                    logBankError(item);
             }
         }
     }
