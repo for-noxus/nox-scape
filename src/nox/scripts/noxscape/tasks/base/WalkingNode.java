@@ -2,6 +2,7 @@ package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import nox.scripts.noxscape.core.interfaces.ILocateable;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.event.Event;
@@ -13,6 +14,7 @@ import org.osbot.rs07.utility.Condition;
 
 import java.util.Arrays;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 public class WalkingNode extends NoxScapeNode {
 
@@ -20,7 +22,9 @@ public class WalkingNode extends NoxScapeNode {
     protected Position destinationPosition;
     private BooleanSupplier breakCondition;
     private PathPreferenceProfile pathPreferenceProfile;
-    private boolean isWebWalk;
+    private boolean isWebWalk = false;
+    private boolean isExact = false;
+    private Consumer<WalkingEvent> walkingEventConfig;
 
     public WalkingNode(ScriptContext ctx) {
         super(ctx);
@@ -28,6 +32,11 @@ public class WalkingNode extends NoxScapeNode {
 
     public WalkingNode toPosition(Position pos) {
         this.destinationPosition = pos;
+        return this;
+    }
+
+    public WalkingNode toPosition(ILocateable locateable) {
+        this.destinationPosition = locateable.getPosition();
         return this;
     }
 
@@ -51,8 +60,19 @@ public class WalkingNode extends NoxScapeNode {
         return this;
     }
 
+    public WalkingNode configureWalkEvent(Consumer<WalkingEvent> cfg) {
+        this.walkingEventConfig = cfg;
+        return this;
+    }
+
     public WalkingNode isWebWalk(boolean isWebWalk) {
         this.isWebWalk = isWebWalk;
+        return this;
+    }
+
+    public WalkingNode isExactWebWalk(boolean isWebWalk) {
+        this.isWebWalk = isWebWalk;
+        this.isExact = true;
         return this;
     }
 
@@ -65,7 +85,7 @@ public class WalkingNode extends NoxScapeNode {
     public boolean isValid() {
         boolean playerByPosition = destinationPosition != null && ctx.myPosition().distance(destinationPosition) <= 8;
         boolean playerInArea = destinationArea != null && destinationArea.contains(ctx.myPlayer().getPosition());
-        return !playerByPosition || !playerInArea;
+        return (!playerByPosition || !playerInArea);
     }
 
     @Override
@@ -83,20 +103,25 @@ public class WalkingNode extends NoxScapeNode {
             if (pathPreferenceProfile != null)
                 ((WebWalkEvent)event).setPathPreferenceProfile(pathPreferenceProfile);
 
+            ((WebWalkEvent)event).prefetchRequirements(ctx);
+            Position destination = ((WebWalkEvent)event).getDestination();
+
             if (breakCondition != null)
                 ((WebWalkEvent)event).setBreakCondition(new Condition() {
                     @Override
                     public boolean evaluate() {
-                        return breakCondition.getAsBoolean();
+                        return breakCondition.getAsBoolean() && (isExact && ctx.myPosition().distance(destination) < 10);
                     }
                 });
 
-            ctx.execute(event);
         } else {
             if (destinationArea != null)
                 event = new WalkingEvent(destinationArea);
             else if (destinationPosition != null)
                 event = new WalkingEvent(destinationPosition);
+
+            if (walkingEventConfig != null)
+                walkingEventConfig.accept(((WalkingEvent)event));
 
             if (breakCondition != null)
                 ((WalkingEvent)event).setBreakCondition(new Condition() {
@@ -110,6 +135,11 @@ public class WalkingNode extends NoxScapeNode {
         ctx.execute(event);
 
         if (event.hasFinished()) {
+            if (isWebWalk && isExact) {
+                if (!ctx.getWalking().walk(destinationPosition)) {
+                    abort(String.format("Error walking to exact destination. Script is at (%s) failed to reach (%s)", ctx.myPosition(), destinationPosition));
+                }
+            }
             complete("Successfully completed walking event to " + (destinationPosition != null ? destinationPosition.toString() : destinationArea.toString()));
         } else if (event.hasFailed()) {
             if (isWebWalk)
