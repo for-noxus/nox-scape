@@ -1,5 +1,7 @@
 package nox.scripts.noxscape.tasks.base.banking;
 
+import nox.scripts.noxscape.core.interfaces.ILocateable;
+import nox.scripts.noxscape.core.interfaces.INameable;
 import nox.scripts.noxscape.util.LocationUtils;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
@@ -9,33 +11,33 @@ import org.osbot.rs07.script.MethodProvider;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public enum BankLocation {
-    AL_KHARID("Al_kharid", Banks.AL_KHARID, false),
-    ARCEUUS_HOUSE("Arceuus_house", Banks.ARCEUUS_HOUSE, true),
-    ARDOUGNE_NORTH("Ardougne_north", Banks.ARDOUGNE_NORTH, false),
-    ARDOUGNE_SOUTH("Ardougne_south", Banks.ARDOUGNE_SOUTH, false),
+public enum BankLocation implements INameable, ILocateable {
+    AL_KHARID("Al Kharid", Banks.AL_KHARID, false),
+    ARCEUUS_HOUSE("Arceuus House", Banks.ARCEUUS_HOUSE, true),
+    ARDOUGNE_NORTH("Ardougne North", Banks.ARDOUGNE_NORTH, false),
+    ARDOUGNE_SOUTH("Ardougne South", Banks.ARDOUGNE_SOUTH, false),
     CAMELOT("Camelot", Banks.CAMELOT, false),
     CANIFIS("Canifis", Banks.CANIFIS, false),
-    CASTLE_WARS("Castle_wars", Banks.CASTLE_WARS, false),
+    CASTLE_WARS("Castle Wars", Banks.CASTLE_WARS, false),
     CATHERBY("Catherby", Banks.CATHERBY, false),
     DRAYNOR("Draynor", Banks.DRAYNOR, true),
-    DUEL_ARENA("Duel_arena", Banks.DUEL_ARENA, true),
+    DUEL_ARENA("Duel Arena", Banks.DUEL_ARENA, true),
     EDGEVILLE("Edgeville", Banks.EDGEVILLE, true),
-    FALADOR_EAST("Falador_east", Banks.FALADOR_EAST, true),
-    FALADOR_WEST("Falador_west", Banks.FALADOR_WEST, true),
-    GNOME_STRONGHOLD("Gnome_stronghold", Banks.GNOME_STRONGHOLD, false),
-    GRAND_EXCHANGE("Grand_exchange", Banks.GRAND_EXCHANGE, true),
-    HOSIDIUS_HOUSE("Hosidius_house", Banks.HOSIDIUS_HOUSE, false),
-    LOVAKENGJ_HOUSE("Lovakengj_house", Banks.LOVAKENGJ_HOUSE, false),
-    LOVAKITE_MINE("Lovakite_mine", Banks.LOVAKITE_MINE, false),
-    LUMBRIDGE_LOWER("Lumbridge_lower", Banks.LUMBRIDGE_LOWER, false),
-    LUMBRIDGE_UPPER("Lumbridge_upper", Banks.LUMBRIDGE_UPPER, true),
-    PEST_CONTROL("Pest_control", Banks.PEST_CONTROL, false),
-    PISCARILIUS_HOUSE("Piscarilius_house", Banks.PISCARILIUS_HOUSE, false),
-    SHAYZIEN_HOUSE("Shayzien_house", Banks.SHAYZIEN_HOUSE, false),
+    FALADOR_EAST("Falador East", Banks.FALADOR_EAST, true),
+    FALADOR_WEST("Falador West", Banks.FALADOR_WEST, true),
+    GNOME_STRONGHOLD("Gnome Stronghold", Banks.GNOME_STRONGHOLD, false),
+    GRAND_EXCHANGE("Grand Exchange", Banks.GRAND_EXCHANGE, true),
+    HOSIDIUS_HOUSE("Hosidius House", Banks.HOSIDIUS_HOUSE, false),
+    LOVAKENGJ_HOUSE("Lovakengj House", Banks.LOVAKENGJ_HOUSE, false),
+    LOVAKITE_MINE("Lovakite Mine", Banks.LOVAKITE_MINE, false),
+    LUMBRIDGE_LOWER("Lumbridge Lower", Banks.LUMBRIDGE_LOWER, false),
+    LUMBRIDGE_UPPER("Lumbridge Upper", Banks.LUMBRIDGE_UPPER, true),
+    PEST_CONTROL("Pest Control", Banks.PEST_CONTROL, false),
+    PISCARILIUS_HOUSE("Piscarilius House", Banks.PISCARILIUS_HOUSE, false),
+    SHAYZIEN_HOUSE("Shayzien House", Banks.SHAYZIEN_HOUSE, false),
     TZHAAR("Tzhaar", Banks.TZHAAR, false),
-    VARROCK_EAST("Varrock_east", Banks.VARROCK_EAST, true),
-    VARROCK_WEST("Varrock_west", Banks.VARROCK_WEST, true),
+    VARROCK_EAST("Varrock East", Banks.VARROCK_EAST, true),
+    VARROCK_WEST("Varrock West", Banks.VARROCK_WEST, true),
     YANILLE("Yanille", Banks.YANILLE, false),
     BARBARIANASSAULTBANK("Barbarian Assault Bank", new Area(2534, 3576, 2537, 3572), false), //Barbarian Assault Bank - Members
     BURGHDEROTTBANK("Burgh de Rott Bank", new Area(3496, 3213, 3499, 3210), false), //Burgh de Rott Bank - Members, started In Aid of the Myreque
@@ -63,16 +65,24 @@ public enum BankLocation {
     VINERYBANK("Vinery Bank", new Area(1802, 3571, 1808, 3571), false), //Vinery Bank - Members, located in Zeah, requires no favour to use
     WARRIORSGUILDBANK("Warriors Guild Bank", new Area(2843, 3544, 2846, 3539), false), //Warriors Guild Bank - Members, Attack + Strength >= 130
     WOODCUTTINGGUILDBANK("Woodcutting Guild Bank", new Area(1589, 3480, 1593, 3476), false), //Woodcutting Guild Bank - Members, requires 60 wc + 75% hosidius house favour
-    ZEAHCOOKINGBANK("Zeah Cooking Bank", new Area(1653, 3613, 1658, 3607), false); //Zeah Cooking Bank - Members, located on Zeah
+    ZEAHCOOKINGBANK("Zeah Cooking Bank", new Area(1653, 3613, 1658, 3607), false), //Zeah Cooking Bank - Members, located on Zeah
+
+    PORTSARIM("Port Sarim Deposit", new Area(3043, 3235, 3046, 3236), true, true);
 
     private final String name;
     private final Area bankArea;
     private final boolean isF2P;
+    private final boolean isDepositBox;
 
     BankLocation(String name, Area bankArea, boolean isF2P) {
+        this(name, bankArea, isF2P, false);
+    }
+
+    BankLocation(String name, Area bankArea, boolean isF2P, boolean isDepositBox) {
         this.name = name;
         this.bankArea = bankArea;
         this.isF2P = isF2P;
+        this.isDepositBox = isDepositBox;
     }
 
     public static BankLocation closestTo(MethodProvider ctx, Position pos) {
@@ -89,5 +99,26 @@ public enum BankLocation {
         Position closestPosition = LocationUtils.getClosestAreaByWebWalking(ctx, pos, closestFive);
 
         return Arrays.stream(BankLocation.values()).filter(f -> f.bankArea.contains(closestPosition)).findFirst().orElse(null);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Area getBankArea() {
+        return bankArea;
+    }
+
+    public boolean isF2P() {
+        return isF2P;
+    }
+
+    public boolean isDepositBox() {
+        return isDepositBox;
+    }
+
+    @Override
+    public Position getPosition() {
+        return bankArea.getRandomPosition();
     }
 }
