@@ -1,5 +1,6 @@
 package nox.scripts.noxscape;
 
+import com.sun.javafx.sg.prism.NGExternalNode;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
@@ -32,6 +33,11 @@ public class NoxScape extends Script {
             // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
                 NoxScapeMasterNode newNode = DecisionMaker.getNextMasterNode();
+                if (newNode == null) {
+                    log("We can't find a new node to execute. Exiting script");
+                    stop(false);
+                    return 1;
+                }
                 log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
                 ctx.setCurrentMasterNode(newNode);
                 cmn = newNode;
@@ -69,6 +75,20 @@ public class NoxScape extends Script {
 
     @Override
     public void onPaint(Graphics2D g) {
-        //This is where you will put your code for paint(s)
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        g.setColor(Color.white);
+        g.drawString(ctx.currentNodeMessage(), 10, 325);
+
+        g.setColor(Color.green.darker());
+        // Get current mouse position
+        Point mP = getMouse().getPosition();
+
+        // Draw a line from top of screen (0), to bottom (500), with mouse x coordinate
+        g.drawLine(mP.x, 0, mP.x, 500);
+
+        // Draw a line from left of screen (0), to right (800), with mouse y coordinate
+        g.drawLine(0, mP.y, 800, mP.y);
     }
 }
