@@ -6,6 +6,8 @@ import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.Inventory;
+import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -25,9 +27,23 @@ public class EntitySkillingNode extends NoxScapeNode {
     private String[] dropAllExcept;
 
     private RS2Object previouslyInteractedEntity;
+    private Position centerTile;
+    private int radius;
+    private Area area;
 
     public EntitySkillingNode(ScriptContext ctx) {
         super(ctx);
+    }
+
+    public EntitySkillingNode boundedBy(Position centerTile, int radius) {
+        this.centerTile = centerTile;
+        this.radius = radius;
+        return this;
+    }
+
+    public EntitySkillingNode boundedBy(Area area) {
+        this.area = area;
+        return this;
     }
 
     public EntitySkillingNode entityInvalidWhen(Predicate<RS2Object> entityValidationCondition, int timeout, int interval) {
@@ -59,7 +75,10 @@ public class EntitySkillingNode extends NoxScapeNode {
 
     @Override
     public boolean isValid() {
-        return skillableEntity.getPosition().distance(ctx.myPosition()) <= 20 && !ctx.getInventory().isFull();
+        boolean isInArea = area != null && area.contains(ctx.myPosition());
+        boolean isWithinBoundedRadius = centerTile != null && centerTile.distance(ctx.myPosition()) <= radius && !ctx.getInventory().isFull();
+
+        return isInArea || isWithinBoundedRadius;
     }
 
     @Override
