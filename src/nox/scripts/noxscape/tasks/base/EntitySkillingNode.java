@@ -5,6 +5,7 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
+import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -56,12 +57,9 @@ public class EntitySkillingNode extends NoxScapeNode {
         return this;
     }
 
-    // Todo: Make this area-aware so that it can wait if no entities are available
-    // Todo: if inventory isn't full && inSkillableArea....
     @Override
     public boolean isValid() {
-        boolean foundWithCustom = fnFindEntity == null || fnFindEntity.apply(ctx) != null;
-        return foundWithCustom || ctx.getObjects().closest(skillableEntity.getName()) != null;
+        return skillableEntity.getPosition().distance(ctx.myPosition()) <= 20 && !ctx.getInventory().isFull();
     }
 
     @Override
