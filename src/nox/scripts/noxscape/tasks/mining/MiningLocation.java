@@ -13,7 +13,7 @@ public enum MiningLocation implements INameable, ILocateable, IBankable {
 
     RIMMINGTON_CLAY("Clay at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.CLAY, new Position(2986, 3240, 0), new Position(2987, 3239, 0)),
     RIMMINGTON_COPPER("Copper at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.COPPER, new Position(2978, 3247, 0), new Position(2977, 3248, 0), new Position(2977, 3246, 0)),
-    RIMMINGTON_TIN("Tin at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.TIN, new Position(2978, 3247, 0), new Position(2977, 3248, 0), new Position(2977, 3246, 0)),
+    RIMMINGTON_TIN("Tin at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.TIN, new Position(2984, 3236, 0), new Position(2986, 3236, 0)),
     RIMMINGTON_IRON("Iron at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.IRON, new Position(2969, 3241, 0), new Position(2969, 3239, 0), new Position(2981, 3234, 0), new Position(2982, 3233, 0)),
     RIMMINGTON_GOLD("Gold at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.GOLD, new Position(2976, 3234, 0)),
 
