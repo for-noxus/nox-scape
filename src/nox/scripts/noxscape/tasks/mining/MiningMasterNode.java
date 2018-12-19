@@ -102,6 +102,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(configuration.rockToMine)
+                .boundedBy(location.positions[0], 10)
                 .findEntityWith(api -> api.getObjects().closest(ent -> configuration.rockToMine.hasOre(ent)))
                 .entityInvalidWhen(ent -> !configuration.rockToMine.hasOre(ent), 30000, 50)
                 .hasMessage("Mining " + configuration.rockToMine.getName());

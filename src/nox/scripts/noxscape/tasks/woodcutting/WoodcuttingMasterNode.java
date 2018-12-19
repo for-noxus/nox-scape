@@ -96,6 +96,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(configuration.treeToChop)
+                .boundedBy(location.centerPoint(), 14)
                 .entityInvalidWhen(ent -> ctx.getObjects().closest(obj -> obj.getPosition().equals(ent.getPosition()) && obj.getName().equals("Tree stump")) != null, 5000, 1000)
                 .hasMessage("Chopping " + configuration.treeToChop.getName());
 
