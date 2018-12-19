@@ -43,9 +43,9 @@ public final class DecisionMaker {
                 QueuedNode nodeInfo = priorityNodes.pop();
                 Class nodeClass = Class.forName(nodeInfo.className);
                 NoxScapeMasterNode priorityNode = findExistingNode(nodeClass);
-
                 if (priorityNode != null) {
                     priorityNodes.remove(priorityNode);
+                    priorityNode.configuration = nodeInfo.configuration;
                     priorityNode.initializeNodes();
                     ctx.logClass(DecisionMaker.class, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
                     return priorityNode;
