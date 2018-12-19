@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.core;
 
 import nox.scripts.noxscape.util.NRandom;
+import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.io.FileWriter;
@@ -12,6 +13,7 @@ public class ScriptContext extends MethodProvider {
 
     private NoxScapeMasterNode currentMasterNode;
 
+    private Entity targetEntity;
     public final String logDir;
 
     public ScriptContext(MethodProvider api, String logDir) {
@@ -54,5 +56,13 @@ public class ScriptContext extends MethodProvider {
         if (currentMasterNode != null && currentMasterNode.getCurrentNode() != null && currentMasterNode.getCurrentNode().getMessage() != null)
             return currentMasterNode.getCurrentNode().getMessage();
         return "No message given";
+    }
+
+    public Entity getTargetEntity() {
+        return targetEntity;
+    }
+
+    public void setTargetEntity(Entity targetEntity) {
+        this.targetEntity = targetEntity;
     }
 }

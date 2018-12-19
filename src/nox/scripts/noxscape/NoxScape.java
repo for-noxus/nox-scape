@@ -4,6 +4,9 @@ import com.sun.javafx.sg.prism.NGExternalNode;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import nox.scripts.noxscape.tasks.mining.MiningEntity;
+import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
+import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -90,5 +93,11 @@ public class NoxScape extends Script {
 
         // Draw a line from left of screen (0), to right (800), with mouse y coordinate
         g.drawLine(0, mP.y, 800, mP.y);
+
+        Entity ent = ctx.getTargetEntity();
+        if (ent != null) {
+            g.setColor(Color.red.brighter());
+            g.draw(ctx.getDisplay().getModelArea(ent.getGridX(), ent.getGridY(), ent.getZ(), ent.getModel()));
+        }
     }
 }

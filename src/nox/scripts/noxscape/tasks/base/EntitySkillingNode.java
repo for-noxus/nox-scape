@@ -76,9 +76,9 @@ public class EntitySkillingNode extends NoxScapeNode {
     @Override
     public boolean isValid() {
         boolean isInArea = area != null && area.contains(ctx.myPosition());
-        boolean isWithinBoundedRadius = centerTile != null && centerTile.distance(ctx.myPosition()) <= radius && !ctx.getInventory().isFull();
+        boolean isWithinBoundedRadius = centerTile != null && centerTile.distance(ctx.myPosition()) <= radius;
 
-        return isInArea || isWithinBoundedRadius;
+        return !ctx.getInventory().isFull() && (isInArea || isWithinBoundedRadius);
     }
 
     @Override
@@ -104,6 +104,8 @@ public class EntitySkillingNode extends NoxScapeNode {
             abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
             return 1;
         }
+
+        ctx.setTargetEntity(entity);
 
         if (!entity.hasAction(skillableEntity.getInteractAction())) {
             abort(String.format("Unable to interact with entity (%s) and action (%s), it contains \"%s\"", entity.getName(), skillableEntity.getInteractAction(), String.join(", ", entity.getActions())));
