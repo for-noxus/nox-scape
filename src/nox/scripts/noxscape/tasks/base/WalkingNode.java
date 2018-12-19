@@ -3,6 +3,7 @@ package nox.scripts.noxscape.tasks.base;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ILocateable;
+import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.event.Event;
@@ -135,12 +136,13 @@ public class WalkingNode extends NoxScapeNode {
         ctx.execute(event);
 
         if (event.hasFinished()) {
-            if (isWebWalk && isExact) {
-                if (!ctx.getWalking().walk(destinationPosition)) {
+            if (isWebWalk && isExact)
+                if (!ctx.getWalking().walk(destinationPosition))
                     abort(String.format("Error walking to exact destination. Script is at (%s) failed to reach (%s)", ctx.myPosition(), destinationPosition));
-                }
-            }
-            complete("Successfully completed walking event to " + (destinationPosition != null ? destinationPosition.toString() : destinationArea.toString()));
+                else
+                    complete("Successfully completed exact walking event to " + (destinationPosition != null ? destinationPosition.toString() : destinationArea.toString()));
+             else
+                 complete("Successfully completed walking event to " + (destinationPosition != null ? destinationPosition.toString() : destinationArea.toString()));
         } else if (event.hasFailed()) {
             if (isWebWalk)
                 abort("WebWalking event failed, aborting. Stopped at " + ((WebWalkEvent)event).getCompletion() + "%");
