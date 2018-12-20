@@ -3,6 +3,7 @@ package nox.scripts.noxscape.tasks.base;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
+import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.Inventory;
@@ -30,6 +31,8 @@ public class EntitySkillingNode extends NoxScapeNode {
     private Position centerTile;
     private int radius;
     private Area area;
+
+    private int findAttempts = 0;
 
     public EntitySkillingNode(ScriptContext ctx) {
         super(ctx);
@@ -76,7 +79,7 @@ public class EntitySkillingNode extends NoxScapeNode {
     @Override
     public boolean isValid() {
         boolean isInArea = area != null && area.contains(ctx.myPosition());
-        boolean isWithinBoundedRadius = centerTile != null && centerTile.distance(ctx.myPosition()) <= radius;
+        boolean isWithinBoundedRadius = centerTile != null && LocationUtils.manhattenDistance(centerTile, ctx.myPosition()) < radius;
 
         return !ctx.getInventory().isFull() && (isInArea || isWithinBoundedRadius);
     }
@@ -93,7 +96,7 @@ public class EntitySkillingNode extends NoxScapeNode {
             }
         }
 
-        if (isBusy() && (previouslyInteractedEntity == null || !entityValidationCondition.test(previouslyInteractedEntity)))
+        if (isBusy() && (previouslyInteractedEntity == null || entityValidationCondition.test(previouslyInteractedEntity)))
             return NRandom.humanized() * 2;
 
         RS2Object entity = fnFindEntity != null ?
@@ -101,8 +104,10 @@ public class EntitySkillingNode extends NoxScapeNode {
                 ctx.getObjects().closest(skillableEntity.getName());
 
         if (entity == null) {
-            abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
-            return 1;
+            if (++findAttempts > 20) {
+                abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
+            }
+            return 200;
         }
 
         ctx.setTargetEntity(entity);
