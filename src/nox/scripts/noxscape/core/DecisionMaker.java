@@ -41,6 +41,7 @@ public final class DecisionMaker {
         if (!priorityNodes.empty()) {
             try {
                 QueuedNode nodeInfo = priorityNodes.pop();
+                writeTasksToFile();
                 Class nodeClass = Class.forName(nodeInfo.className);
                 NoxScapeMasterNode priorityNode = findExistingNode(nodeClass);
                 if (priorityNode != null) {
