@@ -15,6 +15,7 @@ import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
@@ -47,7 +48,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
     public void initializeNodes() {
         ctx.logClass(this, "Initializing Mining Nodes");
 
-        BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), true)).toArray(BankItem[]::new);
+        BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().filter(f -> f.canUse(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx))).toArray(BankItem[]::new);
 
         // Get the highest level tree we can currently cut
         if (configuration.rockToMine == null)
@@ -63,7 +64,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
                 .min(Comparator.comparingInt(a -> a.positions[0].distance(curPos)))
                 .get();
 
-        BankItem logsToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
+        BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
 
         PathPreferenceProfile ppp = new PathPreferenceProfile()
                 .checkBankForItems(true)
@@ -84,8 +85,9 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
                 .handlingItems(axesToWithdraw)
                 .hasMessage(String.format("Banking at %s for the first time", location.getBank().getName()));
 
+        Position orePos = NRandom.fromArray(location.positions);
         NoxScapeNode toOreNode = new WalkingNode(ctx)
-                .toPosition(NRandom.fromArray(location.positions))
+                .toPosition(orePos)
                 .isExactWebWalk(true)
                 .hasMessage("Walking to Ore (" + configuration.rockToMine.getName() + ")");
 
@@ -97,13 +99,13 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
 
         NoxScapeNode bankNode = new BankingNode(ctx)
                 .bankingAt(depositLocation)
-                .handlingItems(logsToBank)
+                .handlingItems(oreToBank)
                 .hasMessage(String.format("Banking %s at %s", configuration.rockToMine.producesItemName(), depositLocation.getName()));
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(configuration.rockToMine)
-                .boundedBy(location.positions[0], 10)
-                .findEntityWith(api -> api.getObjects().closest(ent -> configuration.rockToMine.hasOre(ent)))
+                .boundedBy(orePos, location.shouldStayInTile() ? 1 : 16)
+                .findEntityWith(api -> api.getObjects().closest(ent -> configuration.rockToMine.hasOre(ent) && (!location.shouldStayInTile() || LocationUtils.manhattenDistance(ctx.myPosition(), ent.getPosition()) == 1)))
                 .entityInvalidWhen(ent -> !configuration.rockToMine.hasOre(ent), 30000, 50)
                 .hasMessage("Mining " + configuration.rockToMine.getName());
 
