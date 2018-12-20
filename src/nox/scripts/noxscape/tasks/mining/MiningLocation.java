@@ -9,6 +9,8 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.map.constants.Banks;
 
+import java.util.Arrays;
+
 public enum MiningLocation implements INameable, ILocateable, IBankable {
 
     RIMMINGTON_CLAY("Clay at Rimmington", BankLocation.DRAYNOR, BankLocation.PORTSARIM, MiningEntity.CLAY, new Position(2986, 3240, 0), new Position(2987, 3239, 0)),
@@ -22,7 +24,15 @@ public enum MiningLocation implements INameable, ILocateable, IBankable {
 
     LUMBY_SW_COAL("Coal southwest of Lumbridge", BankLocation.LUMBRIDGE_UPPER, MiningEntity.COAL, new Position(3145, 3152, 0), new Position(3145, 3150, 0)),
     LUMBY_SW_MITH("Mithril southwest of Lumbridge", BankLocation.LUMBRIDGE_UPPER, MiningEntity.MITHRIL, new Position(3144, 3136, 0)),
-    LUMBY_SW_ADDY("Adamantite southwest of Lumbridge", BankLocation.LUMBRIDGE_UPPER, MiningEntity.ADAMANTITE, new Position(3147, 3147, 0));
+    LUMBY_SW_ADDY("Adamantite southwest of Lumbridge", BankLocation.LUMBRIDGE_UPPER, MiningEntity.ADAMANTITE, new Position(3147, 3147, 0)),
+
+    VAAROK_E_TIN("Tin southeast of Varrok", BankLocation.VARROCK_EAST, MiningEntity.TIN, new Position(3282, 3363, 0)),
+    VAAROK_E_COPPER("Copper southeast of Varrok", BankLocation.VARROCK_EAST, MiningEntity.COPPER, new Position(3287, 3364, 0), new Position(3286, 3361, 0), new Position(3289, 3362, 0), new Position(3286, 3365, 0)),
+    VAAROK_E_IRON("Iron southeast of Varrok", BankLocation.VARROCK_EAST, MiningEntity.IRON, new Position(3286, 3368, 0)),
+
+    VAAROK_W_CLAY("Ckay southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.CLAY, new Position(3180, 3371, 0), new Position(3177, 3369, 0), new Position(3182, 3376, 0), new Position(3182, 3377, 0)),
+    VAAROK_W_TIN("Tin southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.TIN, new Position(3177, 3365, 0), new Position(3177, 3369, 0), new Position(3182, 3376, 0)),
+    VAAROK_W_IRON("Iron southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.IRON, new Position(3175, 3367, 0));
 
     public final String name;
     public final BankLocation closestBank;
@@ -40,6 +50,10 @@ public enum MiningLocation implements INameable, ILocateable, IBankable {
         this.closestDepositBox = closestDepositBox;
         this.positions = positions;
         this.rock = rock;
+    }
+
+    public boolean shouldStayInTile() {
+        return Arrays.asList(MiningEntity.IRON, MiningEntity.CLAY, MiningEntity.TIN, MiningEntity.COPPER).contains(rock);
     }
 
     @Override
