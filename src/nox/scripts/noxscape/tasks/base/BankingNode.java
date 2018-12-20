@@ -73,7 +73,7 @@ public class BankingNode extends NoxScapeNode {
             Sleep.sleepUntil(() -> ctx.getBank().isOpen(), 6000, 600);
         }
 
-        if (depositallWornItems) {
+        if (depositallWornItems && !ctx.getEquipment().isEmpty()) {
             if (bankLocation.isDepositBox())
                 ctx.getDepositBox().depositWornItems();
             else
@@ -81,7 +81,7 @@ public class BankingNode extends NoxScapeNode {
             ctx.sleepHQuick();
         }
 
-        if (depositAllBackpackItems) {
+        if (depositAllBackpackItems && !ctx.getInventory().isEmpty()) {
             if (bankLocation.isDepositBox())
                 ctx.getDepositBox().depositAll();
             else
@@ -129,12 +129,11 @@ public class BankingNode extends NoxScapeNode {
             // Withdraw all withdraw-items
             if (shouldEquip.get(false).size() > 0) {
                 if (!ctx.getBank().isOpen()) {
-                    if (ctx.getBank().open()) {
-                        shouldEquip.get(false).forEach(this::withdrawItem);
-                    } else {
+                    if (!ctx.getBank().open()) {
                         abort("Error opening bank to withdraw items");
                     }
                 }
+                shouldEquip.get(false).forEach(this::withdrawItem);
             }
         }
 
@@ -159,9 +158,10 @@ public class BankingNode extends NoxScapeNode {
     }
 
     private BankItem getOwnedItemFromSet(List<BankItem> set) {
-        set.sort(Comparator.comparingInt(BankItem::getPriority));
-
-        Optional<BankItem> itemToWithdraw = set.stream().filter(item -> ctx.getBank().contains(item.getName()) || ctx.getInventory().contains(item.getName()) || ctx.getEquipment().contains(item.getName())).findFirst();
+        Optional<BankItem> itemToWithdraw = set.stream()
+                .sorted(Comparator.comparingInt(BankItem::getPriority).reversed())
+                .filter(item -> ctx.getBank().contains(item.getName()) || ctx.getInventory().contains(item.getName()) || ctx.getEquipment().contains(item.getName()))
+                .findFirst();
 
         if (itemToWithdraw.isPresent()) {
             return itemToWithdraw.get();
