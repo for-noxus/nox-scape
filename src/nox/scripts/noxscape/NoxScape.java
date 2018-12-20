@@ -23,6 +23,11 @@ public class NoxScape extends Script {
         try {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
+
+            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
+            cfg.setRockToMine(MiningEntity.IRON);
+
+            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, null);
         } catch (Exception e) {
             log("Script failed to start.");
             logException(e);
@@ -81,8 +86,10 @@ public class NoxScape extends Script {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        g.setColor(Color.white);
-        g.drawString(ctx.currentNodeMessage(), 10, 325);
+        if (ctx != null) {
+            g.setColor(Color.white);
+            g.drawString(ctx.currentNodeMessage(), 10, 325);
+        }
 
         g.setColor(Color.green.darker());
         // Get current mouse position
