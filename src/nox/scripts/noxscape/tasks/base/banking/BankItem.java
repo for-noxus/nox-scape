@@ -19,6 +19,18 @@ public class BankItem implements INameable {
         this(name, action, amount, null, priority, false);
     }
 
+    @Override
+    public String toString() {
+        return "BankItem{" +
+                "name='" + name + '\'' +
+                ", action=" + action +
+                ", amount=" + amount +
+                ", set='" + set + '\'' +
+                ", priority=" + priority +
+                ", equip=" + equip +
+                '}';
+    }
+
     public BankItem(String name, BankAction action, int amount, String set, int priority, boolean equip) {
         this.name = name;
         this.action = action;
