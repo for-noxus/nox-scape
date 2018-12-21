@@ -137,7 +137,7 @@ public class WalkingNode extends NoxScapeNode {
         ctx.execute(event);
 
         if (event.hasFinished() || (event.hasFailed() && breakCondition != null && breakCondition.getAsBoolean())) {
-            if (isWebWalk && isExact) {
+            if (isWebWalk && isExact && !ctx.myPosition().equals(destinationPosition)) {
                 WalkingEvent e = new WalkingEvent(destinationPosition).setMinDistanceThreshold(0);
                 ctx.execute(e);
                 if (e.hasFailed())
