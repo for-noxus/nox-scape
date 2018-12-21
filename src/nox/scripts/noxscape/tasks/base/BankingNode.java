@@ -64,6 +64,10 @@ public class BankingNode extends NoxScapeNode {
         return bankLocation.getBankArea().contains(ctx.myPosition());
     }
 
+    // Deposit-all iron ore
+    // Deposit inventory
+    // Withdraw-all iron ore
+    // Withdraw-all adamant pickaxe
     @Override
     public int execute() throws InterruptedException {
         // Ensure bank screen is open
