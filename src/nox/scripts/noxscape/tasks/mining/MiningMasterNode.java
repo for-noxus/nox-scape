@@ -21,9 +21,7 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Configuration> {
@@ -49,6 +47,10 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
         ctx.logClass(this, "Initializing Mining Nodes");
 
         BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().filter(f -> f.canUse(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx))).toArray(BankItem[]::new);
+        BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
+        List<BankItem> bankItems = new ArrayList<>();
+        bankItems.addAll(Arrays.asList(axesToWithdraw));
+        bankItems.add(oreToBank);
 
         // Get the highest level tree we can currently cut
         if (configuration.rockToMine == null)
@@ -64,7 +66,6 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
                 .min(Comparator.comparingInt(a -> a.positions[0].distance(curPos)))
                 .get();
 
-        BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
 
         PathPreferenceProfile ppp = new PathPreferenceProfile()
                 .checkBankForItems(true)
@@ -99,7 +100,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
 
         NoxScapeNode bankNode = new BankingNode(ctx)
                 .bankingAt(depositLocation)
-                .handlingItems(oreToBank)
+                .handlingItems(bankItems)
                 .hasMessage(String.format("Banking %s at %s", configuration.rockToMine.producesItemName(), depositLocation.getName()));
 
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
@@ -130,9 +131,9 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
 
         boolean inventoryHasAxe = ctx.getInventory().contains(pickaxeNames);
         boolean wieldingAxe = ctx.getEquipment().isWieldingWeaponThatContains(pickaxeNames);
-        boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && Arrays.stream(ctx.getInventory().getItems()).noneMatch(a -> a!= null && !axeset.contains(a.getName()) && a.getName().equals(configuration.rockToMine.producesItemName()));
+        boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && Arrays.stream(ctx.getInventory().getItems()).noneMatch(a -> a != null && (!axeset.contains(a.getName()) || !a.getName().equals(configuration.rockToMine.producesItemName())));
 
-        return !(inventoryHasAxe || wieldingAxe) || ctx.getInventory().isFull() || hasStuffInInventory;
+        return (!inventoryHasAxe && !wieldingAxe) || ctx.getInventory().isFull() || hasStuffInInventory;
     }
 
     public static class Configuration {
