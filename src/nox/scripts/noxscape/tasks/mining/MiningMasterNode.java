@@ -46,18 +46,18 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
     public void initializeNodes() {
         ctx.logClass(this, "Initializing Mining Nodes");
 
-        BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().filter(f -> f.canUse(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx))).toArray(BankItem[]::new);
-        BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
-        List<BankItem> bankItems = new ArrayList<>();
-        bankItems.addAll(Arrays.asList(axesToWithdraw));
-        bankItems.add(oreToBank);
-
-        // Get the highest level tree we can currently cut
+        // Get the highest level ore we can currently mine
         if (configuration.rockToMine == null)
             configuration.rockToMine = Arrays.stream(MiningEntity.values())
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
                 .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
                 .get();
+
+        BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().filter(f -> f.canUse(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx))).toArray(BankItem[]::new);
+        BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
+        List<BankItem> bankItems = new ArrayList<>();
+        bankItems.addAll(Arrays.asList(axesToWithdraw));
+        bankItems.add(oreToBank);
 
         // Get the closest Mining location to ours
         final Position curPos = ctx.myPosition();
@@ -65,7 +65,6 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
                 .filter(f -> f.rock == configuration.rockToMine)
                 .min(Comparator.comparingInt(a -> a.positions[0].distance(curPos)))
                 .get();
-
 
         PathPreferenceProfile ppp = new PathPreferenceProfile()
                 .checkBankForItems(true)
