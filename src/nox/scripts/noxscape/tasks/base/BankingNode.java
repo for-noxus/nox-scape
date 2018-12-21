@@ -32,6 +32,13 @@ public class BankingNode extends NoxScapeNode {
         return this;
     }
 
+    public BankingNode handlingItems(List<BankItem> items) {
+        this.items = new BankItem[items.size()];
+        this.items = items.toArray(this.items);
+        return this;
+    }
+
+
     public BankingNode depositAllWornItems() {
         this.depositallWornItems = true;
         return this;
