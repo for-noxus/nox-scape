@@ -107,7 +107,6 @@ public class WalkingNode extends NoxScapeNode {
                 ((WebWalkEvent)event).setPathPreferenceProfile(pathPreferenceProfile);
 
             ((WebWalkEvent)event).prefetchRequirements(ctx);
-            Position destination = ((WebWalkEvent)event).getDestination();
 
             ((WebWalkEvent)event).setBreakCondition(new Condition() {
                 @Override
