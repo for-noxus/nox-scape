@@ -44,11 +44,12 @@ public class TutorialIslandMasterNode extends NoxScapeMasterNode {
 
         setNodes(new ArrayList<>(Arrays.asList(createCharacter, talkToGuide, clickOptionsMenu, walkToFishingGuide, fishingGuide, cookGuide, questGuide, miningGuide, combatGuide, bankGuide, prayerGuide, magicGuide)));
 
-        if (this.getCurrentNode() == null) {
-            this.abort("Unable to find a valid entrypoint.");
-        }
-
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
+    }
+
+    @Override
+    public boolean isCompleted() {
+        return !canExecute();
     }
 
     @Override

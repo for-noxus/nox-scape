@@ -23,6 +23,7 @@ public class FishingGuide extends NoxScapeNode {
 
     private final String INSTRUCTIONS_WALK = "on the ground will walk you";
     private final String INSTRUCTIONS_INSTRUCTOR = "Speak to the survival expert to continue";
+    private final String INSTRUCTIONS_INSTRUCTOR2 = "some shrimp in this pond here";
     private final String INSTRUCTIONS_INVEN_CLICK = "click on the flashing backpack icon";
     private final String INSTRUCTIONS_FISH = "Let's use it to catch some shrimp";
     private final String INSTRUCTIONS_SKILLS_CLICK = "flashing bar graph icon";
@@ -43,7 +44,7 @@ public class FishingGuide extends NoxScapeNode {
         HintArrow arrow = ctx.getHintArrow();
         boolean isExpertHinted = arrow.getNPC() != null && arrow.getNPC().getName().equals(NPC_EXPERT_NAME);
         boolean shrimpsCaught = ctx.getWidgets().getWidgetContainingText("manage to catch some shrimp") != null;
-        return shrimpsCaught || isExpertHinted || TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_WALK, INSTRUCTIONS_INSTRUCTOR, INSTRUCTIONS_INVEN_CLICK, INSTRUCTIONS_FISH, INSTRUCTIONS_SKILLS_CLICK,
+        return shrimpsCaught || isExpertHinted || TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_WALK, INSTRUCTIONS_INSTRUCTOR, INSTRUCTIONS_INSTRUCTOR2, INSTRUCTIONS_INVEN_CLICK, INSTRUCTIONS_FISH, INSTRUCTIONS_SKILLS_CLICK,
                 INSTRUCTIONS_CHOP, INSTRUCTIONS_LIGHT_FIRE, INSTRUCTIONS_COOK, INSTRUCTIONS_MOVEON);
     }
 
@@ -134,7 +135,7 @@ public class FishingGuide extends NoxScapeNode {
     private FishState getState() {
         if (TutorialIslandUtil.getClickToContinueWidget(ctx) != null)
             TutorialIslandUtil.clickToContinue(ctx);
-        if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_WALK, INSTRUCTIONS_INSTRUCTOR) || TutorialIslandUtil.getClickToContinueWidget(ctx) != null)
+        if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_WALK, INSTRUCTIONS_INSTRUCTOR, INSTRUCTIONS_INSTRUCTOR2) || TutorialIslandUtil.getClickToContinueWidget(ctx) != null)
             return FishState.TALKTO;
          else if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_INVEN_CLICK))
             return FishState.INVEN_CLICK;

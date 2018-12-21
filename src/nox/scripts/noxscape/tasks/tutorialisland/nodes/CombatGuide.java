@@ -21,14 +21,14 @@ public class CombatGuide extends NoxScapeNode {
     private final String INSTRUCTIONS_TALKTOGUIDE = "you will find out about melee and ranged combat";
     private final String INSTRUCTIONS_TALKTOGUIDE2 = "Speak to the combat instructor";
     private final String INSTRUCTIONS_TALKTOGUIDE3 = "talk to the combat instructor";
-    private final String INSTRUCTIONS_CLIK_EQUIPMENT = "flashing icon of a man";
+    private final String INSTRUCTIONS_CLICK_EQUIPMENT = "flashing icon of a man";
     private final String INSTRUCTIONS_CLICK_WORNITEMS = "flashing button with a shield and helmet on it";
     private final String INSTRUCTIONS_EQUIP_DAGGER = "Click your dagger to equip it";
     private final String INSTRUCTIONS_EQUIP_SWORDSHIELD = "swapping your dagger for the sword and shield";
     private final String INSTRUCTIONS_CLICK_COMBAT = "flashing crossed swords icon";
     private final String INSTRUCTIONS_GOTO_RAT = "Click on the gates to continue";
     private final String INSTRUCTIONS_ATTACK_RAT = "time to slay some rats";
-    private final String INSTRUCTIONS_ATTACK_RAT_RANGED = "Once equipped with the ranging gear";
+    private final String INSTRUCTIONS_ATTACK_RAT_RANGED = "Once equipped with the ranging";
     private final String INSTRUCTIONS_MOVEON = "To move on, click on the indicated ladder.";
     private final String INSTRUCTIONS_HEALTHBAR = "you will see a bar over your head.";
 
@@ -51,7 +51,7 @@ public class CombatGuide extends NoxScapeNode {
 
         return ctx.getCombat().isFighting() || arrowOverGuide || talkingToGuide ||
                 TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON, INSTRUCTIONS_ATTACK_RAT_RANGED, INSTRUCTIONS_ATTACK_RAT, INSTRUCTIONS_TALKTOGUIDE3, INSTRUCTIONS_CLICK_WORNITEMS, INSTRUCTIONS_HEALTHBAR,
-                        INSTRUCTIONS_EQUIP_DAGGER, INSTRUCTIONS_TALKTOGUIDE, INSTRUCTIONS_CLIK_EQUIPMENT, INSTRUCTIONS_TALKTOGUIDE2, INSTRUCTIONS_EQUIP_SWORDSHIELD, INSTRUCTIONS_GOTO_RAT, INSTRUCTIONS_CLICK_COMBAT);
+                        INSTRUCTIONS_EQUIP_DAGGER, INSTRUCTIONS_TALKTOGUIDE, INSTRUCTIONS_CLICK_EQUIPMENT, INSTRUCTIONS_TALKTOGUIDE2, INSTRUCTIONS_EQUIP_SWORDSHIELD, INSTRUCTIONS_GOTO_RAT, INSTRUCTIONS_CLICK_COMBAT);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class CombatGuide extends NoxScapeNode {
         if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOGUIDE, INSTRUCTIONS_TALKTOGUIDE2, INSTRUCTIONS_TALKTOGUIDE3)) {
             return CombatState.TALK_TO_GUIDE;
         }
-        if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CLIK_EQUIPMENT, INSTRUCTIONS_CLICK_WORNITEMS, INSTRUCTIONS_EQUIP_DAGGER)) {
+        if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CLICK_EQUIPMENT, INSTRUCTIONS_CLICK_WORNITEMS, INSTRUCTIONS_EQUIP_DAGGER)) {
             return CombatState.CLICK_EQUIPMENT;
         }
         if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_EQUIP_SWORDSHIELD, INSTRUCTIONS_CLICK_COMBAT)) {

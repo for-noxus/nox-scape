@@ -57,9 +57,6 @@ public class ClickOptionsMenu extends NoxScapeNode {
             RS2Widget fixedWidget = ctx.getWidgets().singleFilter(WIDGET_ROOT_OPTIONS_FIXED,fixedFilter);
             if (fixedWidget != null && fixedWidget.interact()) {
                 ctx.logClass(this, "Screen set to fixed mode");
-                // Thanks Explv
-                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(ctx.getBot().getBotPanel(), "Please restart the client"));
-                ctx.getBot().getScriptExecutor().stop();
             }
         }
         return new Random().nextInt(1500) + 100;
