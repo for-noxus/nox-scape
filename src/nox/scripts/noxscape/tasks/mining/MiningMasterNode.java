@@ -116,7 +116,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
         preExecutionBankNode.setChildNode(toOreNode);
         preExecutionWalkNode.setChildNode(preExecutionBankNode);
 
-        setNodes(Arrays.asList(toOreNode, interactNode, toBankNode, bankNode, preExecutionBankNode, preExecutionWalkNode));
+        setNodes(Arrays.asList(bankNode, interactNode, toOreNode, toBankNode, preExecutionBankNode, preExecutionWalkNode));
         setPreExecutionNode(preExecutionWalkNode);
         setReturnToBankNode(toBankNode);
 
