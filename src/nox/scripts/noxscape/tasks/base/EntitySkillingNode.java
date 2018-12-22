@@ -104,11 +104,13 @@ public class EntitySkillingNode extends NoxScapeNode {
                 ctx.getObjects().closest(skillableEntity.getName());
 
         if (entity == null) {
-            if (++findAttempts > 20) {
+            if (++findAttempts > 25) {
                 abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
             }
             return 200;
         }
+
+        findAttempts = 0;
 
         ctx.setTargetEntity(entity);
 
