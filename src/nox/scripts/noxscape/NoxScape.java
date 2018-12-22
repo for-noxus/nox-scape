@@ -89,7 +89,12 @@ public class NoxScape extends Script {
         if (ctx != null) {
             g.setColor(Color.white);
             g.drawString(ctx.currentNodeMessage(), 10, 325);
-        }
+
+            Entity ent = ctx.getTargetEntity();
+            if (ent != null) {
+                g.setColor(Color.red.brighter());
+                g.draw(ctx.getDisplay().getModelArea(ent.getGridX(), ent.getGridY(), ent.getZ(), ent.getModel()));
+            }}
 
         g.setColor(Color.green.darker());
         // Get current mouse position
@@ -100,11 +105,5 @@ public class NoxScape extends Script {
 
         // Draw a line from left of screen (0), to right (800), with mouse y coordinate
         g.drawLine(0, mP.y, 800, mP.y);
-
-        Entity ent = ctx.getTargetEntity();
-        if (ent != null) {
-            g.setColor(Color.red.brighter());
-            g.draw(ctx.getDisplay().getModelArea(ent.getGridX(), ent.getGridY(), ent.getZ(), ent.getModel()));
-        }
     }
 }
