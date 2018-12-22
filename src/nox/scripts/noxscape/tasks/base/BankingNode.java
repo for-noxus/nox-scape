@@ -115,9 +115,9 @@ public class BankingNode extends NoxScapeNode {
             // Deposit all items in inventory that aren't specified to be withdrawn
             Set<String> bankItemNames = Arrays.stream(items).map(BankItem::getName).collect(Collectors.toSet());
             if (bankLocation.isDepositBox())
-                ctx.getDepositBox().depositAll(item -> !bankItemNames.contains(item.toString()));
+                ctx.getDepositBox().depositAll(item -> !bankItemNames.contains(item.getName()));
             else
-                ctx.getBank().depositAll(item -> !bankItemNames.contains(item.toString()));
+                ctx.getBank().depositAll(item -> !bankItemNames.contains(item.getName()));
 
             ctx.sleep(0, 80);
 
@@ -144,7 +144,8 @@ public class BankingNode extends NoxScapeNode {
                         abort("Error opening bank to withdraw items");
                     }
                 }
-                shouldEquip.get(false).forEach(this::withdrawItem);
+                shouldEquip.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
+                shouldEquip.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
             }
         }
 
