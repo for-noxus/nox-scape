@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.core;
 
+import nox.scripts.noxscape.core.api.QuickExchange;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.MethodProvider;
@@ -16,10 +17,19 @@ public class ScriptContext extends MethodProvider {
     private Entity targetEntity;
     public final String logDir;
 
+    private QuickExchange quickExchange;
+
     public ScriptContext(MethodProvider api, String logDir) {
         this.logDir = logDir;
         exchangeContext(api.getBot());
         logClass(this, "Script context initialized.");
+    }
+
+    public QuickExchange getQuickExchange() {
+        if (quickExchange == null)
+            quickExchange = new QuickExchange( this);
+
+        return quickExchange;
     }
 
     public NoxScapeMasterNode getCurrentMasterNode() {
