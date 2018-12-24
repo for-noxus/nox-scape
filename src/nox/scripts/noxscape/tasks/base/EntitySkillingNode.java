@@ -6,20 +6,16 @@ import nox.scripts.noxscape.core.interfaces.ISkillable;
 import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.RS2Object;
-import org.osbot.rs07.script.MethodProvider;
 
-import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class EntitySkillingNode extends NoxScapeNode {
 
     private Predicate<RS2Object> entityValidationCondition;
-    private Function<MethodProvider, RS2Object> fnFindEntity;
+    private Predicate<RS2Object> fnFindEntity;
 
     private ISkillable skillableEntity;
     private int postInteractWaitTimeout;
@@ -56,7 +52,7 @@ public class EntitySkillingNode extends NoxScapeNode {
         return this;
     }
 
-    public EntitySkillingNode findEntityWith(Function<MethodProvider, RS2Object> fnFindEntity) {
+    public EntitySkillingNode findEntityWith(Predicate<RS2Object> fnFindEntity) {
         this.fnFindEntity = fnFindEntity;
         return this;
     }
@@ -96,18 +92,23 @@ public class EntitySkillingNode extends NoxScapeNode {
             }
         }
 
-        if (isBusy() && (previouslyInteractedEntity == null || entityValidationCondition.test(previouslyInteractedEntity)))
+        if (ctx.getDialogues().isPendingContinuation())
+            ctx.getDialogues().completeDialogue();
+
+        if (isBusy() && (previouslyInteractedEntity == null || entityValidationCondition.test(previouslyInteractedEntity))) {
+            ctx.logClass(this, "Waiting for rock");
             return NRandom.humanized() * 2;
+        }
 
         RS2Object entity = fnFindEntity != null ?
-                fnFindEntity.apply(ctx) :
+                ctx.getObjects().closest(ent -> fnFindEntity.test(ent)) :
                 ctx.getObjects().closest(skillableEntity.getName());
 
         if (entity == null) {
-            if (++findAttempts > 25) {
+            if (++findAttempts > 120) {
                 abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
             }
-            return 200;
+            return 500;
         }
 
         findAttempts = 0;
@@ -122,10 +123,15 @@ public class EntitySkillingNode extends NoxScapeNode {
             abort(String.format("Error interacting interact with entity (%s) and action (%s)", entity.getName(), skillableEntity.getInteractAction()));
         }
 
+        long interactTime = System.currentTimeMillis();
         if (entityValidationCondition != null) {
             previouslyInteractedEntity = entity;
-            Sleep.sleepUntil(() -> entityValidationCondition.test(ctx.getObjects().closest(f -> f.getPosition().equals(entity.getPosition()))), postInteractWaitTimeout, postInteractWaitInterval);
-            ctx.logClass(this, "Rock has been mined out, switching...");
+            Sleep.until(() -> {
+                RS2Object coal = ctx.getObjects().closest(f -> f.getPosition().equals(previouslyInteractedEntity.getPosition()) && fnFindEntity.test(f));
+                boolean passesTest = entityValidationCondition.test(coal);
+                boolean longTimeSinceInteracting = (System.currentTimeMillis() - interactTime > 5000) && !ctx.myPlayer().isAnimating();
+                return ctx.getDialogues().isPendingContinuation() || longTimeSinceInteracting || passesTest;
+            }, postInteractWaitTimeout, postInteractWaitInterval);
         }
 
         return NRandom.humanized();
