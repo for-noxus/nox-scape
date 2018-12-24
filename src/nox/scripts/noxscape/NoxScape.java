@@ -1,11 +1,11 @@
 package nox.scripts.noxscape;
 
-import com.sun.javafx.sg.prism.NGExternalNode;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
+import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -25,7 +25,7 @@ public class NoxScape extends Script {
             DecisionMaker.init(ctx);
 
             MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
-            cfg.setRockToMine(MiningEntity.IRON);
+            cfg.setRockToMine(MiningEntity.COAL);
 
             DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, null);
         } catch (Exception e) {
