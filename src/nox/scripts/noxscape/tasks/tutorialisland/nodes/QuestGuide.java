@@ -52,7 +52,7 @@ public class QuestGuide extends NoxScapeNode {
                     RS2Object door = ctx.getObjects().closest("Door");
                     if (door != null) {
                         if (door.interact()) {
-                            Sleep.sleepUntil(() -> ctx.getMap().canReach(questGuide), 5000, 500);
+                            Sleep.until(() -> ctx.getMap().canReach(questGuide), 5000, 500);
                         } else {
                             logError("Error opening questguide door");
                             ctx.getCamera().toEntity(door);
@@ -70,7 +70,7 @@ public class QuestGuide extends NoxScapeNode {
                 RS2Widget cct = TutorialIslandUtil.getClickToContinueWidget(ctx);
                 if (cct != null) {
                     if (cct.interact())
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 1000);
+                        Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 1000);
                         break;
                 } else {
                     if (questGuide.interact()) {

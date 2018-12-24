@@ -44,8 +44,8 @@ public class CookGuide extends NoxScapeNode {
                 HintArrow arrow = ctx.getHintArrow();
                 if (ctx.getWalking().walk(arrow.getPosition())) {
                     if (ctx.getObjects().closest("Door").interact())
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOCHEF), 4000, 500);
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOCHEF), 7500, 800);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOCHEF), 4000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOCHEF), 7500, 800);
                     break;
                 }
                 ctx.logClass(this, "Error walking to cook door");
@@ -58,14 +58,14 @@ public class CookGuide extends NoxScapeNode {
             case MAKE_DOUGH: {
                 if (ctx.getInventory().contains("Pot of flour") && ctx.getInventory().contains("Bucket of water")) {
                     ctx.getInventory().interact("Use", "Pot of flour");
-                    Sleep.sleepUntil(() -> ctx.getInventory().isItemSelected(), 2000, 400);
+                    Sleep.until(() -> ctx.getInventory().isItemSelected(), 2000, 400);
                     ctx.getInventory().interact("Use", "Bucket of water");
-                    Sleep.sleepUntil(() -> ctx.getInventory().contains("Bread dough"), 5000, 500);
+                    Sleep.until(() -> ctx.getInventory().contains("Bread dough"), 5000, 500);
                 } else if (ctx.getInventory().contains("Bread dough")) {
                     RS2Object range = ctx.getObjects().closest("Range");
                     if (range == null || !range.interact("Cook"))
                         logError("Unable to cook bread");
-                    Sleep.sleepUntil(() -> ctx.getInventory().contains("Bread"),  5000, 500);
+                    Sleep.until(() -> ctx.getInventory().contains("Bread"),  5000, 500);
                 } else {
                     if (chef == null || !chef.interact()) {
                         logError("Unable to reobtain flour/bread from chef");
@@ -76,7 +76,7 @@ public class CookGuide extends NoxScapeNode {
             case MOVEON: {
                 HintArrow arr = ctx.getHintArrow();
                 if (arr != null && arr.getPosition().interact(ctx.getBot(),"Open"))
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_MOVEON_PASTDOOR), 8000, 1000);
+                    Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_MOVEON_PASTDOOR), 8000, 1000);
                 logError("Error opening door to leave chef");
                 break;
             }

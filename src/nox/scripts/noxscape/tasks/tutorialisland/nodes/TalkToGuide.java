@@ -1,6 +1,5 @@
 package nox.scripts.noxscape.tasks.tutorialisland.nodes;
 
-import com.sun.demo.jvmti.hprof.Tracker;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandUtil;
@@ -43,7 +42,7 @@ public class TalkToGuide extends NoxScapeNode {
         } else {
             NPC guide = ctx.getNpcs().closest(NPC_NAME_GUIDE);
             if (guide != null && guide.interact()) {
-                Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
+                Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
             }
         }
         return r.nextInt(2000) + 1000;

@@ -52,11 +52,11 @@ public class MiningGuide extends NoxScapeNode {
             case TALKTO: {
                 if (mineGuide == null) {
                     if (ctx.getWalking().walk(POSITION_INSTRUCTOR)) {
-                        Sleep.sleepUntil(() -> ctx.getNpcs().closest(NPC_MINEGUIDE_NAME) != null, 5000, 500);
+                        Sleep.until(() -> ctx.getNpcs().closest(NPC_MINEGUIDE_NAME) != null, 5000, 500);
                     }
                 }
                 if (mineGuide != null && mineGuide.interact()) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 8500, 500);
+                    Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 8500, 500);
                 } else {
                     logError("Error talking to mineguide");
                 }
@@ -70,14 +70,14 @@ public class MiningGuide extends NoxScapeNode {
                     success = Rock.TIN.getClosestWithOre(ctx).interact("Mine");
                 }
                 if (success)
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.clickToContinue(ctx), 8500, 500);
+                    Sleep.until(() -> TutorialIslandUtil.clickToContinue(ctx), 8500, 500);
                 else
                     logError("Error mining rocks");
                 break;
             }
             case SMELT: {
                 if (ctx.getObjects().closest("Furnace").interact("Use")) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO), 8500, 1000);
+                    Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO), 8500, 1000);
                 } else {
                     logError("Error smelting ores");
                 }
@@ -85,9 +85,9 @@ public class MiningGuide extends NoxScapeNode {
             }
             case SMITH: {
                 if (ctx.getObjects().closest("Anvil").interact("Smith")) {
-                    Sleep.sleepUntil(() -> ctx.getWidgets().isVisible(WIDGET_ROOT_SMITHING), 8000, 1000);
+                    Sleep.until(() -> ctx.getWidgets().isVisible(WIDGET_ROOT_SMITHING), 8000, 1000);
                     if (ctx.getWidgets().singleFilter(WIDGET_ROOT_SMITHING,f -> f.getItems() != null && Arrays.stream(f.getItems()).anyMatch(a -> a.getName().equals("Bronze dagger"))).interact()) {
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 8500, 500);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 8500, 500);
                     }
                 } else {
                     logError("Error smithing dagger");
@@ -96,9 +96,9 @@ public class MiningGuide extends NoxScapeNode {
             }
             case MOVEON: {
                 if (ctx.getWalking().walk(ctx.getHintArrow().getPosition())) {
-                    Sleep.sleepUntil(() -> ctx.getMap().distance(ctx.getHintArrow().getPosition()) < 3, 8000,1000);
+                    Sleep.until(() -> ctx.getMap().distance(ctx.getHintArrow().getPosition()) < 3, 8000,1000);
                     if (ctx.getObjects().closest("Gate").interact("Open"))
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 5000, 800);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 5000, 800);
                     else
                         logError("Error exiting guidesmith");
                 }

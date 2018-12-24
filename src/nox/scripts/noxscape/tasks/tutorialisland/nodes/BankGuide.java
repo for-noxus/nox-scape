@@ -69,12 +69,12 @@ public class BankGuide extends NoxScapeNode {
                 }
                 if (ctx.getMap().distance(POSITION_BANK) > 3) {
                     if (ctx.getWalking().walk(POSITION_BANK)) {
-                        Sleep.sleepUntil(() -> ctx.getMap().distance(POSITION_BANK) <= 3, 5000, 500);
+                        Sleep.until(() -> ctx.getMap().distance(POSITION_BANK) <= 3, 5000, 500);
                     }
                 }
                 RS2Object booth = ctx.getObjects().closest("Bank booth");
                 if (booth != null && booth.interact("Use")) {
-                    Sleep.sleepUntil(() -> ctx.getBank().isOpen(), 500, 500);
+                    Sleep.until(() -> ctx.getBank().isOpen(), 500, 500);
                 } else {
                     logError("Error opening bank booth");
                 }
@@ -84,7 +84,7 @@ public class BankGuide extends NoxScapeNode {
                 if (ctx.getWidgets().singleFilter(WIDGET_ROOT_CLOSE, closeFilter).interact("Close")) {
                     ctx.sleep(1000);
                     if (ctx.getObjects().closest(f -> f.getPosition().equals(POSITION_DOOR_ACCOUNTGUIDE)).interact("Open")) {
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO_ACCOUNTGUIDE), 6000, 600);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO_ACCOUNTGUIDE), 6000, 600);
                     }
                 }
                 break;
@@ -93,7 +93,7 @@ public class BankGuide extends NoxScapeNode {
                 if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_ACCOUNT_CLICK)) {
                     RS2Widget accountTab = ctx.getWidgets().singleFilter(WIDGET_ROOT_BOTTOMTABS, accountManagementFilter);
                     if (accountTab != null && accountTab.interact()) {
-                        Sleep.sleepUntil(() -> ctx.getHintArrow() != null, 5000, 1000);
+                        Sleep.until(() -> ctx.getHintArrow() != null, 5000, 1000);
                     } else {
                         logError("Error clicking account management tab");
                     }
@@ -101,7 +101,7 @@ public class BankGuide extends NoxScapeNode {
                     NPC accountGuide = ctx.getNpcs().closest(NPC_NAME_ACCOUNTGUIDE);
                     if (accountGuide != null) {
                         if (accountGuide.interact("Talk-to")) {
-                            Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
+                            Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
                         }
                     }
                 }
@@ -110,7 +110,7 @@ public class BankGuide extends NoxScapeNode {
             case MOVEON2: {
                 RS2Object moveOnDoor = ctx.getObjects().closest(f -> f.getPosition().equals(POSITION_DOOR_ACCOUNTGUIDE_MOVEON));
                 if (moveOnDoor != null && moveOnDoor.interact("Open")) {
-                    Sleep.sleepUntil(() -> !TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON2), 8000, 800);
+                    Sleep.until(() -> !TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON2), 8000, 800);
                 }
             }
             case HANDLED:

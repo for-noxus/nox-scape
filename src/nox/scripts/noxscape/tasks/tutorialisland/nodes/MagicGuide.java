@@ -56,11 +56,11 @@ public class MagicGuide extends NoxScapeNode {
                 }
                 if (ctx.getMap().distance(POSITION_MAGIC_GUIDE) > 7) {
                     ctx.getWalking().walk(POSITION_MAGIC_GUIDE);
-                    Sleep.sleepUntil(() -> ctx.getMap().distance(POSITION_MAGIC_GUIDE) < 3, 10000, 1000);
+                    Sleep.until(() -> ctx.getMap().distance(POSITION_MAGIC_GUIDE) < 3, 10000, 1000);
                 }
                 NPC magicGuide = ctx.getNpcs().closest(NPC_NAME_MAGICGUIDE);
                 if (magicGuide != null && magicGuide.interact("Talk-to")) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
                 } else {
                     logError("Error talking to prayer guide");
                 }
@@ -73,7 +73,7 @@ public class MagicGuide extends NoxScapeNode {
                 NPC chicken = ctx.getNpcs().closest(f -> f.getName().equals("Chicken") && !f.isUnderAttack());
                 if (chicken != null) {
                     if (ctx.getMagic().castSpellOnEntity(Spells.NormalSpells.WIND_STRIKE, chicken)) {
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO3), 7000, 700);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTO3), 7000, 700);
                     } else {
                         logError("Error casting Wind Strike");
                     }
@@ -84,7 +84,7 @@ public class MagicGuide extends NoxScapeNode {
             }
             case TELEPORT: {
                 if (TutorialIslandUtil.clickToContinue(ctx)) {
-                    Sleep.sleepUntil(() -> ctx.getNpcs().closest("Lubridge Guide") != null, 10000, 1000);
+                    Sleep.until(() -> ctx.getNpcs().closest("Lubridge Guide") != null, 10000, 1000);
                     ctx.logClass(this, "Successfully completed Tutorial Island");
                 }
             }

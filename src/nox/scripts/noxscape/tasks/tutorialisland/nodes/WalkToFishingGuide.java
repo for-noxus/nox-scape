@@ -33,7 +33,7 @@ public class WalkToFishingGuide extends NoxScapeNode {
         NPC expert = ctx.getNpcs().closest(NPC_NAME_SURVIALEXPERT);
         if (!ctx.getMap().canReach(expert)) {
             if (POS_EXIT_DOOR.interact(ctx.getBot(),"Open")) {
-                Sleep.sleepUntil(() -> ctx.getMap().canReach(expert), 4000, 400);
+                Sleep.until(() -> ctx.getMap().canReach(expert), 4000, 400);
             }
         }
         if (ctx.getWalking().walk(expert)) {

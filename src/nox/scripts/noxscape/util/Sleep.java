@@ -23,11 +23,11 @@ public final class Sleep extends ConditionalSleep {
         return condition.getAsBoolean();
     }
 
-    public static boolean sleepUntil(final BooleanSupplier condition, final int timeout) {
+    public static boolean until(final BooleanSupplier condition, final int timeout) {
         return new Sleep(condition, timeout).sleep();
     }
 
-    public static boolean sleepUntil(final BooleanSupplier condition, final int timeout, final int interval) {
+    public static boolean until(final BooleanSupplier condition, final int timeout, final int interval) {
         return new Sleep(condition, timeout, interval).sleep();
     }
 }

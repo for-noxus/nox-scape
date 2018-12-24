@@ -57,11 +57,11 @@ public class PrayerGuide extends NoxScapeNode {
                 }
                 if (ctx.getMap().distance(POSITION_PRAYER_GUIDE) > 7) {
                     ctx.getWalking().walk(POSITION_PRAYER_GUIDE);
-                    Sleep.sleepUntil(() -> ctx.getMap().distance(POSITION_PRAYER_GUIDE) < 3, 10000, 1000);
+                    Sleep.until(() -> ctx.getMap().distance(POSITION_PRAYER_GUIDE) < 3, 10000, 1000);
                 }
                 NPC prayerGuide = ctx.getNpcs().closest(NPC_NAME_PRAYERGUIDE);
                 if (prayerGuide != null && prayerGuide.interact("Talk-to")) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 500);
                 } else {
                     logError("Error talking to prayer guide");
                 }
@@ -70,7 +70,7 @@ public class PrayerGuide extends NoxScapeNode {
             case MOVEON: {
                 RS2Object door = ctx.getObjects().closest(f -> f.getPosition().equals(POSITION_PRAYER_DOOR));
                 if (door != null && door.interact("Open")) {
-                    Sleep.sleepUntil(() -> !TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 8000, 800);
+                    Sleep.until(() -> !TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 8000, 800);
                 } else {
                     logError("Error leaving prayer guide");
                 }

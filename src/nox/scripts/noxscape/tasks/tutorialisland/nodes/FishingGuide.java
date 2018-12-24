@@ -74,10 +74,10 @@ public class FishingGuide extends NoxScapeNode {
             case FISH: {
                 if (!ctx.getInventory().contains("Raw shrimps")) {
                     ctx.getNpcs().closest("Fishing spot").interact("Net");
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
                     TutorialIslandUtil.clickToContinue(ctx);
                 }
-                Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget( ctx) != null, 4000, 500);
+                Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget( ctx) != null, 4000, 500);
                 ctx.getTabs().open(Tab.SKILLS);
                 break;
             }
@@ -87,9 +87,9 @@ public class FishingGuide extends NoxScapeNode {
                     if (trees == null && trees.size() == 0)
                         logError("Error locating tree to cut");
                     trees.get(0).interact("Chop down");
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 4000, 500);
                     TutorialIslandUtil.clickToContinue(ctx);
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_LIGHT_FIRE, INSTRUCTIONS_COOK), 3000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_LIGHT_FIRE, INSTRUCTIONS_COOK), 3000, 500);
                 }
                 while (isEntityAtPosition(ctx.myPosition())) {
                     Position newPosition = ctx.myPosition().translate(MethodProvider.random(4) - 2, MethodProvider.random(4 ) - 2);
@@ -97,13 +97,13 @@ public class FishingGuide extends NoxScapeNode {
                         ctx.logClass(this, "Successfully relocated to cook a fire");
                 }
                 if (ctx.getInventory().interact("Use", "Logs") && ctx.getInventory().interact("Use", "Tinderbox")) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_COOK) && ctx.getObjects().closest("Fire") != null, 9000, 500);
+                    Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_COOK) && ctx.getObjects().closest("Fire") != null, 9000, 500);
                     RS2Object fire = ctx.getObjects().closest("Fire");
                     if (fire != null) {
                         ctx.getCamera().toEntity(fire);
                         if (!(ctx.getInventory().interact("Use", "Raw shrimps") && fire.interact()))
                             ctx.logClass(this, "Unable to cook shrimps..");
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 6000, 500);
+                        Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 6000, 500);
                         TutorialIslandUtil.clickToContinue(ctx);
                     }
                 }
@@ -112,9 +112,9 @@ public class FishingGuide extends NoxScapeNode {
             case MOVEON: {
                 HintArrow arrow = ctx.getHintArrow();
                 if (arrow != null || ctx.getWalking().walk(arrow.getPosition())) {
-                    Sleep.sleepUntil(() -> arrow.getPosition().distance(ctx.myPosition()) < 4 && !ctx.myPlayer().isMoving(), 8000, 800);
+                    Sleep.until(() -> arrow.getPosition().distance(ctx.myPosition()) < 4 && !ctx.myPlayer().isMoving(), 8000, 800);
                     if (arrow.getPosition().interact(ctx.getBot(), "Open")) {
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON_PASTGATE), 3000, 500);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON_PASTGATE), 3000, 500);
                         break;
                     }
                 }

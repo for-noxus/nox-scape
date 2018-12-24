@@ -64,7 +64,7 @@ public class CombatGuide extends NoxScapeNode {
                 RS2Widget cct = TutorialIslandUtil.getClickToContinueWidget(ctx);
                 if (cct != null) {
                     if (cct.interact()) {
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 1000);
+                        Sleep.until(() -> TutorialIslandUtil.getClickToContinueWidget(ctx) != null, 5000, 1000);
                         break;
                     }
                 } else if (!ctx.getMap().canReach(combatGuide)) {
@@ -82,15 +82,15 @@ public class CombatGuide extends NoxScapeNode {
             case CLICK_EQUIPMENT: {
                 if (ctx.getTabs().getOpen() != Tab.EQUIPMENT) {
                     if (ctx.getTabs().open(Tab.EQUIPMENT))
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_CLICK_WORNITEMS), 5000, 1000);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_CLICK_WORNITEMS), 5000, 1000);
                 }
                 RS2Widget equippedItemsWidget = ctx.getWidgets().singleFilter(WIDGET_ROOT_EQUIPMENTSTATS, equipmentFilter);
                 if (equippedItemsWidget != null && equippedItemsWidget.interact()) {
-                    Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_EQUIP_DAGGER), 5000, 800);
+                    Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_EQUIP_DAGGER), 5000, 800);
                 }
                 if (ctx.getInventory().contains("Bronze dagger")) {
                     if (ctx.getInventory().interact("Wield", "Bronze dagger"))
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOGUIDE2), 5000, 800);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOGUIDE2), 5000, 800);
                     else
                         logError("Unable to equip dagger");
                 }
@@ -104,9 +104,9 @@ public class CombatGuide extends NoxScapeNode {
                 if (ctx.getInventory().contains("Wooden shield")) {
                     ctx.getInventory().interact("Wield","Wooden shield");
                 }
-                Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CLICK_COMBAT), 6500, 800);
+                Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CLICK_COMBAT), 6500, 800);
                 ctx.getTabs().open(Tab.ATTACK);
-                Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_GOTO_RAT), 8000, 800);
+                Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_GOTO_RAT), 8000, 800);
                 break;
             }
             case HANDLE_RATS: {
@@ -119,20 +119,20 @@ public class CombatGuide extends NoxScapeNode {
                         ctx.getInventory().interact("Wield", "Bronze arrow");
                     }
                     if (ctx.getNpcs().closest(f -> !f.isUnderAttack() && f.getName().equals("Giant rat")).interact()) {
-                        Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 15000, 1000);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 15000, 1000);
                     }
                 } else {
                     HintArrow arr = ctx.getHintArrow();
                     if (arr != null && arr.getPosition() != null) {
                         if (ctx.getObjects().closest(f -> f.getPosition().equals(POSITION_GATE_2)).interact("Open")) {
                             if (ctx.getObjects().closest(f -> f.getName().equals("Gate") && f.getPosition().distance(POSITION_GATE_1) <= 4).interact("Open")) {
-                                Sleep.sleepUntil(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_ATTACK_RAT), 8500, 800);
+                                Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_ATTACK_RAT), 8500, 800);
                             }
                         }
                     }
                     if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_ATTACK_RAT) || (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_HEALTHBAR) && !ctx.getCombat().isFighting())) {
                         if (ctx.getNpcs().closest(f -> !f.isUnderAttack() && f.getName().equals("Giant rat")).interact("Attack")) {
-                            Sleep.sleepUntil(() -> !ctx.getCombat().isFighting(), 15000, 1000);
+                            Sleep.until(() -> !ctx.getCombat().isFighting(), 15000, 1000);
                         }
                     }
                 }
@@ -141,7 +141,7 @@ public class CombatGuide extends NoxScapeNode {
             case MOVEON: {
                 if (ctx.getWalking().walk(POSITION_LADDER)) {
                     if (ctx.getObjects().closest("Ladder").interact("Climb-up")) {
-                        Sleep.sleepUntil(() -> !TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 5000, 500);
+                        Sleep.until(() -> !TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON), 5000, 500);
                         break;
                     } else {
                         logError("Error climbing up combat ladder");

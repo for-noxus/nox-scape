@@ -11,7 +11,6 @@ import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Random;
 
@@ -42,7 +41,7 @@ public class ClickOptionsMenu extends NoxScapeNode {
         List<RS2Widget> settingsIcon = ctx.getWidgets().containingActions(WIDGET_ROOT_GAMEICONS_RESIZABLE, TEXT_OPTIONS);
         if (settingsIcon != null && settingsIcon.size() > 0) {
             if (settingsIcon.get(0).interact()) {
-                Sleep.sleepUntil(() -> ctx.getWidgets().isVisible(WIDGET_ROOT_OPTIONS_FIXED), 2000,300 );
+                Sleep.until(() -> ctx.getWidgets().isVisible(WIDGET_ROOT_OPTIONS_FIXED), 2000,300 );
             }
 
         } else {
