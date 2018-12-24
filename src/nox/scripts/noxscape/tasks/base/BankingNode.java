@@ -6,7 +6,6 @@ import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.map.Area;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -76,12 +75,12 @@ public class BankingNode extends NoxScapeNode {
                 if (!ctx.getDepositBox().open())
                     logError("Error opening deposit box at location " + bankLocation.getName());
             }
-            Sleep.sleepUntil(() -> ctx.getDepositBox().isOpen(), 6000, 600);
+            Sleep.until(() -> ctx.getDepositBox().isOpen(), 6000, 600);
         } else if (!ctx.getBank().isOpen()) {
             if (!ctx.getBank().open()) {
                 logError("Error opening bank at location " + bankLocation.getName());
             }
-            Sleep.sleepUntil(() -> ctx.getBank().isOpen(), 6000, 600);
+            Sleep.until(() -> ctx.getBank().isOpen(), 6000, 600);
         }
 
         if (depositallWornItems && !ctx.getEquipment().isEmpty()) {
