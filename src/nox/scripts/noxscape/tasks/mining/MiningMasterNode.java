@@ -105,8 +105,8 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
         NoxScapeNode interactNode = new EntitySkillingNode(ctx)
                 .interactWith(configuration.rockToMine)
                 .boundedBy(orePos, location.shouldStayInTile() ? 1 : 16)
-                .findEntityWith(api -> api.getObjects().closest(ent -> configuration.rockToMine.hasOre(ent) && (!location.shouldStayInTile() || LocationUtils.manhattenDistance(ctx.myPosition(), ent.getPosition()) == 1)))
-                .entityInvalidWhen(ent -> !configuration.rockToMine.hasOre(ent), 30000, 50)
+                .findEntityWith(ent -> ent.getName() != null && ent.getName().equals("Rocks") && configuration.rockToMine.hasOre(ent) && (!location.shouldStayInTile() || LocationUtils.manhattenDistance(ctx.myPosition(), ent.getPosition()) == 1))
+                .entityInvalidWhen(ent -> !configuration.rockToMine.hasOre(ent), 30000, 200)
                 .hasMessage("Mining " + configuration.rockToMine.getName());
 
         toOreNode.setChildNode(interactNode);
@@ -130,7 +130,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
 
         boolean inventoryHasAxe = ctx.getInventory().contains(pickaxeNames);
         boolean wieldingAxe = ctx.getEquipment().isWieldingWeaponThatContains(pickaxeNames);
-        boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && Arrays.stream(ctx.getInventory().getItems()).noneMatch(a -> a != null && (!axeset.contains(a.getName()) || !a.getName().equals(configuration.rockToMine.producesItemName())));
+        boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && !Arrays.stream(ctx.getInventory().getItems()).allMatch(a -> a == null || a.getName() == null || (axeset.contains(a.getName()) || a.getName().equals(configuration.rockToMine.producesItemName())));
 
         return (!inventoryHasAxe && !wieldingAxe) || ctx.getInventory().isFull() || hasStuffInInventory;
     }
