@@ -1,31 +1,22 @@
 package nox.scripts.noxscape.core.api;
 
-import com.sun.corba.se.spi.activation.ServerAlreadyRegisteredHelper;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.WidgetActionFilter;
 import nox.scripts.noxscape.util.Wrapper;
-import org.osbot.RE;
 import org.osbot.rs07.api.GrandExchange;
+import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class QuickExchange extends MethodProvider {
 
-    private int WIDGET_BOX_START = 7;
     private int WIDGET_ROOT_SEARCHITEM = 162;
 
-    private int SPRITE_BUY_ITEM = 1108;
-    private int SPRITE_SELL_ITEM = 1106;
-
-    public String WIDGET_TEXT_SEARCHITEM = "Start typing the name of an item to search for it.";
+    private String WIDGET_TEXT_SEARCHITEM = "Start typing the name of an item to search for it.";
 
     private String NPC_NAME = "Grand Exchange Clerk";
     private String NPC_ACTION_EXCHANGE = "Exchange";
@@ -96,13 +87,7 @@ public class QuickExchange extends MethodProvider {
             }
         }
 
-        RS2Widget buyWidget = getWidgets().singleFilter(getGrandExchange().getInterfaceId(), widg -> widg.getSecondLevelId() == WIDGET_BOX_START + boxToUse.iIiIIiiiIIiI && widg.getSpriteIndex1() == SPRITE_BUY_ITEM);
-        if (buyWidget == null) {
-            log("Error locating create-buy-offer widget");
-            return false;
-        }
-
-        if (!buyWidget.interact()) {
+        if (!getGrandExchange().buyItems(boxToUse)) {
             log("Error interacting with buy-offer widget");
             return false;
         }
@@ -129,37 +114,7 @@ public class QuickExchange extends MethodProvider {
 
         Sleep.until(() -> getWidgets().singleFilter(getGrandExchange().getInterfaceId(), w -> w != null && w.getMessage() != null && w.getMessage().equals(itemName)) != null, 10000, 1000);
 
-        if (getGrandExchange().getOfferQuantity() != amount) {
-            if (!getGrandExchange().setOfferQuantity(amount)) {
-                log(String.format("Error setting offer quantity for item %s and amount %d", itemName, amount));
-                return false;
-            }
-        }
-
-        if (!modifyPricePct(true)) {
-            log("Error increasing price");
-            return false;
-        }
-
-        if (!getGrandExchange().confirm()) {
-            log("Error pressing confirm for the purchase of item(s) " + itemName);
-            return false;
-        }
-
-        Sleep.until(() -> getGrandExchange().getStatus(boxToUse) == GrandExchange.Status.FINISHED_BUY, 10000, 1000);
-
-        if (getGrandExchange().getStatus(boxToUse) == GrandExchange.Status.FINISHED_BUY) {
-            if (getInventory().isFull() && !withdrawToBank) {
-                log("Inventory was too full to collect bought item(s) " + itemName);
-                return false;
-            }
-            if (getGrandExchange().collect(withdrawToBank)) {
-                log(String.format("QuickExchange -- Successfully bought %dx %s at %dGP each.", amount, itemName, getGrandExchange().getItemPrice(boxToUse)));
-                return true;
-            }
-        }
-
-        return true;
+        return finishHandlingItem(itemName, amount, true, withdrawToBank, boxToUse);
     }
 
     public boolean quickSell(String itemName, int amount) throws InterruptedException {
@@ -196,28 +151,50 @@ public class QuickExchange extends MethodProvider {
 
         Sleep.until(() -> getGrandExchange().isSellOfferOpen(), 2000, 400);
 
+        return finishHandlingItem(itemName, amount, false, true, boxToUse);
+    }
+
+    private boolean finishHandlingItem(String itemName, int amount, boolean isBuying, boolean withdrawToBank, GrandExchange.Box boxToUse) throws InterruptedException {
         if (getGrandExchange().getOfferQuantity() != amount) {
             if (!getGrandExchange().setOfferQuantity(amount)) {
-                log(String.format("Unable to set offer quantity for item %s and amount %d", itemName, amount));
+                log(String.format("Error setting offer quantity for item %s and amount %d", itemName, amount));
                 return false;
             }
         }
 
-        if (!modifyPricePct(false)) {
-            log("Error decreasing price");
+        if (!modifyPricePct(isBuying)) {
+            log("Error modifying price");
             return false;
+        }
+
+        if (isBuying) {
+            Item coins = getInventory().getItem("Coins");
+            if (coins == null) {
+                log("No coins in inventory to purchase item " + itemName);
+                return false;
+            }
+            if (coins.getAmount() < getGrandExchange().getOfferPrice()) {
+                log(String.format("Insufficient coinage to purchase %s, you need %d coins (had %d)", itemName, getGrandExchange().getOfferPrice(), coins.getAmount()));
+                return false;
+            }
         }
 
         if (!getGrandExchange().confirm()) {
-            log("Error pressing confirm for the sale of item(s) " + itemName);
+            log("Error pressing confirm for item(s) " + itemName);
             return false;
         }
 
-        Sleep.until(() -> getGrandExchange().getStatus(boxToUse) == GrandExchange.Status.FINISHED_SALE, 10000, 1000);
+        GrandExchange.Status statusToWaitFor = (isBuying ? GrandExchange.Status.FINISHED_BUY : GrandExchange.Status.FINISHED_SALE);
+        Sleep.until(() -> getGrandExchange().getStatus(boxToUse) == statusToWaitFor,
+                10000, 1000);
 
-        if (getGrandExchange().getStatus(boxToUse) == GrandExchange.Status.FINISHED_SALE) {
-            if (getGrandExchange().collect(true)) {
-                log(String.format("QuickExchange -- Successfully sold %dx %s at %dGP each.", amount, itemName, getGrandExchange().getItemPrice(boxToUse)));
+        if (getGrandExchange().getStatus(boxToUse) == statusToWaitFor) {
+            if (getInventory().isFull() && !withdrawToBank) {
+                log("Inventory was too full to collect bought item(s) " + itemName);
+                return false;
+            }
+            if (getGrandExchange().collect(withdrawToBank)) {
+                log(String.format("QuickExchange -- Successfully handled %dx %s at %dGP each.", amount, itemName, getGrandExchange().getItemPrice(boxToUse)));
                 return true;
             }
         }
