@@ -5,4 +5,5 @@ public enum MasterNodeType {
     MONEYMAKING,
     SKILLING,
     TIMEWASTE,
+    OTHER
 }
