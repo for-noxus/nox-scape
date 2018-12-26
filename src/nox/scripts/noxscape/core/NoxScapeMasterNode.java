@@ -13,20 +13,21 @@ public abstract class NoxScapeMasterNode<k> {
 
     protected ScriptContext ctx;
     protected MasterNodeInformation nodeInformation;
-    protected k configuration;
-    protected StopWatcher stopWatcher;
 
+    protected k configuration;
+
+    protected StopWatcher stopWatcher;
     private NoxScapeNode currentNode;
+
     private NoxScapeNode postExecutionNode;
     private NoxScapeNode preExecutionNode;
     private NoxScapeNode returnToBankNode;
-
     private List<NoxScapeNode> nodes;
 
     private boolean completedPreExecution = false;
+
     private boolean isAborted;
     private String abortedReason;
-
     public NoxScapeMasterNode(ScriptContext ctx) {
         this.ctx = ctx;
     }
@@ -140,7 +141,7 @@ public abstract class NoxScapeMasterNode<k> {
 
     public boolean isCompleted() {
         // Nodes aren't required to have a PostExecutionNode, but they are required to have a Node to return to bank
-        return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted();
+        return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted() && nodes.stream().allMatch(NoxScapeNode::isCompleted);
     }
 
     public boolean isAborted() {
@@ -157,6 +158,10 @@ public abstract class NoxScapeMasterNode<k> {
         this.preExecutionNode = null;
         this.postExecutionNode = null;
         this.returnToBankNode = null;
+    }
+
+    public k getConfiguration() {
+        return configuration;
     }
 
     protected void abort(String abortedReason) {
