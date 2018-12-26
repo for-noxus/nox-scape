@@ -24,7 +24,7 @@ import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Configuration> {
+public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Configuration> {
 
     public MiningMasterNode(ScriptContext ctx) {
         super(ctx);
@@ -34,7 +34,6 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
                 Frequency.COMMON,
                 Duration.COMPLETION,
                 MasterNodeType.SKILLING);
-        configuration = new Configuration();
     }
 
     @Override
@@ -149,7 +148,7 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
     }
 
     public static class Configuration {
-        protected MiningEntity rockToMine;
+        MiningEntity rockToMine;
 
         @Override
         public String toString() {
