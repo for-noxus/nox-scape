@@ -9,7 +9,9 @@ import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.RS2Object;
+import org.osbot.rs07.script.MethodProvider;
 
+import java.awt.*;
 import java.util.function.Predicate;
 
 public class EntitySkillingNode extends NoxScapeNode {
@@ -114,6 +116,15 @@ public class EntitySkillingNode extends NoxScapeNode {
         findAttempts = 0;
 
         ctx.setTargetEntity(entity);
+
+        Point mp = ctx.getMouse().getPosition();
+        if (ctx.getMouse().isOnCursor(entity)) {
+            if (MethodProvider.random(4) == 1) {
+                int fuzzedX = mp.x + NRandom.fuzzedBounds(-4, 5, 4, 5);
+                int fuzzedY = mp.y + NRandom.fuzzedBounds(-4, 5, 4, 5);
+                ctx.getMouse().move(fuzzedX,fuzzedY);
+            }
+        }
 
         if (!entity.hasAction(skillableEntity.getInteractAction())) {
             abort(String.format("Unable to interact with entity (%s) and action (%s), it contains \"%s\"", entity.getName(), skillableEntity.getInteractAction(), String.join(", ", entity.getActions())));
