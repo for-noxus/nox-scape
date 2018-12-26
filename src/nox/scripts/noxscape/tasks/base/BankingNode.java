@@ -130,7 +130,7 @@ public class BankingNode extends NoxScapeNode {
                 ctx.sleepHQuick();
 
                 if (ctx.getBank().close()) {
-                    shouldEquip.get(true).forEach(this::equipItem);
+                    shouldEquip.get(true).stream().filter(f -> !ctx.getEquipment().contains(f.getName())).forEach(this::equipItem);
                 }
 
                 ctx.sleepHQuick();
