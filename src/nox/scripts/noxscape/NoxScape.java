@@ -58,6 +58,7 @@ public class NoxScape extends Script {
                 // Loop back to the top to get assigned a new node
                 return 3000;
             }
+
             // Watch our current node's stopwatcher
             if (cmn.getStopWatcher() != null && cmn.getStopWatcher().shouldStop()) {
                 return cmn.continuePostExecution();
