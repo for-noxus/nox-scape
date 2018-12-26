@@ -12,6 +12,14 @@ public final class NRandom {
         return lowerBounds + generated;
     }
 
+    public static int fuzzedBounds(int lowerMean, int lowerDeviation, int upperMean, int upperDeviation) {
+        Random r = new Random();
+        int lowerNum = (int) Math.floor((lowerDeviation * r.nextGaussian()) + lowerMean);
+        int upperNum = (int) Math.max(lowerNum + 1, Math.floor((upperDeviation * r.nextGaussian()) + upperMean));
+
+        return exact(lowerNum, upperNum);
+    }
+
     public static int humanized() {
         return humanized(DEFAULT_EFFICIENCY);
     }
