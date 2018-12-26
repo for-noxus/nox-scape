@@ -47,11 +47,24 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
         ctx.logClass(this, "Initializing Mining Nodes");
 
         // Get the highest level ore we can currently mine
-        if (configuration.rockToMine == null)
+        if (configuration == null)
+            configuration = new Configuration();
+
+        ctx.log(configuration.toString());
+
+        if (configuration.rockToMine == null) {
             configuration.rockToMine = Arrays.stream(MiningEntity.values())
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
                 .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
                 .get();
+            ctx.log(configuration.toString());
+            ctx.log(Arrays.toString(Thread.currentThread().getStackTrace()));
+
+        } else if (configuration.rockToMine.getRequiredLevel() > ctx.getSkills().getStatic(Skill.MINING)) {
+            ctx.log(Arrays.toString(Thread.currentThread().getStackTrace()));
+            abort("Unable to mine chosen rock: " + configuration.rockToMine.getName());
+            return;
+        }
 
         BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().filter(f -> f.canUse(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx))).toArray(BankItem[]::new);
         BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
@@ -137,6 +150,13 @@ public class MiningMasterNode<k> extends NoxScapeMasterNode<MiningMasterNode.Con
 
     public static class Configuration {
         protected MiningEntity rockToMine;
+
+        @Override
+        public String toString() {
+            return "Configuration{" +
+                    "rockToMine=" + rockToMine +
+                    '}';
+        }
 
         public void setRockToMine(MiningEntity rockToMine) {
             this.rockToMine = rockToMine;
