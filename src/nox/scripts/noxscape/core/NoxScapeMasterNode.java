@@ -144,7 +144,19 @@ public abstract class NoxScapeMasterNode<k> {
     }
 
     public boolean isAborted() {
-        return nodes.stream().anyMatch(Node::isAborted) || isAborted;
+        return nodes == null || nodes.stream().anyMatch(Node::isAborted) || isAborted;
+    }
+
+    public void reactivate() {
+        this.completedPreExecution = false;
+        this.nodes = null;
+        this.configuration = null;
+        this.stopWatcher = null;
+        this.isAborted = false;
+        this.abortedReason = null;
+        this.preExecutionNode = null;
+        this.postExecutionNode = null;
+        this.returnToBankNode = null;
     }
 
     protected void abort(String abortedReason) {
