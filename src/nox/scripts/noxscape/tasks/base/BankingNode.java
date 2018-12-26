@@ -6,6 +6,7 @@ import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
+import org.osbot.rs07.api.Bank;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ public class BankingNode extends NoxScapeNode {
     private BankItem[] items;
     private boolean depositAllBackpackItems = false;
     private boolean depositallWornItems = false;
+    private boolean noted = false;
 
     public BankingNode(ScriptContext ctx) {
         super(ctx);
@@ -37,6 +39,10 @@ public class BankingNode extends NoxScapeNode {
         return this;
     }
 
+    public BankingNode asNoted() {
+        this.noted = true;
+        return this;
+    }
 
     public BankingNode depositAllWornItems() {
         this.depositallWornItems = true;
@@ -101,6 +107,13 @@ public class BankingNode extends NoxScapeNode {
 
         if (items != null) {
 
+            if (!noted) {
+                if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_ITEM)) {
+                    abort("Unable to switch to normal item withdrawal");
+                    return 5;
+                }
+            }
+
             // Split our items into two sets based on whether or not you can withdraw them
             Map<Boolean, List<BankItem>> belongsToSet = Arrays.stream(items).collect(Collectors.partitioningBy(item -> item.getSet() != null));
 
@@ -144,6 +157,12 @@ public class BankingNode extends NoxScapeNode {
                     }
                 }
                 shouldEquip.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
+
+                if (this.noted) {
+                    if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_NOTE)) {
+                        abort("Failed to set BankMode as noted");
+                    }
+                }
                 shouldEquip.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
             }
         }
