@@ -46,6 +46,7 @@ public final class DecisionMaker {
                 NoxScapeMasterNode priorityNode = findExistingNode(nodeClass);
                 if (priorityNode != null) {
                     priorityNodes.remove(priorityNode);
+                    priorityNode.reactivate();
                     priorityNode.configuration = nodeInfo.configuration;
                     priorityNode.initializeNodes();
                     ctx.logClass(DecisionMaker.class, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
@@ -66,9 +67,10 @@ public final class DecisionMaker {
         int runningTotal = 0;
         for (Pair<NoxScapeMasterNode, Integer> p: availableNodes) {
             runningTotal += p.b;
-            if (runningTotal >= selectedValue) nextNode = p.a;
+            if (runningTotal >= selectedValue)
+                nextNode = p.a;
         }
-
+        nextNode.reactivate();
         ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
 
         nextNode.initializeNodes();
