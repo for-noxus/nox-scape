@@ -7,6 +7,9 @@ import com.google.gson.stream.JsonWriter;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.QueuedNode;
 import nox.scripts.noxscape.core.StopWatcher;
+import nox.scripts.noxscape.tasks.GrandExchange.GEAction;
+import nox.scripts.noxscape.tasks.GrandExchange.GEItem;
+import nox.scripts.noxscape.tasks.GrandExchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingEntity;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
@@ -28,8 +31,12 @@ public class NodeSerializerTest {
 
         StopWatcher miningWatcher = StopWatcher.create(null).stopAfter(100_000).gpMade();
 
+        GrandExchangeMasterNode.Configuration gecfg = new GrandExchangeMasterNode.Configuration();
+        gecfg.setItemsToHandle(new GEItem("Yew logs", GEAction.SELL, 100));
+
         DecisionMaker.addPriorityTask(MiningMasterNode.class, null, miningWatcher);
         DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, stopWatcher);
+        DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, gecfg, null);
 
         Stack<QueuedNode> nodes = DecisionMaker.getQueuedTasks();
 
