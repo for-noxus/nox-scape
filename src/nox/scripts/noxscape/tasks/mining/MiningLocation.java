@@ -30,7 +30,7 @@ public enum MiningLocation implements INameable, ILocateable, IBankable {
     VAAROK_E_COPPER("Copper southeast of Varrok", BankLocation.VARROCK_EAST, MiningEntity.COPPER, new Position(3287, 3364, 0), new Position(3286, 3361, 0), new Position(3289, 3362, 0), new Position(3286, 3365, 0)),
     VAAROK_E_IRON("Iron southeast of Varrok", BankLocation.VARROCK_EAST, MiningEntity.IRON, new Position(3286, 3368, 0)),
 
-    VAAROK_W_CLAY("Ckay southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.CLAY, new Position(3180, 3371, 0), new Position(3177, 3369, 0), new Position(3182, 3376, 0), new Position(3182, 3377, 0)),
+    VAAROK_W_CLAY("Ckay southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.CLAY, new Position(3180, 3371, 0), new Position(3183, 3378, 0), new Position(3182, 3377, 0), new Position(3182, 3377, 0)),
     VAAROK_W_TIN("Tin southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.TIN, new Position(3177, 3365, 0), new Position(3177, 3369, 0), new Position(3182, 3376, 0)),
     VAAROK_W_IRON("Iron southwest of Varrok", BankLocation.VARROCK_WEST, MiningEntity.IRON, new Position(3175, 3367, 0));
 
