@@ -2,11 +2,13 @@ package nox.scripts.noxscape.core;
 
 import com.google.gson.Gson;
 import nox.scripts.noxscape.core.enums.Frequency;
+import nox.scripts.noxscape.tasks.GrandExchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.QueuedNodeDeserializer;
+import org.osbot.rs07.script.MethodProvider;
 
 import java.io.*;
 import java.util.*;
@@ -59,7 +61,12 @@ public final class DecisionMaker {
             }
         }
 
-        List<Pair<NoxScapeMasterNode, Integer>> availableNodes = masterNodes.stream().filter(NoxScapeMasterNode::canExecute).map(m -> new Pair<>(m, getStandardizedWeight(m.nodeInformation.getFrequency()))).collect(Collectors.toList());
+        List<Pair<NoxScapeMasterNode, Integer>> availableNodes = masterNodes
+                .stream()
+                .filter(NoxScapeMasterNode::canExecute)
+                .filter(f -> f.nodeInformation.getFrequency() != Frequency.MANUAL)
+                .map(m -> new Pair<>(m, getStandardizedWeight(m.nodeInformation.getFrequency())))
+                .collect(Collectors.toList());
         int nodesSelectionRange = availableNodes.stream().map(Pair::getB).reduce(0, Integer::sum);
         int selectedValue = new Random().nextInt(nodesSelectionRange);
 
@@ -68,7 +75,7 @@ public final class DecisionMaker {
         for (Pair<NoxScapeMasterNode, Integer> p: availableNodes) {
             runningTotal += p.b;
             if (runningTotal >= selectedValue)
-                nextNode = p.a;
+                    nextNode = p.a;
         }
         nextNode.reactivate();
         ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
@@ -90,6 +97,8 @@ public final class DecisionMaker {
         try {
             newtask.configClassName = node.getDeclaredClasses()[0].getTypeName();
         } catch (Exception e) {
+            if (ctx != null)
+                ctx.log(e);
         }
         newtask.configuration = configuration;
         newtask.stopWatcher = stopWatcher;
@@ -107,6 +116,7 @@ public final class DecisionMaker {
         addMasterNode(TutorialIslandMasterNode.class);
         addMasterNode(WoodcuttingMasterNode.class);
         addMasterNode(MiningMasterNode.class);
+        addMasterNode(GrandExchangeMasterNode.class);
 
         priorityNodes = readTaskFile();
 
@@ -163,13 +173,13 @@ public final class DecisionMaker {
         try {
             File logFile = getTaskFile();
             String json = new Gson().newBuilder().setPrettyPrinting().create().toJson(priorityNodes);
-
             BufferedWriter out = new BufferedWriter(new FileWriter(logFile, false));
             out.write(json);
             out.close();
 
         } catch (Exception e) {
-
+            if (ctx != null)
+                ctx.log(e.getMessage() == null ? e : e.getMessage() + "\n" + e.toString());
         }
     }
 
