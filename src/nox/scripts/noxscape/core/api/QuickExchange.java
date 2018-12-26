@@ -127,7 +127,7 @@ public class QuickExchange extends MethodProvider {
         }
 
         if (getInventory().getAmount(itemName) < amount) {
-            log("Inventory does not contain enough " + itemName + "to sell");
+            log("Inventory does not contain enough " + itemName + " to sell");
             return false;
         }
 
