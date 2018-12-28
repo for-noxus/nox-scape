@@ -3,8 +3,12 @@ package nox.scripts.noxscape;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import nox.scripts.noxscape.core.StopWatcher;
+import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
+import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
+import nox.scripts.noxscape.ui.DebugPaint;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.Script;
@@ -24,14 +28,12 @@ public class NoxScape extends Script {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
 
-            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
-            cfg.setRockToMine(MiningEntity.COAL);
-
-            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, null);
+            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(10_000).gpMade());
         } catch (Exception e) {
             log("Script failed to start.");
             logException(e);
         }
+        getBot().addPainter(new DebugPaint(ctx));
     }
 
     @Override
@@ -40,6 +42,10 @@ public class NoxScape extends Script {
             NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
             // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
+                if (cmn != null && cmn.isCompleted()) {
+                    log("Successfully completed MasterNode " + cmn.getMasterNodeInformation().getFriendlyName());
+                    cmn.reset();
+                }
                 NoxScapeMasterNode newNode = DecisionMaker.getNextMasterNode();
                 if (newNode == null) {
                     log("We can't find a new node to execute. Exiting script");
@@ -48,12 +54,12 @@ public class NoxScape extends Script {
                 }
                 log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
                 ctx.setCurrentMasterNode(newNode);
-                cmn = newNode;
+                cmn = ctx.getCurrentMasterNode();
             }
 
             // If any nodes in our CMN, or our CMN itself is requesting abortion
             if (cmn.isAborted()) {
-                log(String.format("Node %s requested script abortion.\nReason: %s", cmn.getClass().getSimpleName(), cmn.getAbortedReason()));
+                log(String.format("Node %s aborted (%s)", cmn.getMasterNodeInformation().getFriendlyName(), cmn.getAbortedReason()));
                 ctx.setCurrentMasterNode(null);
                 // Loop back to the top to get assigned a new node
                 return 3000;
@@ -68,7 +74,6 @@ public class NoxScape extends Script {
             }
         } catch (Exception e) {
             logException(e);
-            sleep(5000);
             stop(false);
         }
         // This should never happen..........
@@ -87,15 +92,6 @@ public class NoxScape extends Script {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        if (ctx != null) {
-            g.setColor(Color.white);
-            g.drawString(ctx.currentNodeMessage(), 10, 325);
-
-            Entity ent = ctx.getTargetEntity();
-            if (ent != null) {
-                g.setColor(Color.red.brighter());
-                g.draw(ctx.getDisplay().getModelArea(ent.getGridX(), ent.getGridY(), ent.getZ(), ent.getModel()));
-            }}
 
         g.setColor(Color.green.darker());
         // Get current mouse position
