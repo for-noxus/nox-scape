@@ -12,13 +12,12 @@ import java.util.function.Function;
 public abstract class NoxScapeMasterNode<k> {
 
     protected ScriptContext ctx;
+
     protected MasterNodeInformation nodeInformation;
-
     protected k configuration;
-
     protected StopWatcher stopWatcher;
-    private NoxScapeNode currentNode;
 
+    private NoxScapeNode currentNode;
     private NoxScapeNode postExecutionNode;
     private NoxScapeNode preExecutionNode;
     private NoxScapeNode returnToBankNode;
@@ -28,29 +27,9 @@ public abstract class NoxScapeMasterNode<k> {
 
     private boolean isAborted;
     private String abortedReason;
+
     public NoxScapeMasterNode(ScriptContext ctx) {
         this.ctx = ctx;
-    }
-
-    public MasterNodeInformation getMasterNodeInformation() {
-        return nodeInformation;
-    }
-
-    public StopWatcher getStopWatcher() {
-        return stopWatcher;
-    }
-
-    public NoxScapeMasterNode configureStopWatcher(Function<IAmountable, StopWatcher> config) {
-        stopWatcher = config.apply(StopWatcher.create(ctx));
-        return this;
-    }
-
-    public List<NoxScapeNode> getNodes() {
-        return this.nodes;
-    }
-
-    public void setNodes(List<NoxScapeNode> nodes) {
-        this.nodes = nodes;
     }
 
     public int continueExecution() throws InterruptedException {
@@ -127,6 +106,10 @@ public abstract class NoxScapeMasterNode<k> {
 
     public abstract boolean requiresPreExecution();
 
+    public void setNodes(List<NoxScapeNode> nodes) {
+        this.nodes = nodes;
+    }
+
     protected void setReturnToBankNode(NoxScapeNode node) {
         this.returnToBankNode = node;
     }
@@ -139,6 +122,27 @@ public abstract class NoxScapeMasterNode<k> {
         return currentNode;
     }
 
+    public List<NoxScapeNode> getNodes() {
+        return this.nodes;
+    }
+
+    public MasterNodeInformation getMasterNodeInformation() {
+        return nodeInformation;
+    }
+
+    public StopWatcher getStopWatcher() {
+        return stopWatcher;
+    }
+
+    public void setStopWatcher(StopWatcher stopWatcher) {
+        this.stopWatcher = stopWatcher;
+    }
+
+    public NoxScapeMasterNode configureStopWatcher(Function<IAmountable, StopWatcher> config) {
+        stopWatcher = config.apply(StopWatcher.create(ctx));
+        return this;
+    }
+
     public boolean isCompleted() {
         // Nodes aren't required to have a PostExecutionNode, but they are required to have a Node to return to bank
         return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted() && nodes.stream().allMatch(NoxScapeNode::isCompleted);
@@ -148,7 +152,11 @@ public abstract class NoxScapeMasterNode<k> {
         return nodes == null || nodes.stream().anyMatch(Node::isAborted) || isAborted;
     }
 
-    public void reactivate() {
+
+    public void reset() {
+        if (ctx.getBot().getMessageListeners().contains(stopWatcher)) {
+            ctx.getBot().removeMessageListener(stopWatcher);
+        }
         this.completedPreExecution = false;
         this.nodes = null;
         this.configuration = null;
