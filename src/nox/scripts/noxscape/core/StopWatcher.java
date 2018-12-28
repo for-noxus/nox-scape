@@ -25,7 +25,7 @@ public class StopWatcher implements MessageListener {
     }
 
     @Override
-    public void onMessage(Message message) throws InterruptedException {
+    public void onMessage(Message message) {
         if (message.getType() == Message.MessageType.GAME && message.getMessage().toLowerCase().contains(builder.actionsMessage))
             trackedAmount++;
     }
@@ -49,6 +49,18 @@ public class StopWatcher implements MessageListener {
     public void begin() {
         trackedAmount = 0;
         builder.initTime = System.currentTimeMillis();
+    }
+
+    public long getRunTime() {
+        return System.currentTimeMillis() - builder.initTime;
+    }
+
+    public int getTrackedAmount() {
+        return trackedAmount;
+    }
+
+    public StopCondition getStopCondition() {
+        return builder.condition;
     }
 
     protected static class Builder implements IConditionable, IAmountable {
