@@ -1,24 +1,17 @@
 package nox.scripts.noxscape.tools;
 
 import com.google.gson.*;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.QueuedNode;
 import nox.scripts.noxscape.core.StopWatcher;
-import nox.scripts.noxscape.tasks.GrandExchange.GEAction;
-import nox.scripts.noxscape.tasks.GrandExchange.GEItem;
-import nox.scripts.noxscape.tasks.GrandExchange.GrandExchangeMasterNode;
+import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
+import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
+import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingEntity;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.util.QueuedNodeDeserializer;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Queue;
 import java.util.Stack;
 
 public class NodeSerializerTest {
