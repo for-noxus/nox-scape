@@ -1,14 +1,16 @@
 package nox.scripts.noxscape.core;
 
 import com.google.gson.Gson;
+import com.sun.javafx.sg.prism.NGExternalNode;
 import nox.scripts.noxscape.core.enums.Frequency;
-import nox.scripts.noxscape.tasks.GrandExchange.GrandExchangeMasterNode;
+import nox.scripts.noxscape.core.interfaces.INodeSupplier;
+import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
+import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.QueuedNodeDeserializer;
-import org.osbot.rs07.script.MethodProvider;
 
 import java.io.*;
 import java.util.*;
@@ -35,32 +37,50 @@ public final class DecisionMaker {
         }
     }
 
-    private DecisionMaker() {
-    }
-
     public static NoxScapeMasterNode getNextMasterNode() {
+        NoxScapeMasterNode nextNode = null;
 
         if (!priorityNodes.empty()) {
             try {
                 QueuedNode nodeInfo = priorityNodes.pop();
                 writeTasksToFile();
                 Class nodeClass = Class.forName(nodeInfo.className);
-                NoxScapeMasterNode priorityNode = findExistingNode(nodeClass);
-                if (priorityNode != null) {
-                    priorityNodes.remove(priorityNode);
-                    priorityNode.reactivate();
-                    priorityNode.configuration = nodeInfo.configuration;
-                    priorityNode.initializeNodes();
-                    ctx.logClass(DecisionMaker.class, "Priority task selected: " + priorityNode.getMasterNodeInformation().getFriendlyName());
-                    return priorityNode;
+                nextNode = findExistingNode(nodeClass);
+                if (nextNode != null) {
+                    nextNode.configuration = nodeInfo.configuration;
+                    ctx.logClass(DecisionMaker.class, "Priority task selected: " + nextNode.getMasterNodeInformation().getFriendlyName());
                 }
             } catch (ClassNotFoundException e) {
                 // Having issues with that priorityNode, let's just uhh...not use it
                 e.printStackTrace();
+            }
+        } else {
+            nextNode = chooseNextMasterNode();
+        }
+
+        if (nextNode == null) {
+            ctx.logClass(DecisionMaker.class, "Somehow ended up with a null node, choosing anew..");
+            return getNextMasterNode();
+        }
+
+        nextNode.initializeNodes();
+
+        while (nextNode instanceof INodeSupplier) {
+            NoxScapeMasterNode suppliedNode = ((INodeSupplier)nextNode).getNextMasterNode();
+            if (suppliedNode != null) {
+                ctx.log(String.format("Node %s is a node supplier, supplying node (%s)", nextNode.getMasterNodeInformation().getFriendlyName(), suppliedNode.getMasterNodeInformation().getFriendlyName()));
+                nextNode = suppliedNode;
+            } else {
+                ctx.log(String.format("Node %s is a node supplier, but no node was given. Moving on.", nextNode.getMasterNodeInformation().getFriendlyName()));
+                nextNode.reset();
                 return getNextMasterNode();
             }
         }
 
+        return nextNode;
+    }
+
+    private static NoxScapeMasterNode chooseNextMasterNode() {
         List<Pair<NoxScapeMasterNode, Integer>> availableNodes = masterNodes
                 .stream()
                 .filter(NoxScapeMasterNode::canExecute)
@@ -75,12 +95,15 @@ public final class DecisionMaker {
         for (Pair<NoxScapeMasterNode, Integer> p: availableNodes) {
             runningTotal += p.b;
             if (runningTotal >= selectedValue)
-                    nextNode = p.a;
+                nextNode = p.a;
         }
-        nextNode.reactivate();
-        ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
 
-        nextNode.initializeNodes();
+        if (nextNode == null) {
+            ctx.logClass(DecisionMaker.class, "Couldn't find next task from range to " + nodesSelectionRange);
+            return null;
+        }
+
+        ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
         return nextNode;
     }
 
@@ -117,6 +140,7 @@ public final class DecisionMaker {
         addMasterNode(WoodcuttingMasterNode.class);
         addMasterNode(MiningMasterNode.class);
         addMasterNode(GrandExchangeMasterNode.class);
+        addMasterNode(MoneyMakingMasterNode.class);
 
         priorityNodes = readTaskFile();
 
