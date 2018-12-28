@@ -1,4 +1,4 @@
-package nox.scripts.noxscape.tasks.GrandExchange;
+package nox.scripts.noxscape.tasks.grand_exchange;
 
 public class GEItem {
     private String name;

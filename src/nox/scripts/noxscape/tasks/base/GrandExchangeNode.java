@@ -2,8 +2,8 @@ package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.tasks.GrandExchange.GEAction;
-import nox.scripts.noxscape.tasks.GrandExchange.GEItem;
+import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
+import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;

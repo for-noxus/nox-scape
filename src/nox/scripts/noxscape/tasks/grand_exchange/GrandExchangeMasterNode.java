@@ -1,4 +1,4 @@
-package nox.scripts.noxscape.tasks.GrandExchange;
+package nox.scripts.noxscape.tasks.grand_exchange;
 
 import nox.scripts.noxscape.core.MasterNodeInformation;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
