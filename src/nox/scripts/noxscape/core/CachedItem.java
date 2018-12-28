@@ -1,4 +1,4 @@
-package nox.scripts.noxscape.core.items;
+package nox.scripts.noxscape.core;
 
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.core.interfaces.INameable;
