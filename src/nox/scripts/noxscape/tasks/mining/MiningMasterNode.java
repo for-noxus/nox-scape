@@ -7,8 +7,7 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
-import nox.scripts.noxscape.core.items.CachedItem;
-import nox.scripts.noxscape.core.items.MiningItems;
+import nox.scripts.noxscape.core.CachedItem;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.EntitySkillingNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
@@ -49,18 +48,14 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         if (configuration == null)
             configuration = new Configuration();
 
-        ctx.log(configuration.toString());
-
         if (configuration.rockToMine == null) {
             configuration.rockToMine = Arrays.stream(MiningEntity.values())
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
                 .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
                 .get();
-            ctx.log(configuration.toString());
             ctx.log(Arrays.toString(Thread.currentThread().getStackTrace()));
 
         } else if (configuration.rockToMine.getRequiredLevel() > ctx.getSkills().getStatic(Skill.MINING)) {
-            ctx.log(Arrays.toString(Thread.currentThread().getStackTrace()));
             abort("Unable to mine chosen rock: " + configuration.rockToMine.getName());
             return;
         }
