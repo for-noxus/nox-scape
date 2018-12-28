@@ -1,5 +1,6 @@
-package nox.scripts.noxscape.core.items;
+package nox.scripts.noxscape.tasks.woodcutting;
 
+import nox.scripts.noxscape.core.CachedItem;
 import org.osbot.rs07.api.ui.Skill;
 
 import java.util.List;
