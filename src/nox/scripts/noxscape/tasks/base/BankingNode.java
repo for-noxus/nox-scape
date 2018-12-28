@@ -133,37 +133,41 @@ public class BankingNode extends NoxScapeNode {
 
             ctx.sleep(0, 80);
 
-            Map<Boolean, List<BankItem>> shouldEquip = belongsToSet.get(false).stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
+            // Only check this section if we've not equipped our eqip items and withdrawn our withdrawn items
+            if (belongsToSet.get(false).stream().anyMatch(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))) ) {
 
-            // Withdraw and equip all equip-items first
-            if (shouldEquip.get(true).size() > 0) {
+                Map<Boolean, List<BankItem>> shouldEquip = belongsToSet.get(false).stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
 
-                shouldEquip.get(true).forEach(this::withdrawItem);
+                // Withdraw and equip all equip-items first
+                if (shouldEquip.get(true).size() > 0) {
+
+                    shouldEquip.get(true).forEach(this::withdrawItem);
+
+                    ctx.sleepHQuick();
+
+                    if (ctx.getBank().close()) {
+                        shouldEquip.get(true).stream().filter(f -> !ctx.getEquipment().contains(f.getName())).forEach(this::equipItem);
+                    }
+                }
 
                 ctx.sleepHQuick();
 
-                if (ctx.getBank().close()) {
-                    shouldEquip.get(true).stream().filter(f -> !ctx.getEquipment().contains(f.getName())).forEach(this::equipItem);
-                }
-
-                ctx.sleepHQuick();
-            }
-
-            // Withdraw all withdraw-items
-            if (shouldEquip.get(false).size() > 0) {
-                if (!ctx.getBank().isOpen()) {
-                    if (!ctx.getBank().open()) {
-                        abort("Error opening bank to withdraw items");
+                // Withdraw all withdraw-items
+                if (shouldEquip.get(false).size() > 0) {
+                    if (!ctx.getBank().isOpen()) {
+                        if (!ctx.getBank().open()) {
+                            abort("Error opening bank to withdraw items");
+                        }
                     }
-                }
-                shouldEquip.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
+                    shouldEquip.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
 
-                if (this.noted) {
-                    if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_NOTE)) {
-                        abort("Failed to set BankMode as noted");
+                    if (this.noted) {
+                        if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_NOTE)) {
+                            abort("Failed to set BankMode as noted");
+                        }
                     }
+                    shouldEquip.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
                 }
-                shouldEquip.get(false).stream().filter(BankItem::isWithdraw).forEach(this::withdrawItem);
             }
         }
 
