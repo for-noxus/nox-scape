@@ -7,6 +7,7 @@ import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
 import nox.scripts.noxscape.tasks.tutorialisland.nodes.*;
+import org.osbot.rs07.api.ui.Message;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,5 +71,10 @@ public class TutorialIslandMasterNode extends NoxScapeMasterNode {
                 MasterNodeType.QUEST);
 
         return nodeInformation;
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+
     }
 }
