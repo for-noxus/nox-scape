@@ -56,7 +56,6 @@ public class CreateCharacter extends NoxScapeNode {
         RS2Widget setNameWidget = ctx.getWidgets().getWidgetContainingText(WIDGET_ROOT_DISPLAYNAME, TEXT_LOOKUP_SETNAME);
 
         if (lookupNameWidget != null && lookupNameWidget.interact()) {
-            ctx.logSafe(this, lookupNameWidget.getInteractActions());
             ctx.logClass(this, "Setting the character's name..");
             Sleep.until(() -> ctx.getWidgets().getWidgetContainingText(WIDGET_ROOT_CHATBOX, TEXT_DISPLAYNAME_INSTRUCTIONS) != null, 2000, 500);
             String generatedName = generateName();
