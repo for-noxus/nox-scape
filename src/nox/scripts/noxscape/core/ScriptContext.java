@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.core;
 
 import nox.scripts.noxscape.core.api.QuickExchange;
+import nox.scripts.noxscape.core.api.ScriptProgress;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.MethodProvider;
@@ -18,11 +19,11 @@ public class ScriptContext extends MethodProvider {
     public final String logDir;
 
     private QuickExchange quickExchange;
+    private ScriptProgress scriptProgress;
 
     public ScriptContext(MethodProvider api, String logDir) {
         this.logDir = logDir;
         exchangeContext(api.getBot());
-        logClass(this, "Script context initialized.");
     }
 
     public QuickExchange getQuickExchange() {
@@ -30,6 +31,13 @@ public class ScriptContext extends MethodProvider {
             quickExchange = new QuickExchange( this);
 
         return quickExchange;
+    }
+
+    public ScriptProgress getScriptProgress() {
+        if (scriptProgress == null)
+            scriptProgress = new ScriptProgress(this);
+
+        return scriptProgress;
     }
 
     public NoxScapeMasterNode getCurrentMasterNode() {
@@ -52,10 +60,6 @@ public class ScriptContext extends MethodProvider {
 
     public void sleep(int lowerBounds, int higherBounds) throws InterruptedException {
         MethodProvider.sleep(new Random().nextInt(higherBounds - lowerBounds) + lowerBounds);
-    }
-
-    public void logSafe(Object clazz, Object... objects) {
-        logClass(clazz, objects == null ? "null" : (String) Arrays.stream(objects).reduce("", (a, b) -> a + (b == null ? " null" : " " + b.toString())));
     }
 
     public void logClass(Object o, String message) {
