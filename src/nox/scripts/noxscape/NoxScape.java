@@ -1,5 +1,6 @@
 package nox.scripts.noxscape;
 
+import javafx.scene.paint.Stop;
 import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
@@ -11,6 +12,7 @@ import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
 import nox.scripts.noxscape.ui.DebugPaint;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.Entity;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -28,7 +30,13 @@ public class NoxScape extends Script {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
 
-            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(10_000).gpMade());
+//            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
+//            cfg.setRockToMine(MiningEntity.IRON);
+//
+//            StopWatcher sw = StopWatcher.create(ctx).stopAfter(0, Skill.MINING).xpGained();
+//
+//            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw);
+            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(100).gpMade());
         } catch (Exception e) {
             log("Script failed to start.");
             logException(e);
@@ -54,6 +62,7 @@ public class NoxScape extends Script {
                 }
                 log("Starting new MasterNode: " + newNode.getMasterNodeInformation().getFriendlyName());
                 ctx.setCurrentMasterNode(newNode);
+                ctx.getCurrentMasterNode().getStopWatcher().begin();
                 cmn = ctx.getCurrentMasterNode();
             }
 
@@ -66,7 +75,7 @@ public class NoxScape extends Script {
             }
 
             // Watch our current node's stopwatcher
-            if (cmn.getStopWatcher() != null && cmn.getStopWatcher().shouldStop()) {
+            if (cmn.getStopWatcher().shouldStop()) {
                 return cmn.continuePostExecution();
             } else {
                 // Carry on as usual
