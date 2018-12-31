@@ -1,15 +1,15 @@
 package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
-import nox.scripts.noxscape.NoxScape;
-import nox.scripts.noxscape.core.interfaces.IAmountable;
+
+import nox.scripts.noxscape.core.enums.Duration;
+import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
+import org.osbot.rs07.listener.MessageListener;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
-public abstract class NoxScapeMasterNode<k> {
+public abstract class NoxScapeMasterNode<k> implements MessageListener {
 
     protected ScriptContext ctx;
 
@@ -35,7 +35,6 @@ public abstract class NoxScapeMasterNode<k> {
     public int continueExecution() throws InterruptedException {
         // Store the current node in a tmp
         NoxScapeNode lastNode = currentNode;
-
         // If we don't yet have a node..
         if (currentNode == null) {
 
@@ -118,6 +117,10 @@ public abstract class NoxScapeMasterNode<k> {
         this.preExecutionNode = node;
     }
 
+    protected void setPostExecutionNode(NoxScapeNode node) {
+        this.postExecutionNode = node;
+    }
+
     protected NoxScapeNode getCurrentNode() {
         return currentNode;
     }
@@ -138,25 +141,32 @@ public abstract class NoxScapeMasterNode<k> {
         this.stopWatcher = stopWatcher;
     }
 
-    public NoxScapeMasterNode configureStopWatcher(Function<IAmountable, StopWatcher> config) {
-        stopWatcher = config.apply(StopWatcher.create(ctx));
-        return this;
+    public void setDefaultStopWatcher() {
+        int minutesToRun;
+
+        if (nodeInformation.getDuration() == null) {
+            minutesToRun = Duration.MEDIUM.getMinutes();
+        }
+        else {
+            minutesToRun = nodeInformation.getDuration().getMinutes();
+        }
+
+        stopWatcher = StopWatcher.create(ctx).stopAfter(minutesToRun).minutesRan();
     }
 
     public boolean isCompleted() {
         // Nodes aren't required to have a PostExecutionNode, but they are required to have a Node to return to bank
-        return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted() && nodes.stream().allMatch(NoxScapeNode::isCompleted);
+        return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted();
     }
 
     public boolean isAborted() {
         return nodes == null || nodes.stream().anyMatch(Node::isAborted) || isAborted;
     }
 
-
     public void reset() {
-        if (ctx.getBot().getMessageListeners().contains(stopWatcher)) {
+        if (stopWatcher != null)
             ctx.getBot().removeMessageListener(stopWatcher);
-        }
+        ctx.getBot().removeMessageListener(this);
         this.completedPreExecution = false;
         this.nodes = null;
         this.configuration = null;
@@ -166,10 +176,15 @@ public abstract class NoxScapeMasterNode<k> {
         this.preExecutionNode = null;
         this.postExecutionNode = null;
         this.returnToBankNode = null;
+        this.currentNode = null;
     }
 
     public k getConfiguration() {
         return configuration;
+    }
+
+    public void setConfiguration(k cfg) {
+        this.configuration = cfg;
     }
 
     protected void abort(String abortedReason) {
@@ -179,7 +194,9 @@ public abstract class NoxScapeMasterNode<k> {
 
     public String getAbortedReason() {
         return abortedReason == null ?
-                nodes.stream().filter(Node::isAborted).map(Node::getAbortedReason).findFirst().orElse(null) :
+                nodes == null ?
+                        "Seemingly no reason..." :
+                        nodes.stream().filter(Node::isAborted).map(Node::getAbortedReason).findFirst().orElse("Seemingly no reason...") :
                 abortedReason;
     }
 
