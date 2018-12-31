@@ -14,7 +14,7 @@ public class StopWatcher implements MessageListener {
     protected transient ScriptContext ctx;
     private Builder builder;
     private int trackedAmount;
-
+    private long initTime;
     private StopWatcher(ScriptContext ctx) {
         this.ctx = ctx;
     }
@@ -24,47 +24,71 @@ public class StopWatcher implements MessageListener {
         return new Builder(watcher);
     }
 
+    public static StopWatcher createDefault(ScriptContext ctx) {
+        StopWatcher watcher = new StopWatcher(ctx);
+        Builder bld = new Builder(watcher);
+        bld.condition = StopCondition.UNSET;
+        return watcher;
+    }
+
     @Override
     public void onMessage(Message message) {
         if (message.getType() == Message.MessageType.GAME && message.getMessage().toLowerCase().contains(builder.actionsMessage))
             trackedAmount++;
     }
 
+    public void addTrackedAmount(int amount) {
+        this.trackedAmount += amount;
+    }
+
     public boolean shouldStop() {
-        switch(builder.condition) {
-            case XP_GAINED:
-                return ctx.getExperienceTracker().getGainedXP(builder.skill) >= builder.amount;
-            case LEVELS_GAINED:
-                return ctx.getExperienceTracker().getGainedLevels(builder.skill) >= builder.amount;
-            case MONEY_MADE:
-            case RESOURCES_ACTIONED:
-                return trackedAmount >= builder.amount;
-            case TIME_ELAPSED:
-                return ((System.currentTimeMillis() - builder.initTime) / 1000 / 60) >= builder.amount;
-            default:
-                return true;
-        }
+        return getTrackedAmount() >= builder.amount;
     }
 
     public void begin() {
         trackedAmount = 0;
-        builder.initTime = System.currentTimeMillis();
+        initTime = System.currentTimeMillis();
+        if (builder.skill != null)
+            ctx.getExperienceTracker().start(builder.skill);
     }
 
     public long getRunTime() {
-        return System.currentTimeMillis() - builder.initTime;
+        return System.currentTimeMillis() - initTime;
+    }
+
+    public int getGoalAmount() {
+        return builder.amount;
     }
 
     public int getTrackedAmount() {
-        return trackedAmount;
+        switch(builder.condition) {
+            case XP_GAINED:
+                return ctx.getExperienceTracker().getGainedXP(builder.skill);
+            case LEVELS_GAINED:
+                return ctx.getExperienceTracker().getGainedLevels(builder.skill);
+            case MONEY_MADE:
+            case RESOURCES_ACTIONED:
+                return trackedAmount;
+            case TIME_ELAPSED:
+                return (int)((System.currentTimeMillis() - initTime) / 1000 / 60);
+            default:
+                return -1;
+        }
     }
 
     public StopCondition getStopCondition() {
         return builder.condition;
     }
 
-    protected static class Builder implements IConditionable, IAmountable {
-        private long initTime;
+    @Override
+    public String toString() {
+        return "StopWatcher{" +
+                "trackedAmount=" + trackedAmount +
+                "builder=" + builder.toString() +
+                '}';
+    }
+
+    private static class Builder implements IConditionable, IAmountable {
         private StopCondition condition;
         private Skill skill;
         private String actionsMessage;
@@ -101,6 +125,12 @@ public class StopWatcher implements MessageListener {
         }
 
         @Override
+        public StopWatcher actionsPerformed() {
+            this.condition = StopCondition.RESOURCES_ACTIONED;
+            return stopWatcher;
+        }
+
+        @Override
         public StopWatcher messagesContaining(String message) {
             this.condition = StopCondition.RESOURCES_ACTIONED;
             this.actionsMessage = message;
@@ -121,6 +151,15 @@ public class StopWatcher implements MessageListener {
             return this;
         }
 
+        @Override
+        public String toString() {
+            return "Builder{" +
+                    ", condition=" + condition +
+                    ", skill=" + skill +
+                    ", actionsMessage='" + actionsMessage + '\'' +
+                    ", amount=" + amount +
+                    '}';
+        }
     }
 }
 
