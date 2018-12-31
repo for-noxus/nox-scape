@@ -7,5 +7,8 @@ public interface IConditionable {
     StopWatcher xpGained();
     StopWatcher gpMade();
     StopWatcher minutesRan();
+
+    StopWatcher actionsPerformed();
+
     StopWatcher messagesContaining(String message);
 }
