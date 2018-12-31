@@ -5,12 +5,14 @@ import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
 import nox.scripts.noxscape.core.CachedItem;
+import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.EntitySkillingNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 
@@ -27,7 +29,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 "Woodcutting",
                 "Cuts trees for logs at various locations",
                 Frequency.COMMON,
-                Duration.COMPLETION,
+                Duration.MEDIUM,
                 MasterNodeType.SKILLING);
         configuration = new Configuration();
     }
@@ -39,8 +41,6 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
     @Override
     public void initializeNodes() {
-        ctx.logClass(this, "Initializing Woodcutting Nodes");
-
         BankItem[] axesToWithdraw = WoodcuttingItems.axes().stream().map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), true)).toArray(BankItem[]::new);
 
         // Get the highest level tree we can currently cut
@@ -49,6 +49,9 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.WOODCUTTING))
                 .max(Comparator.comparingInt(WoodcuttingEntity::getRequiredLevel))
                 .get();
+
+        if (stopWatcher.getStopCondition() == StopCondition.UNSET)
+            setDefaultStopWatcher();
 
         // Get the closest WoodCutting location to ours
         final Position curPos = ctx.myPosition();
@@ -123,6 +126,11 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
         boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && Arrays.stream(ctx.getInventory().getItems()).noneMatch(a -> a!= null && !axeset.contains(a.getName()) && a.getName().equals(configuration.treeToChop.producesItemName()));
 
         return !(inventoryHasAxe || wieldingAxe) || ctx.getInventory().isFull() || hasStuffInInventory;
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+
     }
 
     public static class Configuration {

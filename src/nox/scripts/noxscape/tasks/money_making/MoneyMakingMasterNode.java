@@ -3,11 +3,14 @@ package nox.scripts.noxscape.tasks.money_making;
 import nox.scripts.noxscape.core.MasterNodeInformation;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import nox.scripts.noxscape.core.StopWatcher;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
+import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.core.interfaces.IMoneyMaker;
 import nox.scripts.noxscape.core.interfaces.INodeSupplier;
+import org.osbot.rs07.api.ui.Message;
 
 import java.util.*;
 
@@ -35,6 +38,11 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
     }
 
     @Override
+    public void setDefaultStopWatcher() {
+        stopWatcher = StopWatcher.createDefault(ctx);
+    }
+
+    @Override
     public void initializeNodes() {
         chosenMethod = moneyMakingNodes.stream()
                 .filter(NoxScapeMasterNode::canExecute)
@@ -45,6 +53,9 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
             abort("Unable to determine a valid MoneyMaking method");
             return;
         }
+
+        if (stopWatcher.getStopCondition() == StopCondition.UNSET)
+            chosenMethod.setDefaultStopWatcher();
 
         chosenMethod.reset();
         chosenMethod.setStopWatcher(stopWatcher);
@@ -59,5 +70,10 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
     @Override
     public NoxScapeMasterNode getNextMasterNode() {
         return chosenMethod;
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+
     }
 }

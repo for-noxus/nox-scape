@@ -11,6 +11,7 @@ import nox.scripts.noxscape.core.interfaces.IMoneyMaker;
 import nox.scripts.noxscape.core.interfaces.INodeSupplier;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
+import org.osbot.rs07.api.ui.Message;
 
 public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, INodeSupplier {
 
@@ -37,10 +38,14 @@ public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, I
 
         MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
         cfg.setRockToMine(MiningEntity.CLAY);
+        miningMasterNode.setConfiguration(cfg);
 
         if (stopWatcher == null) {
             stopWatcher = StopWatcher.create(ctx).stopAfter(10_000).gpMade();
         }
+
+        miningMasterNode.setStopWatcher(stopWatcher);
+        miningMasterNode.initializeNodes();
     }
 
     @Override
@@ -56,5 +61,10 @@ public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, I
     @Override
     public NoxScapeMasterNode getNextMasterNode() {
         return miningMasterNode;
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+
     }
 }

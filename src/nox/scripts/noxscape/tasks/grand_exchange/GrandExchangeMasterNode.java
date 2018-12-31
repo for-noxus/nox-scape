@@ -7,12 +7,14 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
+import nox.scripts.noxscape.core.interfaces.IActionListener;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.GrandExchangeNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import org.osbot.rs07.api.ui.Message;
 
 import java.util.Arrays;
 import java.util.List;
@@ -66,13 +68,19 @@ public class GrandExchangeMasterNode extends NoxScapeMasterNode<GrandExchangeMas
                 .handlingItems(bankItems);
 
         NoxScapeNode geNode = new GrandExchangeNode(ctx)
-                .handlingItems(configuration.itemsToHandle);
+                .handlingItems(configuration.itemsToHandle)
+                .addListener(ctx.getScriptProgress());
+
+        NoxScapeNode bankNode = new BankingNode(ctx)
+                .bankingAt(BankLocation.GRAND_EXCHANGE)
+                .depositAllBackpackItems()
+                .depositAllWornItems();
 
         preExecutionWalkNode.setChildNode(preExecutionBankNode);
         preExecutionBankNode.setChildNode(geNode);
 
         setPreExecutionNode(preExecutionWalkNode);
-        setReturnToBankNode(preExecutionBankNode);
+        setReturnToBankNode(bankNode);
         setNodes(Arrays.asList(preExecutionWalkNode, preExecutionBankNode, geNode));
 
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
@@ -83,6 +91,11 @@ public class GrandExchangeMasterNode extends NoxScapeMasterNode<GrandExchangeMas
         boolean isInBankArea = BankLocation.GRAND_EXCHANGE.getBankArea().contains(ctx.myPosition());
         boolean needsToWithdraw = configuration.itemsToHandle.stream().anyMatch(a -> !ctx.getInventory().contains(a.getName()) || (ctx.getInventory().getAmount(a.getName()) < a.getAmount()));
         return !isInBankArea || needsToWithdraw;
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+
     }
 
     public static class Configuration {

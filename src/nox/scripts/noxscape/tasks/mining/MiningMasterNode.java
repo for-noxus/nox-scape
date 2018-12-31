@@ -8,6 +8,7 @@ import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
 import nox.scripts.noxscape.core.CachedItem;
+import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.EntitySkillingNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
@@ -17,13 +18,16 @@ import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.Item;
+import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
+import org.osbot.rs07.listener.MessageListener;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Configuration> {
+public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Configuration> implements MessageListener {
 
     public MiningMasterNode(ScriptContext ctx) {
         super(ctx);
@@ -31,7 +35,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 "Mining",
                 "Mines ores at various locations",
                 Frequency.COMMON,
-                Duration.COMPLETION,
+                Duration.MEDIUM,
                 MasterNodeType.SKILLING);
     }
 
@@ -42,8 +46,6 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
 
     @Override
     public void initializeNodes() {
-        ctx.logClass(this, "Initializing Mining Nodes");
-
         // Get the highest level ore we can currently mine
         if (configuration == null)
             configuration = new Configuration();
@@ -53,14 +55,20 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
                 .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
                 .get();
-            ctx.log(Arrays.toString(Thread.currentThread().getStackTrace()));
 
         } else if (configuration.rockToMine.getRequiredLevel() > ctx.getSkills().getStatic(Skill.MINING)) {
             abort("Unable to mine chosen rock: " + configuration.rockToMine.getName());
             return;
         }
 
-        BankItem[] axesToWithdraw = MiningItems.pickaxes().stream().filter(f -> f.canUse(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx))).toArray(BankItem[]::new);
+        if (stopWatcher.getStopCondition() == StopCondition.UNSET)
+            setDefaultStopWatcher();
+
+        BankItem[] axesToWithdraw = MiningItems.pickaxes().stream()
+                .filter(f -> f.canUse(ctx))
+                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx)))
+                .toArray(BankItem[]::new);
+
         BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
         List<BankItem> bankItems = new ArrayList<>();
         bankItems.addAll(Arrays.asList(axesToWithdraw));
@@ -90,7 +98,8 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 .depositAllWornItems()
                 .depositAllBackpackItems()
                 .handlingItems(axesToWithdraw)
-                .hasMessage(String.format("Banking at %s for the first time", location.getBank().getName()));
+                .hasMessage(String.format("Banking at %s for the first time", location.getBank().getName()))
+                .addListener(ctx.getScriptProgress());
 
         Position orePos = NRandom.fromArray(location.positions);
         NoxScapeNode toOreNode = new WalkingNode(ctx)
@@ -127,6 +136,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         setPreExecutionNode(preExecutionWalkNode);
         setReturnToBankNode(toBankNode);
 
+        ctx.getBot().addMessageListener(this);
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
     }
 
@@ -140,6 +150,19 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         boolean hasStuffInInventory = !ctx.getInventory().isEmpty() && !Arrays.stream(ctx.getInventory().getItems()).allMatch(a -> a == null || a.getName() == null || (axeset.contains(a.getName()) || a.getName().equals(configuration.rockToMine.producesItemName())));
 
         return (!inventoryHasAxe && !wieldingAxe) || ctx.getInventory().isFull() || hasStuffInInventory;
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+        if (message.getType() == Message.MessageType.GAME && message.getMessage().toLowerCase().contains("you manage to mine some")) {
+            Item item = ctx.getInventory().getItem(configuration.rockToMine.producesItemName());
+            if (item == null) {
+                ctx.logClass(this, "Unable to log action for mining entity " + configuration.rockToMine);
+            }
+            else {
+                ctx.getScriptProgress().onItemAcquired(item.getId(), 1);
+            }
+        }
     }
 
     public static class Configuration {
