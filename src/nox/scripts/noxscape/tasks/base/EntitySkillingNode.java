@@ -3,6 +3,8 @@ package nox.scripts.noxscape.tasks.base;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
+import nox.scripts.noxscape.tasks.mining.MiningEntity;
+import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
@@ -107,10 +109,13 @@ public class EntitySkillingNode extends NoxScapeNode {
                 ctx.getObjects().closest(skillableEntity.getName());
 
         if (entity == null) {
-            if (++findAttempts > 120) {
+            entity = Sleep.untilNotNull(() -> fnFindEntity != null ?
+                    ctx.getObjects().closest(ent -> fnFindEntity.test(ent)) :
+                    ctx.getObjects().closest(skillableEntity.getName()), 120_000, 700);
+            if (entity == null) {
                 abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
+                return 500;
             }
-            return 500;
         }
 
         findAttempts = 0;
