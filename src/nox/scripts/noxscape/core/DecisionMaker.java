@@ -11,6 +11,7 @@ import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.QueuedNodeDeserializer;
+import org.osbot.P;
 
 import java.io.*;
 import java.util.*;
@@ -47,7 +48,9 @@ public final class DecisionMaker {
                 Class nodeClass = Class.forName(nodeInfo.className);
                 nextNode = findExistingNode(nodeClass);
                 if (nextNode != null) {
+                    nextNode.reset();
                     nextNode.configuration = nodeInfo.configuration;
+                    nextNode.setStopWatcher(nodeInfo.stopWatcher);
                     ctx.logClass(DecisionMaker.class, "Priority task selected: " + nextNode.getMasterNodeInformation().getFriendlyName());
                 }
             } catch (ClassNotFoundException e) {
@@ -62,6 +65,9 @@ public final class DecisionMaker {
             ctx.logClass(DecisionMaker.class, "Somehow ended up with a null node, choosing anew..");
             return getNextMasterNode();
         }
+
+        if (nextNode.getStopWatcher() == null)
+            nextNode.setStopWatcher(StopWatcher.createDefault(ctx));
 
         nextNode.initializeNodes();
 
@@ -104,6 +110,8 @@ public final class DecisionMaker {
         }
 
         ctx.logClass(DecisionMaker.class, String.format("Task selected with a random value of %d with a range from 0-%d: %s", selectedValue, nodesSelectionRange, nextNode.getMasterNodeInformation().getFriendlyName()));
+
+        nextNode.reset();
         return nextNode;
     }
 
