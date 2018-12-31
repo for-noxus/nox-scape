@@ -10,6 +10,8 @@ public class BankItem implements INameable {
     private String set;
     private int priority;
     private boolean equip;
+    private int shouldBuyAmount;
+    private boolean shouldBuy;
 
     public BankItem(String name, BankAction action, int amount) {
         this(name, action, amount, null, 0);
@@ -19,18 +21,6 @@ public class BankItem implements INameable {
         this(name, action, amount, null, priority, false);
     }
 
-    @Override
-    public String toString() {
-        return "BankItem{" +
-                "name='" + name + '\'' +
-                ", action=" + action +
-                ", amount=" + amount +
-                ", set='" + set + '\'' +
-                ", priority=" + priority +
-                ", equip=" + equip +
-                '}';
-    }
-
     public BankItem(String name, BankAction action, int amount, String set, int priority, boolean equip) {
         this.name = name;
         this.action = action;
@@ -38,6 +28,20 @@ public class BankItem implements INameable {
         this.set = set;
         this.priority = priority;
         this.equip = equip;
+    }
+
+    public BankItem buyIfNecessary(int amount) {
+        this.shouldBuy = true;
+        this.shouldBuyAmount = amount;
+        return this;
+    }
+
+    public boolean shouldBuy() {
+        return shouldBuy;
+    }
+
+    public int shouldBuyAmount() {
+        return shouldBuyAmount;
     }
 
     public String getName() {
@@ -70,5 +74,17 @@ public class BankItem implements INameable {
 
     public boolean shouldEquip() {
         return equip;
+    }
+
+    @Override
+    public String toString() {
+        return "BankItem{" +
+                "name='" + name + '\'' +
+                ", action=" + action +
+                ", amount=" + amount +
+                ", set='" + set + '\'' +
+                ", priority=" + priority +
+                ", equip=" + equip +
+                '}';
     }
 }
