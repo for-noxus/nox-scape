@@ -7,6 +7,7 @@ import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.Bank;
+import org.osbot.rs07.api.model.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 public class BankingNode extends NoxScapeNode {
 
     private BankLocation bankLocation;
-    private BankItem[] items;
+    private List<BankItem> items = new ArrayList<>();
     private boolean depositAllBackpackItems = false;
     private boolean depositallWornItems = false;
     private boolean noted = false;
@@ -29,13 +30,12 @@ public class BankingNode extends NoxScapeNode {
     }
 
     public BankingNode handlingItems(BankItem... items) {
-        this.items = items;
+        this.items.addAll(Arrays.asList(items));
         return this;
     }
 
     public BankingNode handlingItems(List<BankItem> items) {
-        this.items = new BankItem[items.size()];
-        this.items = items.toArray(this.items);
+        this.items.addAll(items);
         return this;
     }
 
@@ -56,7 +56,7 @@ public class BankingNode extends NoxScapeNode {
 
     @Override
     public boolean isValid() {
-        if (items == null || items.length == 0) {
+        if (items == null || items.size() == 0) {
             abort("Banking node added but no items were added for deposit/withdrawal");
             return false;
         }
@@ -115,7 +115,7 @@ public class BankingNode extends NoxScapeNode {
             }
 
             // Split our items into two sets based on whether or not you can withdraw them
-            Map<Boolean, List<BankItem>> belongsToSet = Arrays.stream(items).collect(Collectors.partitioningBy(item -> item.getSet() != null));
+            Map<Boolean, List<BankItem>> belongsToSet = items.stream().collect(Collectors.partitioningBy(item -> item.getSet() != null));
 
             // Handle item sets
             BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::getOwnedItemFromSet).toArray(BankItem[]::new);
@@ -125,7 +125,7 @@ public class BankingNode extends NoxScapeNode {
             belongsToSet.get(false).stream().filter(BankItem::isDeposit).forEach(this::depositItem);
 
             // Deposit all items in inventory that aren't specified to be withdrawn
-            Set<String> bankItemNames = Arrays.stream(items).map(BankItem::getName).collect(Collectors.toSet());
+            Set<String> bankItemNames = items.stream().map(BankItem::getName).collect(Collectors.toSet());
             if (bankLocation.isDepositBox())
                 ctx.getDepositBox().depositAll(item -> !bankItemNames.contains(item.getName()));
             else
@@ -133,8 +133,9 @@ public class BankingNode extends NoxScapeNode {
 
             ctx.sleep(0, 80);
 
+            //Todo: Check if bank, inv, and equipment doesn't have a withdraw-item we need. If not, and we should buy it, queue up the GEMasterNode with that item
             // Only check this section if we've not equipped our eqip items and withdrawn our withdrawn items
-            if (belongsToSet.get(false).stream().anyMatch(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))) ) {
+            if (belongsToSet.get(false).stream().filter(BankItem::isWithdraw).anyMatch(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))) ) {
 
                 Map<Boolean, List<BankItem>> shouldEquip = belongsToSet.get(false).stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
 
@@ -207,7 +208,8 @@ public class BankingNode extends NoxScapeNode {
 
     private void depositItem(BankItem item) {
         if (item.getName() != null && ctx.getInventory().contains(item.getName())) {
-            if (ctx.getInventory().getAmount(item.getName()) <= item.getAmount()) {
+            Item inventoryItem = ctx.getInventory().getItem(item.getName());
+            if (ctx.getInventory().getAmount(inventoryItem.getId()) <= item.getAmount()) {
                 if (bankLocation.isDepositBox()) {
                     if (!ctx.getDepositBox().depositAll(item.getName()))
                         logBankError(item);
@@ -239,8 +241,9 @@ public class BankingNode extends NoxScapeNode {
         }
 
         // We don't have the item we're looking for
-        if (!ctx.getBank().contains(item.getName()))
+        if (!ctx.getBank().contains(item.getName())) {
             abort(String.format("Bank does not contain item (%s)", item.getName()));
+        }
 
         // We're unable to withdraw the item we're looking for
         if (ctx.getInventory().getEmptySlotCount() == 0)
