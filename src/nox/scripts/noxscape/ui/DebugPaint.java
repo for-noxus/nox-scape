@@ -9,6 +9,7 @@ import org.osbot.rs07.canvas.paint.Painter;
 import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -20,17 +21,20 @@ public class DebugPaint implements Painter {
 
     private final BasicStroke stroke1 = new BasicStroke(1);
 
-    private final Font stopWatchFont = new Font("Arial", 0, 12);
-    private final Font stopWatchTitleFont = new Font("Arial", 1, 14);
+    private final Font font1 = new Font("Arial", 1, 14);
+    private final Font font2 = new Font("Arial", 0, 12);
+    private final Font font3 = new Font("Arial", 1, 12);
+    private final Font font4 = new Font("Arial", 0, 10);
 
     private ScriptContext ctx;
     private StopWatcher watcher;
 
-    private StopCondition stopCondition;
     private int stopConditionAmount = 0;
+    private int goalAmount = 0;
+    private String stopCondition = "";
     private String runtime = "";
     private String masterNodeName = "";
-
+    private String scriptProgress = "";
     private long lastUpdateTime = 0;
 
     public DebugPaint(ScriptContext ctx) {
@@ -53,32 +57,49 @@ public class DebugPaint implements Painter {
                 updateVariables();
 
             g.setColor(color1);
-            g.fillRect(322, 251, 195, 85);
+            g.fillRect(290, 251, 226, 84);
             g.setColor(color2);
             g.setStroke(stroke1);
-            g.drawRect(322, 251, 195, 85);
+            g.drawRect(290, 251, 226, 84);
+            g.setColor(color1);
+            g.fillRoundRect(551, 209, 183, 256, 16, 16);
+            g.setColor(color2);
+            g.drawRoundRect(551, 209, 183, 256, 16, 16);
+            g.setFont(font1);
             g.setColor(color3);
-            g.setFont(stopWatchTitleFont);
-            g.drawString("StopWatcher (" + masterNodeName + ")", 330, 270);
-            g.setFont(stopWatchFont);
+            g.drawString("StopWatcher - " +masterNodeName , 300, 270);
+            g.setFont(font2);
+            g.drawString("Stop Condition: " + stopCondition, 300, 315);
+            g.drawString(String.format("Condition Amount: %d (%d)", stopConditionAmount, goalAmount), 300, 330);
             g.drawString("MasterNode Runtime: " + runtime, 300, 285);
-            g.drawString("Stop Condition: " + stopCondition.getName(), 330, 300);
-            g.drawString("Condition Amount: " + watcher.getTrackedAmount(), 330, 330);
+            g.setFont(font3);
+            g.drawString("Progress", 616, 224);
+            g.setFont(font4);
+            FontMetrics metrics = g.getFontMetrics();
+            int vspace = metrics.getHeight();
+            int idx = 0;
+            for (String f : scriptProgress.split("\n")) {
+                g.drawString(f, 560, 230 + (vspace * idx++));
+            }
         }
     }
 
     private void updateVariables() {
-        if (watcher == null) {
-            if (ctx != null && ctx.getCurrentMasterNode() != null && ctx.getCurrentMasterNode().getStopWatcher() != null) {
-                this.watcher = ctx.getCurrentMasterNode().getStopWatcher();
-            } else {
-                return;
-            }
+        scriptProgress = ctx.getScriptProgress().toString();
+
+        if (ctx == null || ctx.getCurrentMasterNode() == null)
+            return;
+
+        if (watcher == null || ctx.getCurrentMasterNode().getStopWatcher() != watcher) {
+            this.watcher = ctx.getCurrentMasterNode().getStopWatcher();
         }
 
-        stopCondition = watcher.getStopCondition();
+        stopCondition = watcher.getStopCondition().getName();
         stopConditionAmount = watcher.getTrackedAmount();
+        goalAmount = watcher.getGoalAmount();
         runtime = formatTime(watcher.getRunTime());
+        masterNodeName = ctx.getCurrentMasterNode().getMasterNodeInformation().getFriendlyName();
+        lastUpdateTime = System.currentTimeMillis();
     }
 
     private String formatTime(long time) {
