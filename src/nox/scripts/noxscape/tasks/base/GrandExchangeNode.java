@@ -54,6 +54,7 @@ public class GrandExchangeNode extends NoxScapeNode {
             if (!ctx.getQuickExchange().quickSell(item.getName(), amountToSell)) {
                 abort("Error selling GEItem " + item.getName());
             }
+            notifyAction("Sold " + item.getName(), item.getAmount());
         }
 
         for (GEItem item: isForSale.get(false))
