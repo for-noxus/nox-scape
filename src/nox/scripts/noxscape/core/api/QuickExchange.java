@@ -155,7 +155,7 @@ public class QuickExchange extends MethodProvider {
     }
 
     private boolean finishHandlingItem(String itemName, int amount, boolean isBuying, boolean withdrawToBank, GrandExchange.Box boxToUse) throws InterruptedException {
-        if (getGrandExchange().getOfferQuantity() != amount) {
+        if (getGrandExchange().getOfferQuantity() != amount && amount != -1) {
             if (!getGrandExchange().setOfferQuantity(amount)) {
                 log(String.format("Error setting offer quantity for item %s and amount %d", itemName, amount));
                 return false;
