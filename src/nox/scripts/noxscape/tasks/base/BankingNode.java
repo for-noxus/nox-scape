@@ -1,14 +1,22 @@
 package nox.scripts.noxscape.tasks.base;
 
+import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
+import nox.scripts.noxscape.core.StopWatcher;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
+import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
+import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
+import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
+import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.model.Item;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,7 +126,7 @@ public class BankingNode extends NoxScapeNode {
             Map<Boolean, List<BankItem>> belongsToSet = items.stream().collect(Collectors.partitioningBy(item -> item.getSet() != null));
 
             // Handle item sets
-            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::getOwnedItemFromSet).toArray(BankItem[]::new);
+            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::filterItemsFromSet).toArray(BankItem[]::new);
             belongsToSet.get(false).addAll(Arrays.asList(setItemsToWithdraw));
 
             // Deposit all deposit-items
@@ -133,11 +141,39 @@ public class BankingNode extends NoxScapeNode {
 
             ctx.sleep(0, 80);
 
-            //Todo: Check if bank, inv, and equipment doesn't have a withdraw-item we need. If not, and we should buy it, queue up the GEMasterNode with that item
             // Only check this section if we've not equipped our eqip items and withdrawn our withdrawn items
-            if (belongsToSet.get(false).stream().filter(BankItem::isWithdraw).anyMatch(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))) ) {
+            List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream().filter(BankItem::isWithdraw).filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))).collect(Collectors.toList());
+            List<GEItem> itemsToBuy = itemsToWithdraw.stream().filter(BankItem::shouldBuy).filter(f -> ctx.getBank().getAmount(f.getName()) < f.getAmount()).map(m -> new GEItem(m.getName(), GEAction.BUY, m.shouldBuyAmount())).collect(Collectors.toList());
+            if (itemsToBuy.size() > 0) {
+                ctx.log("Need to buy " + itemsToBuy.size() + ", calculating prices..");
+                try {
+                    RSBuddyExchangeOracle.retrievePriceGuide();
+                } catch (IOException e) {
+                    abort("Failed to retrieve prices.");
+                    ctx.log(Arrays.toString(e.getStackTrace()));
+                }
 
-                Map<Boolean, List<BankItem>> shouldEquip = belongsToSet.get(false).stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
+                long totalPrice = itemsToBuy.stream().map(m -> RSBuddyExchangeOracle.getItemByName(m.getName()).getOverallPrice() * m.getAmount()).reduce(0L, Long::sum);
+                long totalCoins = ctx.getInventory().getAmount("Coins") + ctx.getBank().getAmount("Coins");
+                ctx.log(String.format("Total cost of items is %s, and we have %s", totalPrice, totalCoins));
+
+                GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
+                cfg.setItemsToHandle(itemsToBuy);
+
+                boolean isGeDependent = false;
+                if (totalCoins <= (totalPrice * 1.1)) { // Play it safe with a 10% buffer
+                    isGeDependent = true;
+                    DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter((int)((totalPrice - totalCoins) * 1.1)).gpMade(), false);
+                }
+                DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), isGeDependent);
+                DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, true);
+                abort("Needed to buy items from GE: " + Arrays.toString(itemsToBuy.toArray()));
+
+                return 50;
+            }
+            if (itemsToWithdraw.size() > 0) {
+
+                Map<Boolean, List<BankItem>> shouldEquip = itemsToWithdraw.stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
 
                 // Withdraw and equip all equip-items first
                 if (shouldEquip.get(true).size() > 0) {
@@ -192,14 +228,20 @@ public class BankingNode extends NoxScapeNode {
         }
     }
 
-    private BankItem getOwnedItemFromSet(List<BankItem> set) {
+    private BankItem filterItemsFromSet(List<BankItem> set) {
         Optional<BankItem> itemToWithdraw = set.stream()
                 .sorted(Comparator.comparingInt(BankItem::getPriority).reversed())
                 .filter(item -> ctx.getBank().contains(item.getName()) || ctx.getInventory().contains(item.getName()) || ctx.getEquipment().contains(item.getName()))
                 .findFirst();
 
-        if (itemToWithdraw.isPresent()) {
+        Optional<BankItem> bestItemToBuy = set.stream().filter(BankItem::shouldBuy).sorted(Comparator.comparingInt(BankItem::getPriority).reversed()).findFirst();
+        bestItemToBuy.ifPresent(bankItem -> ctx.logClass(this, "Found best item to buy: " + bankItem.getName()));
+        // If we have the item and we're not buying a better one, OR the best one IS our item
+        if (itemToWithdraw.isPresent() && !bestItemToBuy.isPresent() || itemToWithdraw.isPresent() && itemToWithdraw.get().equals(bestItemToBuy.orElse(null))) {
             return itemToWithdraw.get();
+        } else if (bestItemToBuy.isPresent() && !bestItemToBuy.get().equals(itemToWithdraw.orElse(null))) {
+            // If we don't own our best item..
+            return bestItemToBuy.get();
         } else {
             abort(String.format("Unable to locate any items belonging to set (%s)", set.get(0).getSet()));
             return null;

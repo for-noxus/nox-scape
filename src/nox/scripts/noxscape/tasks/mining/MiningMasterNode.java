@@ -66,7 +66,13 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
 
         BankItem[] axesToWithdraw = MiningItems.pickaxes().stream()
                 .filter(f -> f.canUse(ctx))
-                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.requiredLevelSum(), m.canEquip(ctx)))
+                .map(m -> {
+                    BankItem item = new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.getLevelRequirement(Skill.MINING), m.canEquip(ctx));
+                    if (m.getLevelRequirement(Skill.MINING) > 20 && configuration.purchaseNewPick) {
+                        item.buyIfNecessary(1);
+                    }
+                    return item;
+                })
                 .toArray(BankItem[]::new);
 
         BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
@@ -168,11 +174,17 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
     public static class Configuration {
         MiningEntity rockToMine;
 
+        boolean purchaseNewPick;
+
         @Override
         public String toString() {
             return "Configuration{" +
                     "rockToMine=" + rockToMine +
                     '}';
+        }
+
+        public void setPurchaseNewPick(boolean purchaseNewPick) {
+            this.purchaseNewPick = purchaseNewPick;
         }
 
         public void setRockToMine(MiningEntity rockToMine) {
