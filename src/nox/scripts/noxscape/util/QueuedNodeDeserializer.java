@@ -14,6 +14,7 @@ public class QueuedNodeDeserializer implements JsonDeserializer<QueuedNode> {
 
         QueuedNode node = new QueuedNode();
 
+        node.isDependant = obj.get("isDependent").getAsBoolean();
         node.className = obj.get("className").getAsString();
         node.stopWatcher = ctx.deserialize(obj.get("stopWatcher"), StopWatcher.class);
         if (obj.has("configuration")) {

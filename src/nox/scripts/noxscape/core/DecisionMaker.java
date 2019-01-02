@@ -34,7 +34,7 @@ public final class DecisionMaker {
         initializeNodes();
         NoxScapeMasterNode tutIsland = findExistingNode(TutorialIslandMasterNode.class);
         if (tutIsland.canExecute()) {
-            addPriorityTask(TutorialIslandMasterNode.class, null, null);
+            addPriorityTask(TutorialIslandMasterNode.class, null, null, false);
         }
     }
 
@@ -86,6 +86,63 @@ public final class DecisionMaker {
         return nextNode;
     }
 
+    public static void addPriorityTask(Class<? extends NoxScapeMasterNode> node, Object configuration, StopWatcher stopWatcher, boolean isDependent) {
+        boolean exists = masterNodes.stream().anyMatch(f -> f.getClass().equals(node));
+
+        if (!exists) {
+            ctx.logClass(DecisionMaker.class, String.format("Attempted to add a priority node that was not a registered masternode (%s)", node.getSimpleName()));
+            return;
+        }
+
+        ctx.logClass(DecisionMaker.class, "Added PriorityNode " + node.getSimpleName());
+
+        QueuedNode newtask = new QueuedNode();
+        newtask.isDependant = isDependent;
+        newtask.className = node.getTypeName();
+        try {
+            newtask.configClassName = node.getDeclaredClasses()[0].getTypeName();
+        } catch (Exception e) {
+            if (ctx != null)
+                ctx.log(e);
+        }
+        newtask.configuration = configuration;
+        newtask.stopWatcher = stopWatcher;
+
+        priorityNodes.push(newtask);
+
+        writeTasksToFile();
+    }
+
+    public static Stack<QueuedNode> getQueuedTasks() {
+        return priorityNodes;
+    }
+
+    public static void clearDependentNodeStack() {
+        if (priorityNodes != null)
+            return;
+
+        while (!priorityNodes.empty() || priorityNodes.peek().isDependant) {
+            QueuedNode node = priorityNodes.pop();
+            ctx.log("Abandoning node " + node.className + " because it was dependent on an abandoned ancestor");
+        }
+    }
+
+    private static void initializeNodes() {
+        addMasterNode(TutorialIslandMasterNode.class);
+        addMasterNode(WoodcuttingMasterNode.class);
+        addMasterNode(MiningMasterNode.class);
+        addMasterNode(GrandExchangeMasterNode.class);
+        addMasterNode(MoneyMakingMasterNode.class);
+
+        priorityNodes = readTaskFile();
+
+        if (ctx != null)
+            ctx.logClass(DecisionMaker.class, String.format("DecisionMaker has been initialized with %d nodes and %d priorityNodes.", masterNodes.size(), priorityNodes.size()));
+        else
+            System.out.println(String.format("DecisionMaker has been initialized with %d nodes and %d priorityNodes.", masterNodes.size(), priorityNodes.size()));
+
+    }
+
     private static NoxScapeMasterNode chooseNextMasterNode() {
         List<Pair<NoxScapeMasterNode, Integer>> availableNodes = masterNodes
                 .stream()
@@ -113,50 +170,6 @@ public final class DecisionMaker {
 
         nextNode.reset();
         return nextNode;
-    }
-
-    public static void addPriorityTask(Class<? extends NoxScapeMasterNode> node, Object configuration, StopWatcher stopWatcher) {
-        boolean exists = masterNodes.stream().anyMatch(f -> f.getClass().equals(node));
-
-        if (!exists) {
-            ctx.logClass(DecisionMaker.class, String.format("Attempted to add a priority node that was not a registered masternode (%s)", node.getSimpleName()));
-            return;
-        }
-
-        QueuedNode newtask = new QueuedNode();
-        newtask.className = node.getTypeName();
-        try {
-            newtask.configClassName = node.getDeclaredClasses()[0].getTypeName();
-        } catch (Exception e) {
-            if (ctx != null)
-                ctx.log(e);
-        }
-        newtask.configuration = configuration;
-        newtask.stopWatcher = stopWatcher;
-
-        priorityNodes.push(newtask);
-
-        writeTasksToFile();
-    }
-
-    public static Stack<QueuedNode> getQueuedTasks() {
-        return priorityNodes;
-    }
-
-    private static void initializeNodes() {
-        addMasterNode(TutorialIslandMasterNode.class);
-        addMasterNode(WoodcuttingMasterNode.class);
-        addMasterNode(MiningMasterNode.class);
-        addMasterNode(GrandExchangeMasterNode.class);
-        addMasterNode(MoneyMakingMasterNode.class);
-
-        priorityNodes = readTaskFile();
-
-        if (ctx != null)
-            ctx.logClass(DecisionMaker.class, String.format("DecisionMaker has been initialized with %d nodes and %d priorityNodes.", masterNodes.size(), priorityNodes.size()));
-        else
-            System.out.println(String.format("DecisionMaker has been initialized with %d nodes and %d priorityNodes.", masterNodes.size(), priorityNodes.size()));
-
     }
 
     private static NoxScapeMasterNode findExistingNode(Class<? extends NoxScapeMasterNode> clazz) {

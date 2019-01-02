@@ -5,4 +5,5 @@ public class QueuedNode {
     public String configClassName;
     public Object configuration;
     public StopWatcher stopWatcher;
+    public boolean isDependant;
 }

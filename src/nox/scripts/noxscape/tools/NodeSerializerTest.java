@@ -27,9 +27,9 @@ public class NodeSerializerTest {
         GrandExchangeMasterNode.Configuration gecfg = new GrandExchangeMasterNode.Configuration();
         gecfg.setItemsToHandle(new GEItem("Yew logs", GEAction.SELL, 100));
 
-        DecisionMaker.addPriorityTask(MiningMasterNode.class, null, miningWatcher);
-        DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, stopWatcher);
-        DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, gecfg, null);
+        DecisionMaker.addPriorityTask(MiningMasterNode.class, null, miningWatcher, false);
+        DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, stopWatcher, true);
+        DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, gecfg, null, true);
 
         Stack<QueuedNode> nodes = DecisionMaker.getQueuedTasks();
 
