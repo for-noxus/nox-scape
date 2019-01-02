@@ -11,13 +11,19 @@ import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
 import nox.scripts.noxscape.ui.DebugPaint;
 import nox.scripts.noxscape.util.Sleep;
+import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.model.Entity;
+import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.event.WalkingEvent;
+import org.osbot.rs07.event.WebWalkEvent;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
+import org.osbot.rs07.utility.Condition;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 @ScriptManifest(name = "NoxScape", author = "Nox", version = 1.0, info = "", logo = "")
 public class NoxScape extends Script {
@@ -30,13 +36,13 @@ public class NoxScape extends Script {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
 
-//            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
-//            cfg.setRockToMine(MiningEntity.IRON);
-//
-//            StopWatcher sw = StopWatcher.create(ctx).stopAfter(0, Skill.MINING).xpGained();
-//
-//            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw);
-            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(100).gpMade());
+            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
+            cfg.setRockToMine(MiningEntity.IRON);
+            cfg.setPurchaseNewPick(true);
+            StopWatcher sw = StopWatcher.create(ctx).stopAfter(0, Skill.MINING).xpGained();
+
+            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw, false);
+//            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(500).gpMade(), false);
         } catch (Exception e) {
             log("Script failed to start.");
             logException(e);
@@ -69,6 +75,8 @@ public class NoxScape extends Script {
             // If any nodes in our CMN, or our CMN itself is requesting abortion
             if (cmn.isAborted()) {
                 log(String.format("Node %s aborted (%s)", cmn.getMasterNodeInformation().getFriendlyName(), cmn.getAbortedReason()));
+                // Clear all nodes that were dependent on this one successfully executing
+                DecisionMaker.clearDependentNodeStack();
                 ctx.setCurrentMasterNode(null);
                 // Loop back to the top to get assigned a new node
                 return 3000;
