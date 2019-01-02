@@ -2,6 +2,8 @@ package nox.scripts.noxscape.tasks.base.banking;
 
 import nox.scripts.noxscape.core.interfaces.INameable;
 
+import java.util.Objects;
+
 public class BankItem implements INameable {
 
     private String name;
@@ -77,6 +79,19 @@ public class BankItem implements INameable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BankItem bankItem = (BankItem) o;
+        return Objects.equals(name, bankItem.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
+    @Override
     public String toString() {
         return "BankItem{" +
                 "name='" + name + '\'' +
@@ -85,6 +100,8 @@ public class BankItem implements INameable {
                 ", set='" + set + '\'' +
                 ", priority=" + priority +
                 ", equip=" + equip +
+                ", shouldBuyAmount=" + shouldBuyAmount +
+                ", shouldBuy=" + shouldBuy +
                 '}';
     }
 }
