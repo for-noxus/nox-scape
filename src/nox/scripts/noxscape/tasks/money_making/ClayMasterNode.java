@@ -13,6 +13,9 @@ import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import org.osbot.rs07.api.ui.Message;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, INodeSupplier {
 
     private MiningMasterNode miningMasterNode;
@@ -38,6 +41,7 @@ public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, I
 
         MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
         cfg.setRockToMine(MiningEntity.CLAY);
+        cfg.setPurchaseNewPick(false);
         miningMasterNode.setConfiguration(cfg);
 
         if (stopWatcher == null) {
@@ -56,6 +60,11 @@ public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, I
     @Override
     public int getProfitIndex() {
         return 5;
+    }
+
+    @Override
+    public List<String> itemsHarvestedForMoney() {
+        return Arrays.asList(MiningEntity.CLAY.producesItemName());
     }
 
     @Override
