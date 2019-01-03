@@ -103,7 +103,7 @@ public final class DecisionMaker {
             newtask.configClassName = node.getDeclaredClasses()[0].getTypeName();
         } catch (Exception e) {
             if (ctx != null)
-                ctx.log(e);
+                ctx.log(newtask.className + " has no configuration class!");
         }
         newtask.configuration = configuration;
         newtask.stopWatcher = stopWatcher;
