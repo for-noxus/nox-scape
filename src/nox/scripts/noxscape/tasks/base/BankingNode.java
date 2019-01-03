@@ -148,7 +148,7 @@ public class BankingNode extends NoxScapeNode {
                     ctx.log(Arrays.toString(e.getStackTrace()));
                 }
 
-                long totalPrice = itemsToBuy.stream().map(m -> RSBuddyExchangeOracle.getItemByName(m.getName()).getOverallPrice() * m.getAmount()).reduce(0L, Long::sum);
+                long totalPrice = itemsToBuy.stream().map(m -> RSBuddyExchangeOracle.getItemByName(m.getName()).getOverallPrice() * m.getAmount()).reduce(0, Integer::sum);
                 long totalCoins = ctx.getInventory().getAmount("Coins") + ctx.getBank().getAmount("Coins");
                 ctx.log(String.format("Total cost of items is %s, and we have %s", totalPrice, totalCoins));
 

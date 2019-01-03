@@ -62,15 +62,16 @@ public class RSBuddyExchangeOracle {
     }
 
     private static void processIntoJSONMap(String jsonStr) {
+        Pattern jsonObjectPattern = Pattern.compile("\"\\d+\":(\\{.*?\\})", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Pattern itemPattern = Pattern.compile("\\\"id\\\":(\\d+),\\\"name\\\":\\\"(.*?)\\\",\\\"members\\\":(\\w+),\\\"sp\\\":(\\d+),\\\"buy_average\\\":(\\d+),\\\"buy_quantity\\\":(\\d+),\\\"sell_average\\\":(\\d+),\\\"sell_quantity\\\":(\\d+),\\\"overall_average\\\":(\\d+),\\\"overall_quantity\\\":(\\d+)", Pattern.CASE_INSENSITIVE);
 
         RSBuddyExchangePrice item;
 
-        Pattern p = Pattern.compile("\"\\d+\":(\\{.*?\\})", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher m = p.matcher(jsonStr);
+        Matcher m = jsonObjectPattern.matcher(jsonStr);
 
         while (m.find()) {
-            item = new RSBuddyExchangePrice(parse(m.group(1)));
-            JSON_BY_IDS.put(item.getID(), item);
+            item = parse(m.group(1), itemPattern);
+            JSON_BY_IDS.put(item.getId(), item);
             JSON_BY_NAMES.put(item.getName(), item);
         }
     }
@@ -115,26 +116,24 @@ public class RSBuddyExchangeOracle {
                 .orElse(null);
     }
 
-    private static Map<String, Object> parse(String jsonStr) {
-
-        Map<String, Object> item = new HashMap<>(10);
-        Pattern p = Pattern.compile("\\\"id\\\":(\\d+),\\\"name\\\":\\\"(.*?)\\\",\\\"members\\\":(\\w+),\\\"sp\\\":(\\d+),\\\"buy_average\\\":(\\d+),\\\"buy_quantity\\\":(\\d+),\\\"sell_average\\\":(\\d+),\\\"sell_quantity\\\":(\\d+),\\\"overall_average\\\":(\\d+),\\\"overall_quantity\\\":(\\d+)", Pattern.CASE_INSENSITIVE);
-        Matcher m = p.matcher(jsonStr);
+    private static RSBuddyExchangePrice parse(String jsonStr, Pattern itemPattern) {
+        Matcher m = itemPattern.matcher(jsonStr);
 
         if (m.find()) {
-            item.put("id", Integer.parseInt(m.group(1)));
-            item.put("name", m.group(2));
-            item.put("members", Boolean.parseBoolean(m.group(3)));
-            item.put("sp", Long.parseLong(m.group(4)));
-            item.put("buy_average", Long.parseLong(m.group(5)));
-            item.put("buy_quantity", Long.parseLong(m.group(6)));
-            item.put("sell_average", Long.parseLong(m.group(7)));
-            item.put("sell_quantity", Long.parseLong(m.group(8)));
-            item.put("overall_average", Long.parseLong(m.group(9)));
-            item.put("overall_quantity", Long.parseLong(m.group(10)));
+            return new RSBuddyExchangePrice(
+                    Integer.parseInt(m.group(1)),
+                    m.group(2),
+                    Boolean.parseBoolean(m.group(3)),
+                    Integer.parseInt(m.group(4)),
+                    Integer.parseInt(m.group(5)),
+                    Integer.parseInt(m.group(5)),
+                    Integer.parseInt(m.group(6)),
+                    Integer.parseInt(m.group(7)),
+                    Integer.parseInt(m.group(8)),
+                    Integer.parseInt(m.group(9))
+            );
         }
 
-        return item;
+        return new RSBuddyExchangePrice();
     }
-
 }

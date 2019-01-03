@@ -1,25 +1,43 @@
 package nox.scripts.noxscape.util.prices;
 
-import java.util.Map;
-
 public class RSBuddyExchangePrice implements Comparable<RSBuddyExchangePrice> {
 
-    private final Map<String, Object> itemJson;
+    private int id;
+    private String name;
+    private boolean isMembers;
+    private int storePrice;
+    private int buyPrice;
+    private int buyQuantity;
+    private int sellPrice;
+    private int sellQuantity;
+    private int overallPrice;
 
-    public RSBuddyExchangePrice(Map<String, Object> itemJson) {
-        super();
-        this.itemJson = itemJson;
+    public RSBuddyExchangePrice() { }
+
+    public RSBuddyExchangePrice(int id, String name, boolean isMembers, int storePrice, int buyPrice, int buyQuantity, int sellPrice, int sellQuantity, int overallPrice, int overallQuantity) {
+        this.id = id;
+        this.name = name;
+        this.isMembers = isMembers;
+        this.storePrice = storePrice;
+        this.buyPrice = buyPrice;
+        this.buyQuantity = buyQuantity;
+        this.sellPrice = sellPrice;
+        this.sellQuantity = sellQuantity;
+        this.overallPrice = overallPrice;
+        this.overallQuantity = overallQuantity;
     }
+
+    private int overallQuantity;
 
     @Override
     public int compareTo(RSBuddyExchangePrice o) {
-        return Integer.compare(getID(), o.getID());
+        return Integer.compare(id, o.id);
     }
 
     @Override
     public String toString() {
         return String.format("{ \"id\":%s, \"name\":\"%s\", \"members\":%s, \"storePrice\":%s, \"buyPrice\":%s, \"buyQuantity\":%s, \"sellPrice\":%s, \"sellQuantity\":%s, \"overallPrice\":%s, \"overallQuantity\":%s }",
-                getID(),
+                getId(),
                 getName(),
                 isMembers(),
                 getStorePrice(),
@@ -31,44 +49,44 @@ public class RSBuddyExchangePrice implements Comparable<RSBuddyExchangePrice> {
                 getOverallQuantity());
     }
 
-    public int getID() {
-        return (Integer) itemJson.getOrDefault("id", -1);
+    public int getId() {
+        return id;
     }
 
     public String getName() {
-        return (String) itemJson.getOrDefault("name", "undefined");
+        return name;
     }
 
     public boolean isMembers() {
-        return (Boolean) itemJson.getOrDefault("members", Boolean.FALSE);
+        return isMembers;
     }
 
-    public long getStorePrice() {
-        return (Long) itemJson.getOrDefault("sp", 0L);
+    public int getStorePrice() {
+        return storePrice;
     }
 
-    public long getBuyPrice() {
-        return (Long) itemJson.getOrDefault("buy_average", 0L);
+    public int getBuyPrice() {
+        return buyPrice;
     }
 
-    public long getBuyQuantity() {
-        return (Long) itemJson.getOrDefault("buy_quantity", 0L);
+    public int getBuyQuantity() {
+        return buyQuantity;
     }
 
-    public long getSellPrice() {
-        return (Long) itemJson.getOrDefault("sell_average", 0L);
+    public int getSellPrice() {
+        return sellPrice;
     }
 
-    public long getSellQuantity() {
-        return (Long) itemJson.getOrDefault("sell_quantity", 0L);
+    public int getSellQuantity() {
+        return sellQuantity;
     }
 
-    public long getOverallPrice() {
-        return (Long) itemJson.getOrDefault("overall_average", 0L);
+    public int getOverallPrice() {
+        return overallPrice;
     }
 
-    public long getOverallQuantity() {
-        return (Long) itemJson.getOrDefault("overall_quantity", 0L);
+    public int getOverallQuantity() {
+        return overallQuantity;
     }
 }
 
