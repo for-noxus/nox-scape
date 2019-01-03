@@ -58,9 +58,12 @@ public class GrandExchangeMasterNode extends NoxScapeMasterNode<GrandExchangeMas
         List<BankItem> bankItems = configuration.itemsToHandle
                 .stream()
                 .filter(f -> f.getAction() == GEAction.SELL)
-                .filter(f -> !ctx.getInventory().contains(f.getName()) || ctx.getInventory().getAmount(f.getName()) < f.getAmount())
-                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, m.getAmount()))
+                .filter(f -> !ctx.getInventory().contains(f.getName()) || ctx.getInventory().getAmount(f.getName()) < f.getAmount() || f.getAmount() == -1)
+                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, m.getAmount() == -1 ? Integer.MAX_VALUE : m.getAmount()))
                 .collect(Collectors.toList());
+        if (configuration.itemsToHandle.stream().anyMatch(a -> a.getAction() == GEAction.BUY))
+            bankItems.add(new BankItem("Coins", BankAction.WITHDRAW, Integer.MAX_VALUE));
+
         NoxScapeNode preExecutionBankNode = new BankingNode(ctx)
                 .depositAllBackpackItems()
                 .asNoted()
