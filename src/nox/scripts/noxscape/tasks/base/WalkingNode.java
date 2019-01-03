@@ -115,6 +115,8 @@ public class WalkingNode extends NoxScapeNode {
                 }
             });
 
+            ((WebWalkEvent)event).setSourcePosition(ctx.myPosition());
+
         } else {
             if (destinationArea != null)
                 event = new WalkingEvent(destinationArea);
