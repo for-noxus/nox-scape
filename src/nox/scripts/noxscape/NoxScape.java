@@ -39,7 +39,7 @@ public class NoxScape extends Script {
             MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
             cfg.setRockToMine(MiningEntity.IRON);
             cfg.setPurchaseNewPick(true);
-            StopWatcher sw = StopWatcher.create(ctx).stopAfter(0, Skill.MINING).xpGained();
+            StopWatcher sw = StopWatcher.create(ctx).stopAfter(3, Skill.MINING).levelsGained();
 
             DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw, false);
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(500).gpMade(), false);
@@ -77,6 +77,7 @@ public class NoxScape extends Script {
                 log(String.format("Node %s aborted (%s)", cmn.getMasterNodeInformation().getFriendlyName(), cmn.getAbortedReason()));
                 // Clear all nodes that were dependent on this one successfully executing
                 DecisionMaker.clearDependentNodeStack();
+                cmn.reset();
                 ctx.setCurrentMasterNode(null);
                 // Loop back to the top to get assigned a new node
                 return 3000;
