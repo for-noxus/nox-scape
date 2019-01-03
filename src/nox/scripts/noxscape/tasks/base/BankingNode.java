@@ -64,7 +64,7 @@ public class BankingNode extends NoxScapeNode {
 
     @Override
     public boolean isValid() {
-        if (items == null || items.size() == 0) {
+        if ((items == null || items.size() == 0) && (!depositAllBackpackItems && !depositallWornItems)) {
             abort("Banking node added but no items were added for deposit/withdrawal");
             return false;
         }
@@ -77,10 +77,6 @@ public class BankingNode extends NoxScapeNode {
         return bankLocation.getBankArea().contains(ctx.myPosition());
     }
 
-    // Deposit-all iron ore
-    // Deposit inventory
-    // Withdraw-all iron ore
-    // Withdraw-all adamant pickaxe
     @Override
     public int execute() throws InterruptedException {
         // Ensure bank screen is open
@@ -114,7 +110,6 @@ public class BankingNode extends NoxScapeNode {
         }
 
         if (items != null) {
-
             if (!noted) {
                 if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_ITEM)) {
                     abort("Unable to switch to normal item withdrawal");
@@ -160,13 +155,13 @@ public class BankingNode extends NoxScapeNode {
                 GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
                 cfg.setItemsToHandle(itemsToBuy);
 
-                boolean isGeDependent = false;
-                if (totalCoins <= (totalPrice * 1.1)) { // Play it safe with a 10% buffer
-                    isGeDependent = true;
+                // If we need to buy from the GE, mark it as dependent on the MoneyMaking node. Otherwise, it is independent
+                boolean isGeDependent = totalCoins <= (totalPrice * 1.1); // Play it safe with a 10% buffer
+                DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), true);
+                DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, isGeDependent);
+                if (isGeDependent) {
                     DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter((int)((totalPrice - totalCoins) * 1.1)).gpMade(), false);
                 }
-                DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), isGeDependent);
-                DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, true);
                 abort("Needed to buy items from GE: " + Arrays.toString(itemsToBuy.toArray()));
 
                 return 50;
