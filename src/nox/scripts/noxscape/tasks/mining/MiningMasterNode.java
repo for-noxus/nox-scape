@@ -180,6 +180,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         public String toString() {
             return "Configuration{" +
                     "rockToMine=" + rockToMine +
+                    ", purchaseNewPick=" + purchaseNewPick +
                     '}';
         }
 
