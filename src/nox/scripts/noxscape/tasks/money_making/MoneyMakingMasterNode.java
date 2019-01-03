@@ -1,18 +1,20 @@
 package nox.scripts.noxscape.tasks.money_making;
 
-import nox.scripts.noxscape.core.MasterNodeInformation;
-import nox.scripts.noxscape.core.NoxScapeMasterNode;
-import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.StopWatcher;
+import nox.scripts.noxscape.core.*;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
 import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.core.interfaces.IMoneyMaker;
 import nox.scripts.noxscape.core.interfaces.INodeSupplier;
+import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
+import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
+import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import org.osbot.rs07.api.ui.Message;
+import sun.util.resources.cldr.fr.CalendarData_fr_GA;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSupplier {
 
@@ -60,6 +62,11 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
         chosenMethod.reset();
         chosenMethod.setStopWatcher(stopWatcher);
         chosenMethod.initializeNodes();
+
+        List<GEItem> itemsToSell = ((IMoneyMaker)chosenMethod).itemsHarvestedForMoney().stream().map(m -> new GEItem(m, GEAction.SELL, -1)).collect(Collectors.toList());
+        GrandExchangeMasterNode.Configuration geCfg = new GrandExchangeMasterNode.Configuration();
+        geCfg.setItemsToHandle(itemsToSell);
+        DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, geCfg, null, true);
     }
 
     @Override
