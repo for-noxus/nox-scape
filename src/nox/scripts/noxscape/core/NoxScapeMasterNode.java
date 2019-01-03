@@ -156,7 +156,10 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
 
     public boolean isCompleted() {
         // Nodes aren't required to have a PostExecutionNode, but they are required to have a Node to return to bank
-        return (postExecutionNode == null || postExecutionNode.isCompleted()) && returnToBankNode.isCompleted();
+        // Returns true if we've postExecuted, returned to bank, AND (node goes to completion and all nodes are complete OR node is time-based and stopwatcher is complete)
+        return (postExecutionNode == null || postExecutionNode.isCompleted()) &&
+                returnToBankNode.isCompleted() &&
+                ((nodeInformation.getDuration() == Duration.COMPLETION && nodes.stream().allMatch(Node::isCompleted)) || (nodeInformation.getDuration() != Duration.COMPLETION && stopWatcher.shouldStop()));
     }
 
     public boolean isAborted() {
