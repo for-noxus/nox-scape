@@ -84,7 +84,7 @@ public class GrandExchangeMasterNode extends NoxScapeMasterNode<GrandExchangeMas
 
         setPreExecutionNode(preExecutionWalkNode);
         setReturnToBankNode(bankNode);
-        setNodes(Arrays.asList(preExecutionWalkNode, preExecutionBankNode, geNode));
+        setNodes(Arrays.asList(geNode));
 
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
     }
