@@ -76,8 +76,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 .toArray(BankItem[]::new);
 
         BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
-        List<BankItem> bankItems = new ArrayList<>();
-        bankItems.addAll(Arrays.asList(axesToWithdraw));
+        List<BankItem> bankItems = new ArrayList<>(Arrays.asList(axesToWithdraw));
         bankItems.add(oreToBank);
 
         // Get the closest Mining location to ours
