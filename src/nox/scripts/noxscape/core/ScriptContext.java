@@ -40,7 +40,7 @@ public class ScriptContext extends MethodProvider {
         return scriptProgress;
     }
 
-    public NoxScapeMasterNode getCurrentMasterNode() {
+    public NoxScapeMasterNode<?> getCurrentMasterNode() {
         return currentMasterNode;
     }
 
