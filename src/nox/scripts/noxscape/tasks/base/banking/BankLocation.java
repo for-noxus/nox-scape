@@ -3,6 +3,7 @@ package nox.scripts.noxscape.tasks.base.banking;
 import nox.scripts.noxscape.core.interfaces.ILocateable;
 import nox.scripts.noxscape.core.interfaces.INameable;
 import nox.scripts.noxscape.util.LocationUtils;
+import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.map.constants.Banks;
@@ -85,12 +86,13 @@ public enum BankLocation implements INameable, ILocateable {
         this.isDepositBox = isDepositBox;
     }
 
-    public static BankLocation closestTo(MethodProvider ctx, Position pos) {
+    public static BankLocation closestTo(MethodProvider ctx, Position pos, boolean isDepositBoxAcceptable) {
         Comparator<BankLocation> euclideanDistance = Comparator.comparingInt(a -> a.bankArea.getRandomPosition().distance(pos));
         boolean isMember = ctx.getWorlds().isMembersWorld();
 
         Area[] closestFive = Arrays.stream(BankLocation.values())
                 .filter(f -> isMember || f.isF2P)
+                .filter(f -> isDepositBoxAcceptable || !f.isDepositBox())
                 .sorted(euclideanDistance)
                 .limit(5)
                 .map(m -> m.bankArea)
