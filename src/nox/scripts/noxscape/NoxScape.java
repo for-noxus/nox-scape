@@ -9,6 +9,7 @@ import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
+import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.ui.DebugPaint;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
@@ -36,12 +37,14 @@ public class NoxScape extends Script {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
 
-            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
-            cfg.setRockToMine(MiningEntity.IRON);
-            cfg.setPurchaseNewPick(true);
-            StopWatcher sw = StopWatcher.create(ctx).stopAfter(3, Skill.MINING).levelsGained();
+            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, null, false);
 
-            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw, false);
+//            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
+//            cfg.setRockToMine(MiningEntity.IRON);
+//            cfg.setPurchaseNewPick(true);
+//            StopWatcher sw = StopWatcher.create(ctx).stopAfter(3, Skill.MINING).levelsGained();
+//
+//            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw, false);
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(500).gpMade(), false);
         } catch (Exception e) {
             log("Script failed to start.");
