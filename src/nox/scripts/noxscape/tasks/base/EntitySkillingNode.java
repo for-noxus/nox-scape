@@ -96,22 +96,21 @@ public class EntitySkillingNode extends NoxScapeNode {
             }
         }
 
+        if (fnFindEntity == null)
+            fnFindEntity = ent -> ent.getName().equals(skillableEntity.getName()) &&
+                    ((area != null && area.contains(ent)) || (centerTile != null && LocationUtils.manhattenDistance(ent.getPosition(), centerTile) < radius));
+
         if (ctx.getDialogues().isPendingContinuation())
             ctx.getDialogues().completeDialogue();
 
         if (isBusy() && (previouslyInteractedEntity == null || entityValidationCondition.test(previouslyInteractedEntity))) {
-            ctx.logClass(this, "Waiting for rock");
             return NRandom.humanized() * 2;
         }
 
-        RS2Object entity = fnFindEntity != null ?
-                ctx.getObjects().closest(ent -> fnFindEntity.test(ent)) :
-                ctx.getObjects().closest(skillableEntity.getName());
+        RS2Object entity = ctx.getObjects().closest(ent -> fnFindEntity.test(ent));
 
         if (entity == null) {
-            entity = Sleep.untilNotNull(() -> fnFindEntity != null ?
-                    ctx.getObjects().closest(ent -> fnFindEntity.test(ent)) :
-                    ctx.getObjects().closest(skillableEntity.getName()), 120_000, 700);
+            entity = Sleep.untilNotNull(() -> ctx.getObjects().closest(ent -> fnFindEntity.test(ent)), 120_000, 700);
             if (entity == null) {
                 abort(String.format("Unable to locate entity (%s) for skilling node (%s)", skillableEntity.getName(), skillableEntity.getSkill().name()));
                 return 500;
@@ -143,8 +142,8 @@ public class EntitySkillingNode extends NoxScapeNode {
         if (entityValidationCondition != null) {
             previouslyInteractedEntity = entity;
             Sleep.until(() -> {
-                RS2Object coal = ctx.getObjects().closest(f -> f.getPosition().equals(previouslyInteractedEntity.getPosition()) && fnFindEntity.test(f));
-                boolean passesTest = entityValidationCondition.test(coal);
+                RS2Object obj = ctx.getObjects().closest(f -> f.getPosition().equals(previouslyInteractedEntity.getPosition()) && fnFindEntity.test(f));
+                boolean passesTest = entityValidationCondition.test(obj);
                 boolean longTimeSinceInteracting = (System.currentTimeMillis() - interactTime > 5000) && !ctx.myPlayer().isAnimating();
                 return ctx.getDialogues().isPendingContinuation() || longTimeSinceInteracting || passesTest;
             }, postInteractWaitTimeout, postInteractWaitInterval);
