@@ -74,7 +74,7 @@ public class BankingNode extends NoxScapeNode {
             return false;
         }
 
-        return bankLocation.getBankArea().contains(ctx.myPosition());
+        return bankLocation.getBankArea().contains(ctx.myPosition()) || (bankLocation.getBankArea().contains(ctx.getMap().getDestination()) && ctx.getMap().canReach(ctx.getMap().getDestination()));
     }
 
     @Override
@@ -110,7 +110,7 @@ public class BankingNode extends NoxScapeNode {
         }
 
         if (items != null) {
-            if (!noted) {
+            if (!noted && !bankLocation.isDepositBox()) {
                 if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_ITEM)) {
                     abort("Unable to switch to normal item withdrawal");
                     return 5;
