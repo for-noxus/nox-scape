@@ -53,13 +53,18 @@ public class GrandExchangeNode extends NoxScapeNode {
             int amountToSell = (int) Math.min(ctx.getInventory().getAmount(item.getName()), item.getAmount());
             if (!ctx.getQuickExchange().quickSell(item.getName(), amountToSell)) {
                 abort("Error selling GEItem " + item.getName());
+                return 5;
             }
             notifyAction("Sold " + item.getName(), item.getAmount());
         }
 
-        for (GEItem item: isForSale.get(false))
-            if (!ctx.getQuickExchange().quickBuy(item.getName(), item.getAmount(), true))
+        for (GEItem item: isForSale.get(false)) {
+            if (!ctx.getQuickExchange().quickBuy(item.getName(), item.getAmount(), true)) {
                 abort("Error purchasing GEItem " + item.getName());
+                return 5;
+            }
+            notifyAction("Bought " + item.getName(), item.getAmount());
+        }
 
         complete(String.format("Successfully sold %d items and bought %d items.", isForSale.get(true).size(), isForSale.get(false).size()));
         return NRandom.humanized();
