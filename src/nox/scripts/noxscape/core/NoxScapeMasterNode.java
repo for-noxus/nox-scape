@@ -92,6 +92,7 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
     }
 
     public int continuePostExecution() throws InterruptedException {
+        ctx.logClass(this, "Executing post-execution pipeline");
         if (postExecutionNode != null && !postExecutionNode.isCompleted()) {
             return postExecutionNode.execute();
         } else {
