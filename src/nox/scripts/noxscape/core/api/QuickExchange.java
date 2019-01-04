@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.core.api;
 
+import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.WidgetActionFilter;
 import nox.scripts.noxscape.util.Wrapper;
@@ -113,6 +114,7 @@ public class QuickExchange extends MethodProvider {
         }
 
         Sleep.until(() -> getWidgets().singleFilter(getGrandExchange().getInterfaceId(), w -> w != null && w.getMessage() != null && w.getMessage().equals(itemName)) != null, 10000, 1000);
+        sleep(NRandom.fuzzedBounds(200, 20, 600, 70));
 
         return finishHandlingItem(itemName, amount, true, withdrawToBank, boxToUse);
     }
@@ -210,7 +212,7 @@ public class QuickExchange extends MethodProvider {
             return false;
         }
 
-        for (int i = 0; i < random(2, 5); i++) {
+        for (int i = 0; i < random(NRandom.fuzzedBounds(7, 1, 11, 2)); i++) {
             if (!widg.interact()) {
                 log("Error interacting with 5% " + message + " widget");
                 return false;
