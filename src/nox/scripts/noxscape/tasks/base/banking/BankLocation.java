@@ -56,6 +56,7 @@ public enum BankLocation implements INameable, ILocateable {
     NARDAHBANK("Nardah Bank", new Area(3424, 2892, 3430, 2889), false), //Nardah Bank - Members, requires getting into desert
     NEITIZNOTBANK("Neitiznot Bank", new Area(2335, 3808, 2337, 3805), false), //Neitiznot Bank - Members, Fremmy trials finished
     PORTPHASMATYSBANK("Port Phasmatys Bank", new Area(3686, 3471, 3691, 3463), false), //Port Phasmatys Bank - Members, requires Priest in Peril (can charter or use ecoto tokens to enter)
+    PORTSARIM("Port Sarim Deposit", new Area(3043, 3235, 3046, 3236), true, true),
     PISCATORISBANK("Piscatoris Bank", new Area(2327, 3690, 2332, 3687), false), //Piscatoris Bank - Members, Swan Song finished
     SHILOVILLAGEBANK("Shilo Village Bank", new Area(2849, 2955, 2855, 2953), false), //Shilo Village Bank - Members, Shilo Villlage finished
     SANDCRABSBANK("Sandcrabs Bank", new Area(1717, 3466, 1722, 3463), false), //Sandcrabs Bank - Members, located in Zeah
@@ -66,9 +67,8 @@ public enum BankLocation implements INameable, ILocateable {
     VINERYBANK("Vinery Bank", new Area(1802, 3571, 1808, 3571), false), //Vinery Bank - Members, located in Zeah, requires no favour to use
     WARRIORSGUILDBANK("Warriors Guild Bank", new Area(2843, 3544, 2846, 3539), false), //Warriors Guild Bank - Members, Attack + Strength >= 130
     WOODCUTTINGGUILDBANK("Woodcutting Guild Bank", new Area(1589, 3480, 1593, 3476), false), //Woodcutting Guild Bank - Members, requires 60 wc + 75% hosidius house favour
-    ZEAHCOOKINGBANK("Zeah Cooking Bank", new Area(1653, 3613, 1658, 3607), false), //Zeah Cooking Bank - Members, located on Zeah
+    ZEAHCOOKINGBANK("Zeah Cooking Bank", new Area(1653, 3613, 1658, 3607), false); //Zeah Cooking Bank - Members, located on Zeah
 
-    PORTSARIM("Port Sarim Deposit", new Area(3043, 3235, 3046, 3236), true, true);
 
     private final String name;
     private final Area bankArea;
