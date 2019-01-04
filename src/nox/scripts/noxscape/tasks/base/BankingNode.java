@@ -134,7 +134,7 @@ public class BankingNode extends NoxScapeNode {
             else
                 ctx.getBank().depositAll(item -> !bankItemNames.contains(item.getName()));
 
-            ctx.sleep(0, 80);
+            ScriptContext.sleep(NRandom.fuzzedBounds(50, 5, 150, 15));
 
             // Only check this section if we've not equipped our eqip items and withdrawn our withdrawn items
             List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream().filter(BankItem::isWithdraw).filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))).collect(Collectors.toList());
