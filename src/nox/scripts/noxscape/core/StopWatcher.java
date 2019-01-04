@@ -1,5 +1,7 @@
 package nox.scripts.noxscape.core;
 
+import nox.api.graphscript.Node;
+import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.core.interfaces.IAmountable;
 import nox.scripts.noxscape.core.interfaces.IConditionable;
@@ -7,6 +9,7 @@ import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.listener.MessageListener;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class StopWatcher implements MessageListener {
@@ -42,7 +45,8 @@ public class StopWatcher implements MessageListener {
     }
 
     public boolean shouldStop() {
-        return getTrackedAmount() >= builder.amount;
+        return getTrackedAmount() >= builder.amount ||
+                (ctx.getCurrentMasterNode().getMasterNodeInformation().getDuration() == Duration.COMPLETION && ctx.getCurrentMasterNode().getNodes().stream().allMatch(Node::isCompleted));
     }
 
     public void begin() {
