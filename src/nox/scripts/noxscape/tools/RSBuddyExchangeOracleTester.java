@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RSBuddyExchangeOracleTester {
-    private static final String[] NAMES_TO_TEST = new String[] { "Clay", "Adamant pickaxe", "Rune axe", "Mithril platebody" };
+    private static final String[] NAMES_TO_TEST = new String[] { "Mithril axe", "Clay", "Adamant pickaxe", "Rune axe", "Mithril platebody" };
     private static final int[] IDS_TO_TEST = new int[] { 434,  532 }; // clay, big bones
     public static void main(String[] args) throws IOException {
         System.out.println("Testing RSBuddy Exchange Oracle");
