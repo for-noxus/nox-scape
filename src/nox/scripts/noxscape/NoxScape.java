@@ -9,6 +9,7 @@ import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
+import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingEntity;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.ui.DebugPaint;
 import nox.scripts.noxscape.util.Sleep;
@@ -25,6 +26,7 @@ import org.osbot.rs07.utility.Condition;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @ScriptManifest(name = "NoxScape", author = "Nox", version = 1.0, info = "", logo = "")
 public class NoxScape extends Script {
@@ -37,7 +39,12 @@ public class NoxScape extends Script {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
 
-            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, null, false);
+            if (!getSettings().areRoofsEnabled())
+                getKeyboard().typeString("::toggleroofs");
+
+            WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
+            cfg.setTreeToChop(WoodcuttingEntity.TREE);
+            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, null, false);
 
 //            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
 //            cfg.setRockToMine(MiningEntity.IRON);
@@ -56,7 +63,7 @@ public class NoxScape extends Script {
     @Override
     public int onLoop() throws InterruptedException {
         try {
-            NoxScapeMasterNode cmn = ctx.getCurrentMasterNode();
+            NoxScapeMasterNode<?> cmn = ctx.getCurrentMasterNode();
             // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
                 if (cmn != null && cmn.isCompleted()) {
@@ -83,7 +90,7 @@ public class NoxScape extends Script {
                 cmn.reset();
                 ctx.setCurrentMasterNode(null);
                 // Loop back to the top to get assigned a new node
-                return 3000;
+                return 100;
             }
 
             // Watch our current node's stopwatcher
@@ -112,7 +119,6 @@ public class NoxScape extends Script {
     public void onPaint(Graphics2D g) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
 
         g.setColor(Color.green.darker());
         // Get current mouse position
