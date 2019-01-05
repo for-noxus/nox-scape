@@ -3,6 +3,7 @@ package nox.scripts.noxscape.core;
 import nox.api.graphscript.Node;
 
 import nox.scripts.noxscape.core.enums.Duration;
+import nox.scripts.noxscape.core.enums.NodePipeline;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import org.osbot.rs07.listener.MessageListener;
 
@@ -18,9 +19,6 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
     protected StopWatcher stopWatcher;
 
     private NoxScapeNode currentNode;
-    private NoxScapeNode postExecutionNode;
-    private NoxScapeNode preExecutionNode;
-    private NoxScapeNode returnToBankNode;
     private List<NoxScapeNode> nodes;
 
     private boolean completedPreExecution = false;
@@ -48,7 +46,7 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
                     completedPreExecution = true;
                     setDefaultEntryPoint();
                 } else {
-                    currentNode = preExecutionNode;
+                    currentNode = getPipelineNode(NodePipeline.PRE_EXECUTION);
                     if (currentNode == null) {
                         abort("MasterNode requires PreExecution, but there was none specified");
                     }
@@ -93,11 +91,12 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
 
     public int continuePostExecution() throws InterruptedException {
         ctx.logClass(this, "Executing post-execution pipeline");
-        if (postExecutionNode != null && !postExecutionNode.isCompleted()) {
-            return postExecutionNode.execute();
-        } else {
-            return returnToBankNode.execute();
+        NoxScapeNode nodeToExecute = getPipelineNode(NodePipeline.POST_EXECUTION);
+        if (nodeToExecute != null && !nodeToExecute.isCompleted()) {
+            return nodeToExecute.execute();
         }
+        abort("Node marked for PostExecution, but no PostExecution node was found");
+        return 500;
     }
 
     public abstract boolean canExecute();
@@ -110,17 +109,13 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
         this.nodes = nodes;
     }
 
-    protected void setReturnToBankNode(NoxScapeNode node) {
-        this.returnToBankNode = node;
+    protected NoxScapeNode getPipelineNode(NodePipeline pipeline) {
+        if (nodes == null || nodes.size() == 0)
+            return null;
+
+        return nodes.stream().filter(f -> f.getPipeline() == pipeline && f.isValid()).findFirst().orElse(null);
     }
 
-    protected void setPreExecutionNode(NoxScapeNode node) {
-        this.preExecutionNode = node;
-    }
-
-    protected void setPostExecutionNode(NoxScapeNode node) {
-        this.postExecutionNode = node;
-    }
 
     protected NoxScapeNode getCurrentNode() {
         return currentNode;
@@ -158,9 +153,12 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
     public boolean isCompleted() {
         // Nodes aren't required to have a PostExecutionNode, but they are required to have a Node to return to bank
         // Returns true if we've postExecuted, returned to bank, AND (node goes to completion and all nodes are complete OR node is time-based and stopwatcher is complete)
-        return (postExecutionNode == null || postExecutionNode.isCompleted()) &&
-                returnToBankNode.isCompleted() &&
-                ((nodeInformation.getDuration() == Duration.COMPLETION && nodes.stream().allMatch(Node::isCompleted)) || (nodeInformation.getDuration() != Duration.COMPLETION && stopWatcher.shouldStop()));
+        NoxScapeNode postExecutionNode = getPipelineNode(NodePipeline.POST_EXECUTION);
+        boolean completedPostExecution = postExecutionNode == null || postExecutionNode.isCompleted();
+        boolean stopWatcherIndicatesCompletion =
+                (nodeInformation.getDuration() == Duration.COMPLETION && nodes.stream().filter(f -> f.getPipeline() == NodePipeline.MAIN_EXECUTION).allMatch(Node::isCompleted)) ||
+                (nodeInformation.getDuration() != Duration.COMPLETION && stopWatcher.shouldStop());
+        return completedPostExecution && stopWatcherIndicatesCompletion;
     }
 
     public boolean isAborted() {
@@ -177,9 +175,6 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
         this.stopWatcher = null;
         this.isAborted = false;
         this.abortedReason = null;
-        this.preExecutionNode = null;
-        this.postExecutionNode = null;
-        this.returnToBankNode = null;
         this.currentNode = null;
     }
 
@@ -211,7 +206,7 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
     }
 
     private boolean setDefaultEntryPoint(NoxScapeNode lastNode) {
-        this.currentNode = getEntryPoint();
+        this.currentNode = getPipelineNode(NodePipeline.MAIN_EXECUTION);
 
         if (this.currentNode == null) {
             ctx.logClass(this, String.format("There were no more valid nodes. MasterNode (%s) will abort.", nodeInformation.getFriendlyName()));
@@ -230,9 +225,6 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
         return setDefaultEntryPoint(null);
     }
 
-    private NoxScapeNode getEntryPoint() {
-        return nodes.stream().filter(Node::isValid).findFirst().orElse(null);
-    }
 
     @Override
     public String toString() {

@@ -2,6 +2,7 @@ package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
 import nox.scripts.noxscape.core.enums.Duration;
+import nox.scripts.noxscape.core.enums.NodePipeline;
 import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.core.interfaces.IAmountable;
 import nox.scripts.noxscape.core.interfaces.IConditionable;
@@ -46,7 +47,7 @@ public class StopWatcher implements MessageListener {
 
     public boolean shouldStop() {
         return getTrackedAmount() >= builder.amount ||
-                (ctx.getCurrentMasterNode().getMasterNodeInformation().getDuration() == Duration.COMPLETION && ctx.getCurrentMasterNode().getNodes().stream().allMatch(Node::isCompleted));
+                (ctx.getCurrentMasterNode().getMasterNodeInformation().getDuration() == Duration.COMPLETION && ctx.getCurrentMasterNode().getNodes().stream().filter(f -> f.getPipeline() == NodePipeline.MAIN_EXECUTION).allMatch(Node::isCompleted));
     }
 
     public void begin() {

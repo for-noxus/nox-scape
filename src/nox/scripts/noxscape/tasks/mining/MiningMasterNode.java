@@ -1,14 +1,12 @@
 package nox.scripts.noxscape.tasks.mining;
 
+import com.sun.applet2.preloader.event.PreloaderEvent;
 import nox.scripts.noxscape.core.MasterNodeInformation;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.enums.Duration;
-import nox.scripts.noxscape.core.enums.Frequency;
-import nox.scripts.noxscape.core.enums.MasterNodeType;
+import nox.scripts.noxscape.core.enums.*;
 import nox.scripts.noxscape.core.CachedItem;
-import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.EntitySkillingNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
@@ -96,7 +94,8 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 .isWebWalk(true)
                 .setPathProfile(ppp)
                 .toArea(location.getBank().getBankArea())
-                .hasMessage("Walking to " + location.getBank().getName());
+                .hasMessage("Walking to " + location.getBank().getName())
+                .forPipeline(NodePipeline.PRE_EXECUTION);
 
         NoxScapeNode preExecutionBankNode = new BankingNode(ctx)
                 .bankingAt(location.getBank())
@@ -104,7 +103,8 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 .depositAllBackpackItems()
                 .handlingItems(axesToWithdraw)
                 .hasMessage(String.format("Banking at %s for the first time", location.getBank().getName()))
-                .addListener(ctx.getScriptProgress());
+                .addListener(ctx.getScriptProgress())
+                .forPipeline(NodePipeline.PRE_EXECUTION);
 
         Position orePos = NRandom.fromArray(location.positions);
         NoxScapeNode toOreNode = new WalkingNode(ctx)
@@ -130,6 +130,12 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 .entityInvalidWhen(ent -> !configuration.rockToMine.hasOre(ent), 30000, 200)
                 .hasMessage("Mining " + configuration.rockToMine.getName());
 
+        NoxScapeNode finishNode = new WalkingNode(ctx)
+                .toArea(location.getBank().getBankArea())
+                .isWebWalk(true)
+                .hasMessage("Finishing up banking at " + depositLocation.getName())
+                .forPipeline(NodePipeline.POST_EXECUTION);
+
         toOreNode.setChildNode(interactNode);
         interactNode.setChildNode(toBankNode);
         toBankNode.setChildNode(bankNode);
@@ -137,9 +143,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         preExecutionBankNode.setChildNode(toOreNode);
         preExecutionWalkNode.setChildNode(preExecutionBankNode);
 
-        setNodes(Arrays.asList(bankNode, interactNode, toOreNode, toBankNode, preExecutionBankNode, preExecutionWalkNode));
-        setPreExecutionNode(preExecutionWalkNode);
-        setReturnToBankNode(toBankNode);
+        setNodes(Arrays.asList(preExecutionBankNode, preExecutionWalkNode, bankNode, interactNode, toOreNode, toBankNode, finishNode));
 
         ctx.getBot().addMessageListener(this);
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));

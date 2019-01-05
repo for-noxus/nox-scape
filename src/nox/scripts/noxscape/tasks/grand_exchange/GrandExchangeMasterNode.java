@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.tasks.grand_exchange;
 
+import com.sun.applet2.preloader.event.PreloaderEvent;
 import nox.scripts.noxscape.core.MasterNodeInformation;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.NoxScapeNode;
@@ -7,6 +8,7 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.enums.Duration;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.enums.MasterNodeType;
+import nox.scripts.noxscape.core.enums.NodePipeline;
 import nox.scripts.noxscape.core.interfaces.IActionListener;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.GrandExchangeNode;
@@ -51,40 +53,47 @@ public class GrandExchangeMasterNode extends NoxScapeMasterNode<GrandExchangeMas
             return;
         }
 
-        NoxScapeNode preExecutionWalkNode = new WalkingNode(ctx)
-                .isWebWalk(true)
-                .toArea(BankLocation.GRAND_EXCHANGE.getBankArea());
-
         List<BankItem> bankItems = configuration.itemsToHandle
                 .stream()
                 .filter(f -> f.getAction() == GEAction.SELL)
                 .filter(f -> !ctx.getInventory().contains(f.getName()) || ctx.getInventory().getAmount(f.getName()) < f.getAmount() || f.getAmount() == -1)
                 .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, m.getAmount() == -1 ? Integer.MAX_VALUE : m.getAmount()))
                 .collect(Collectors.toList());
-        if (configuration.itemsToHandle.stream().anyMatch(a -> a.getAction() == GEAction.BUY))
+
+        if (configuration.itemsToHandle.stream().anyMatch(a -> a.getAction() == GEAction.BUY)) {
             bankItems.add(new BankItem("Coins", BankAction.WITHDRAW, Integer.MAX_VALUE));
+        }
+
+        NoxScapeNode preExecutionWalkNode = new WalkingNode(ctx)
+                .isWebWalk(true)
+                .toArea(BankLocation.GRAND_EXCHANGE.getBankArea())
+                .hasMessage("Walking to GE")
+                .forPipeline(NodePipeline.PRE_EXECUTION);
 
         NoxScapeNode preExecutionBankNode = new BankingNode(ctx)
                 .depositAllBackpackItems()
                 .asNoted()
                 .bankingAt(BankLocation.GRAND_EXCHANGE)
-                .handlingItems(bankItems);
+                .handlingItems(bankItems)
+                .hasMessage("Grabbing items needed for GE from the bank")
+                .forPipeline(NodePipeline.PRE_EXECUTION);
 
         NoxScapeNode geNode = new GrandExchangeNode(ctx)
                 .handlingItems(configuration.itemsToHandle)
-                .addListener(ctx.getScriptProgress());
+                .addListener(ctx.getScriptProgress())
+                .hasMessage("Handling GE Items");
 
-        NoxScapeNode bankNode = new BankingNode(ctx)
+        NoxScapeNode finishNode = new BankingNode(ctx)
                 .bankingAt(BankLocation.GRAND_EXCHANGE)
                 .depositAllBackpackItems()
-                .depositAllWornItems();
+                .depositAllWornItems()
+                .forPipeline(NodePipeline.POST_EXECUTION)
+                .hasMessage("Depositing our goodies");
 
         preExecutionWalkNode.setChildNode(preExecutionBankNode);
         preExecutionBankNode.setChildNode(geNode);
 
-        setPreExecutionNode(preExecutionWalkNode);
-        setReturnToBankNode(bankNode);
-        setNodes(Arrays.asList(geNode));
+        setNodes(Arrays.asList(preExecutionWalkNode, preExecutionBankNode, geNode, finishNode));
 
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
     }

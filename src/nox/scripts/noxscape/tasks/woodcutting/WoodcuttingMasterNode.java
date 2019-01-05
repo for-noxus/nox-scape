@@ -1,11 +1,8 @@
 package nox.scripts.noxscape.tasks.woodcutting;
 
 import nox.scripts.noxscape.core.*;
-import nox.scripts.noxscape.core.enums.Duration;
-import nox.scripts.noxscape.core.enums.Frequency;
-import nox.scripts.noxscape.core.enums.MasterNodeType;
+import nox.scripts.noxscape.core.enums.*;
 import nox.scripts.noxscape.core.CachedItem;
-import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.core.interfaces.IActionListener;
 import nox.scripts.noxscape.tasks.base.BankingNode;
 import nox.scripts.noxscape.tasks.base.EntitySkillingNode;
@@ -67,7 +64,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
         BankItem[] axesToWithdraw = WoodcuttingItems.axes().stream()
                 .filter(f -> f.canUse(ctx))
                 .map(m -> {
-                    BankItem item = new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), true);
+                    BankItem item = new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), m.canEquip(ctx));
                     if (m.getLevelRequirement(Skill.WOODCUTTING) > 20)
                         item.buyIfNecessary(1);
                     return item;
@@ -89,14 +86,16 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 .isWebWalk(true)
                 .setPathProfile(ppp)
                 .toArea(preExecutionBankLocation.getBankArea())
-                .hasMessage(String.format("Walking to %s bank for the first time", preExecutionBankLocation.getName()));
+                .hasMessage(String.format("Walking to %s bank for the first time", preExecutionBankLocation.getName()))
+                .forPipeline(NodePipeline.PRE_EXECUTION);
 
         NoxScapeNode preExecutionBankNode = new BankingNode(ctx)
                 .bankingAt(preExecutionBankLocation)
                 .depositAllWornItems()
                 .depositAllBackpackItems()
                 .handlingItems(axesToWithdraw)
-                .hasMessage("Getting player ready to cut some trees");
+                .hasMessage("Getting player ready to cut some trees")
+                .forPipeline(NodePipeline.PRE_EXECUTION);
 
         NoxScapeNode toTreeNode = new WalkingNode(ctx)
                 .toPosition(woodcuttingLocation)
@@ -104,7 +103,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 .hasMessage("Walking to Trees (" + configuration.treeToChop.getName() + ")");
 
         NoxScapeNode toBankNode = new WalkingNode(ctx)
-                .toPosition(woodcuttingLocation.getBank())
+                .toArea(woodcuttingLocation.getBank().getBankArea())
                 .isWebWalk(true)
                 .hasMessage("Walking to Bank");
 
@@ -119,16 +118,20 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
                 .entityInvalidWhen(ent -> ent.getName().equals("Tree stump"), 30000, 1000)
                 .hasMessage("Chopping " + configuration.treeToChop.getName());
 
+        NoxScapeNode finishNode = new WalkingNode(ctx)
+                .toArea(woodcuttingLocation.getBank().getBankArea())
+                .isWebWalk(true)
+                .hasMessage("Walking to Bank for Completion")
+                .forPipeline(NodePipeline.POST_EXECUTION);
+
         toTreeNode.setChildNode(interactNode);
         interactNode.setChildNode(toBankNode);
         toBankNode.setChildNode(bankNode);
         bankNode.setChildNode(toTreeNode);
-        preExecutionBankNode.setChildNode(toTreeNode);
+
         preExecutionWalkNode.setChildNode(preExecutionBankNode);
 
-        setNodes(Arrays.asList(toTreeNode, interactNode, toBankNode, bankNode));
-        setPreExecutionNode(preExecutionWalkNode);
-        setReturnToBankNode(toBankNode);
+        setNodes(Arrays.asList(preExecutionWalkNode, preExecutionBankNode, toTreeNode, interactNode, toBankNode, bankNode, finishNode));
 
         ctx.getBot().addMessageListener(this);
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));

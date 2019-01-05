@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.core;
 
 import nox.api.graphscript.Node;
+import nox.scripts.noxscape.core.enums.NodePipeline;
 import nox.scripts.noxscape.core.interfaces.IActionListener;
 
 import java.util.ArrayList;
@@ -12,6 +13,8 @@ public abstract class NoxScapeNode extends Node<NoxScapeNode> {
     protected ScriptContext ctx;
 
     private ArrayList<IActionListener> listeners;
+
+    private NodePipeline pipeline = NodePipeline.MAIN_EXECUTION;
 
     public NoxScapeNode(ScriptContext ctx) {
         this.ctx = ctx;
@@ -49,6 +52,11 @@ public abstract class NoxScapeNode extends Node<NoxScapeNode> {
          return this;
     }
 
+    public NoxScapeNode forPipeline(NodePipeline pipeline) {
+        this.pipeline = pipeline;
+        return this;
+    }
+
     public NoxScapeNode addListener(IActionListener listener) {
         if (this.listeners == null)
             this.listeners = new ArrayList<>();
@@ -59,8 +67,14 @@ public abstract class NoxScapeNode extends Node<NoxScapeNode> {
         return this;
     }
 
+    public NodePipeline getPipeline() {
+        return pipeline;
+    }
+
     public String toDebugString() {
         String ret = "Message: " + this.getMessage();
+        ret += "\nAborted: " + this.isAborted();
+        ret += "\nPipeline: " + this.pipeline.name();
         if (this.getChildNodes() != null && this.getChildNodes().size() > 0) {
             ret += "\nChildren: " +  this.getChildNodes().stream().filter(Objects::nonNull).map(m -> m.getClass().getSimpleName()).reduce("", (a, b) -> a + b + ", ");
         }
