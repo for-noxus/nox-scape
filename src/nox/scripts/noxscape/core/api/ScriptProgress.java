@@ -29,8 +29,8 @@ public class ScriptProgress extends MethodProvider implements IActionListener {
         if (action == null || action.equals(""))
             return;
 
-        actionsMap.putIfAbsent(action, amount);
         actionsMap.computeIfPresent(action, (k, v) -> v + amount);
+        actionsMap.putIfAbsent(action, amount);
 
         if (ctx.getCurrentMasterNode() != null && ctx.getCurrentMasterNode().getStopWatcher() != null) {
             ctx.getCurrentMasterNode().getStopWatcher().addTrackedAmount(1);
