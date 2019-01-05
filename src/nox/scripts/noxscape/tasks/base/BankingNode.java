@@ -15,6 +15,7 @@ import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.model.Item;
+import org.osbot.rs07.script.Script;
 
 import java.io.IOException;
 import java.util.*;
@@ -121,7 +122,7 @@ public class BankingNode extends NoxScapeNode {
             Map<Boolean, List<BankItem>> belongsToSet = items.stream().collect(Collectors.partitioningBy(item -> item.getSet() != null));
 
             // Handle item sets
-            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().filter(f -> f.getSet() != null).collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::filterItemsFromSet).toArray(BankItem[]::new);
+            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::filterItemsFromSet).toArray(BankItem[]::new);
             belongsToSet.get(false).addAll(Arrays.asList(setItemsToWithdraw));
 
             // Deposit all deposit-items
@@ -140,7 +141,7 @@ public class BankingNode extends NoxScapeNode {
             List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream().filter(BankItem::isWithdraw).filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))).collect(Collectors.toList());
             List<GEItem> itemsToBuy = itemsToWithdraw.stream().filter(BankItem::shouldBuy).filter(f -> ctx.getBank().getAmount(f.getName()) < f.getAmount()).map(m -> new GEItem(m.getName(), GEAction.BUY, m.shouldBuyAmount())).collect(Collectors.toList());
             if (itemsToBuy.size() > 0) {
-                ctx.log("Need to buy " + itemsToBuy.size() + ", calculating prices..");
+                ctx.log("Need to buy " + itemsToBuy.size() + " item(s), calculating prices..");
                 try {
                     RSBuddyExchangeOracle.retrievePriceGuide();
                 } catch (IOException e) {
@@ -148,7 +149,7 @@ public class BankingNode extends NoxScapeNode {
                     ctx.log(Arrays.toString(e.getStackTrace()));
                 }
 
-                long totalPrice = itemsToBuy.stream().map(m -> RSBuddyExchangeOracle.getItemByName(m.getName()).getOverallPrice() * m.getAmount()).reduce(0, Integer::sum);
+                long totalPrice = itemsToBuy.stream().map(m -> RSBuddyExchangeOracle.getItemByName(m.getName()).getBuyPrice() * m.getAmount()).reduce(0, Integer::sum);
                 long totalCoins = ctx.getInventory().getAmount("Coins") + ctx.getBank().getAmount("Coins");
                 ctx.log(String.format("Total cost of items is %s, and we have %s", totalPrice, totalCoins));
 
@@ -156,14 +157,14 @@ public class BankingNode extends NoxScapeNode {
                 cfg.setItemsToHandle(itemsToBuy);
 
                 // If we need to buy from the GE, mark it as dependent on the MoneyMaking node. Otherwise, it is independent
-                boolean isGeDependent = totalCoins <= (totalPrice * 1.1); // Play it safe with a 10% buffer
+                int moneyToMake = Math.max((int)((totalPrice - totalCoins) * 1.25), NRandom.fuzzedBounds(4800, 200, 10_000, 1000)); // Let's always at least make a minimal amount
+                boolean isGeDependent = totalCoins <= (moneyToMake); // Play it safe with a 10% buffer
                 DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), true);
                 DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, isGeDependent);
                 if (isGeDependent) {
-                    DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter((int)((totalPrice - totalCoins) * 1.1)).gpMade(), false);
+                    DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(moneyToMake).gpMade(), false);
                 }
-                abort("Needed to buy items from GE: " + Arrays.toString(itemsToBuy.toArray()));
-
+                abort("Needed to buy from GE: " + itemsToBuy.stream().map(m -> String.format("%sx %s", m.getAmount(), m.getName())).collect(Collectors.joining(", ")));
                 return 50;
             }
             if (itemsToWithdraw.size() > 0) {
