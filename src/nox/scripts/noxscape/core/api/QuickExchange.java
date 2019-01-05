@@ -205,6 +205,15 @@ public class QuickExchange extends MethodProvider {
     }
 
     private boolean modifyPricePct(boolean increase) throws InterruptedException {
+        // If we're buying a cheap item, just offer a quick and dirty price
+        if (increase && getGrandExchange().getOfferPrice() <= 2500) {
+            int price =
+                    NRandom.exact(5, 6) * 1000 +
+                    NRandom.exact(2, 7) * 100 +
+                    NRandom.exact(1, 5) * 10 +
+                    NRandom.exact(1, 5);
+            return getGrandExchange().setOfferPrice(price);
+        }
         RS2Widget widg = getWidgets().singleFilter(getGrandExchange().getInterfaceId(), increase ? increaseWidgetFilter : decreaseWidgetFilter);
         String message = increase ? "increase" : "decrease";
         if (widg == null) {
@@ -212,12 +221,12 @@ public class QuickExchange extends MethodProvider {
             return false;
         }
 
-        for (int i = 0; i < random(NRandom.fuzzedBounds(7, 1, 11, 2)); i++) {
+        for (int i = 0; i < random(NRandom.fuzzedBounds(13, 1, 18, 2)); i++) {
             if (!widg.interact()) {
                 log("Error interacting with 5% " + message + " widget");
                 return false;
             }
-            sleep(random(20,75));
+            sleep(NRandom.fuzzedBounds(25, 2, 80, 8));
         }
 
         return true;
