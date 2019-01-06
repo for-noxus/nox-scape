@@ -75,7 +75,7 @@ public class BankingNode extends NoxScapeNode {
             return false;
         }
 
-        return bankLocation.getBankArea().contains(ctx.myPosition()) || (bankLocation.getBankArea().contains(ctx.getMap().getDestination()) && ctx.getMap().canReach(ctx.getMap().getDestination()));
+        return bankLocation.getBankArea().contains(ctx.myPosition()) || (ctx.getMap().getDestination() != null && bankLocation.getBankArea().contains(ctx.getMap().getDestination()) && ctx.getMap().canReach(ctx.getMap().getDestination()));
     }
 
     @Override
