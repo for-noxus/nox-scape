@@ -152,6 +152,9 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
     @Override
     public void onMessage(Message message) throws InterruptedException {
         if (message.getType() == Message.MessageType.GAME) {
+            if (message.getMessage().toLowerCase().contains("you've just advanced your woodcutting level")) {
+                ctx.getScriptProgress().onLevelUp(Skill.WOODCUTTING);
+            }
             if (message.getMessage().toLowerCase().contains("you get some")) {
                 Item item = ctx.getInventory().getItem(configuration.treeToChop.producesItemName());
                 if (item == null) {

@@ -4,6 +4,7 @@ import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.enums.StopCondition;
 import nox.scripts.noxscape.core.interfaces.IActionListener;
 import org.osbot.rs07.api.def.ItemDefinition;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
 import java.util.HashMap;
@@ -35,6 +36,13 @@ public class ScriptProgress extends MethodProvider implements IActionListener {
         if (ctx.getCurrentMasterNode() != null && ctx.getCurrentMasterNode().getStopWatcher() != null) {
             ctx.getCurrentMasterNode().getStopWatcher().addTrackedAmount(1);
         }
+    }
+
+    @Override
+    public void onLevelUp(Skill skill) {
+        String friendlyName = skill.name();
+        friendlyName = friendlyName.charAt(0) + friendlyName.substring(1).toLowerCase();
+        onActionPerformed("Leveled Up " + friendlyName);
     }
 
     @Override

@@ -163,13 +163,19 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
 
     @Override
     public void onMessage(Message message) throws InterruptedException {
-        if (message.getType() == Message.MessageType.GAME && message.getMessage().toLowerCase().contains("you manage to mine some")) {
-            Item item = ctx.getInventory().getItem(configuration.rockToMine.producesItemName());
-            if (item == null) {
-                ctx.logClass(this, "Unable to log action for mining entity " + configuration.rockToMine);
+        if (message.getType() == Message.MessageType.GAME) {
+            if (message.getMessage().toLowerCase().contains("advanced your mining level")) {
+                ctx.getScriptProgress().onLevelUp(Skill.MINING);
             }
-            else {
-                ctx.getScriptProgress().onItemAcquired(item.getId(), 1);
+            if ( message.getMessage().toLowerCase().contains("you manage to mine some")) {
+
+                Item item = ctx.getInventory().getItem(configuration.rockToMine.producesItemName());
+                if (item == null) {
+                    ctx.logClass(this, "Unable to log action for mining entity " + configuration.rockToMine);
+                }
+                else {
+                    ctx.getScriptProgress().onItemAcquired(item.getId(), 1);
+                }
             }
         }
     }
