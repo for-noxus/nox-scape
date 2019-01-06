@@ -22,6 +22,8 @@ public final class DecisionMaker {
     private static ArrayList<NoxScapeMasterNode> masterNodes = new ArrayList<>();
     private static Stack<QueuedNode> priorityNodes = new Stack<>();
 
+    private static QueuedNode lastPoppedNode;
+
     private static ScriptContext ctx;
 
     public static void init() {
@@ -43,14 +45,14 @@ public final class DecisionMaker {
 
         if (!priorityNodes.empty()) {
             try {
-                QueuedNode nodeInfo = priorityNodes.pop();
+                lastPoppedNode = priorityNodes.pop();
                 writeTasksToFile();
-                Class nodeClass = Class.forName(nodeInfo.className);
+                Class nodeClass = Class.forName(lastPoppedNode.className);
                 nextNode = findExistingNode(nodeClass);
                 if (nextNode != null) {
                     nextNode.reset();
-                    nextNode.configuration = nodeInfo.configuration;
-                    nextNode.setStopWatcher(nodeInfo.stopWatcher);
+                    nextNode.configuration = lastPoppedNode.configuration;
+                    nextNode.setStopWatcher(lastPoppedNode.stopWatcher);
                     ctx.logClass(DecisionMaker.class, "Priority task selected: " + nextNode.getMasterNodeInformation().getFriendlyName());
                 }
             } catch (ClassNotFoundException e) {
@@ -118,13 +120,22 @@ public final class DecisionMaker {
     }
 
     public static void clearDependentNodeStack() {
-        if (priorityNodes != null)
+        if (priorityNodes == null)
             return;
 
-        while (!priorityNodes.empty() || priorityNodes.peek().isDependant) {
+        while (!priorityNodes.empty() && priorityNodes.peek().isDependant) {
             QueuedNode node = priorityNodes.pop();
             ctx.log("Abandoning node " + node.className + " because it was dependent on an abandoned ancestor");
         }
+    }
+
+    public static void shutdown() {
+        if (lastPoppedNode != null)
+            addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), lastPoppedNode.isDependant);
+
+        writeTasksToFile();
+
+        masterNodes.forEach(NoxScapeMasterNode::reset);
     }
 
     private static void initializeNodes() {
@@ -157,8 +168,10 @@ public final class DecisionMaker {
         int runningTotal = 0;
         for (Pair<NoxScapeMasterNode, Integer> p: availableNodes) {
             runningTotal += p.b;
-            if (runningTotal >= selectedValue)
+            if (runningTotal >= selectedValue) {
                 nextNode = p.a;
+                break;
+            }
         }
 
         if (nextNode == null) {
