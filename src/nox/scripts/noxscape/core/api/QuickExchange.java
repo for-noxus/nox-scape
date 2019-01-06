@@ -196,7 +196,7 @@ public class QuickExchange extends MethodProvider {
                 return false;
             }
             if (getGrandExchange().collect(withdrawToBank)) {
-                log(String.format("QuickExchange -- Successfully handled %dx %s at %dGP each.", amount, itemName, getGrandExchange().getItemPrice(boxToUse)));
+                log(String.format("QuickExchange -- Successfully handled %dx %s at %dGP each.", getGrandExchange().getAmountTraded(boxToUse), itemName, getGrandExchange().getItemPrice(boxToUse)));
                 return true;
             }
         }
