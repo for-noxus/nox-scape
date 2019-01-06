@@ -12,4 +12,9 @@ public class Pair<k, v> {
 
     public k getA() { return a; }
     public v getB() { return b; }
+
+    @Override
+    public String toString() {
+        return String.format("Pair{<%s, %s>}", a, b);
+    }
 }
