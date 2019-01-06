@@ -6,6 +6,9 @@ import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.StopWatcher;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
+import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
+import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
@@ -42,9 +45,14 @@ public class NoxScape extends Script {
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
 
-            WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
-            cfg.setTreeToChop(WoodcuttingEntity.TREE);
-            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, null, false);
+//            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
+//            cfg.setItemsToHandle(new GEItem("Iron ore", GEAction.SELL, -1));
+//            DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, false);
+
+//            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(1, Skill.WOODCUTTING).levelsGained(), false);
+//            WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
+//            cfg.setTreeToChop(WoodcuttingEntity.TREE);
+//            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, cfg, null, false);
 
 //            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
 //            cfg.setRockToMine(MiningEntity.IRON);
@@ -108,6 +116,11 @@ public class NoxScape extends Script {
         log("Captain we've got no fkin clue why we exited");
         stop();
         return 11;
+    }
+
+    @Override
+    public void onExit() throws InterruptedException {
+        DecisionMaker.shutdown();
     }
 
     private void logException(Exception e) {
