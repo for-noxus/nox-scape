@@ -120,6 +120,7 @@ public class NoxScape extends Script {
 
     @Override
     public void onExit() throws InterruptedException {
+        super.onExit();
         DecisionMaker.shutdown();
     }
 
