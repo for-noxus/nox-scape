@@ -12,6 +12,19 @@ public final class NRandom {
         return lowerBounds + generated;
     }
 
+    public static int fuzzed(int mean, int deviation) {
+        Random r = new Random();
+        return (int) Math.round(r.nextGaussian() * deviation + mean);
+    }
+
+    public static int fuzzedBounds(int mean, int lowerDeviation, int upperDeviation) {
+        Random r = new Random();
+        int lowerNum = (int) Math.round(mean - lowerDeviation * r.nextGaussian());
+        int upperNum = (int) Math.round(mean + upperDeviation * r.nextGaussian());
+
+        return exact(lowerNum, upperNum);
+    }
+
     public static int fuzzedBounds(int lowerMean, int lowerDeviation, int upperMean, int upperDeviation) {
         Random r = new Random();
         int lowerNum = (int) Math.round((lowerDeviation * r.nextGaussian()) + lowerMean);
