@@ -1,7 +1,10 @@
 package nox.scripts.noxscape.core;
 
+import nox.scripts.noxscape.core.api.CombatHelper;
+import nox.scripts.noxscape.core.api.CombatStyles;
 import nox.scripts.noxscape.core.api.QuickExchange;
 import nox.scripts.noxscape.core.api.ScriptProgress;
+import nox.scripts.noxscape.tasks.base.combat.CombatPreferenceProfile;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.script.MethodProvider;
@@ -20,6 +23,8 @@ public class ScriptContext extends MethodProvider {
 
     private QuickExchange quickExchange;
     private ScriptProgress scriptProgress;
+    private CombatStyles combatStyles;
+    private CombatHelper combatHelper;
 
     public ScriptContext(MethodProvider api, String logDir) {
         this.logDir = logDir;
@@ -38,6 +43,20 @@ public class ScriptContext extends MethodProvider {
             scriptProgress = new ScriptProgress(this);
 
         return scriptProgress;
+    }
+
+    public CombatStyles getCombatStyles() {
+        if (combatStyles == null)
+            combatStyles = new CombatStyles(this);
+
+        return combatStyles;
+    }
+
+    public CombatHelper getCombatHelper(CombatPreferenceProfile profile) {
+        if (combatHelper == null)
+            combatHelper = new CombatHelper(this, profile);
+
+        return combatHelper;
     }
 
     public NoxScapeMasterNode<?> getCurrentMasterNode() {
