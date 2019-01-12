@@ -8,18 +8,30 @@ import org.osbot.rs07.script.MethodProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 public class CachedItem implements INameable {
     private String name;
-    private List<Pair<Skill, Integer>> requiredLevels;
 
+    private final BooleanSupplier addititionalConditions;
+
+    private List<Pair<Skill, Integer>> requiredLevels;
     public CachedItem(String name, Pair<Skill, Integer>... requiredLevels) {
+        this(name, null, requiredLevels);
+    }
+
+    public CachedItem(String name, BooleanSupplier addititionalConditions, Pair<Skill, Integer>... requiredLevels) {
         this.name = name;
+        this.addititionalConditions = addititionalConditions;
         this.requiredLevels = new ArrayList<>(Arrays.asList(requiredLevels));
     }
 
     public String getName() {
         return name;
+    }
+
+    public BooleanSupplier getAddititionalConditions() {
+        return addititionalConditions;
     }
 
     public int getLevelRequirement(Skill skill) {
@@ -36,13 +48,18 @@ public class CachedItem implements INameable {
     }
 
     public boolean canEquip(MethodProvider api) {
-        List<Skill>  equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
-        return requiredLevels == null || !requiredLevels.stream().filter(f -> equipSkills.contains(f.a)).anyMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b);
+        List<Skill> equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
+        return (addititionalConditions == null || addititionalConditions.getAsBoolean()) &&
+                (requiredLevels == null ||
+                !requiredLevels.stream().filter(f -> equipSkills.contains(f.a)).anyMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b));
     }
 
     public boolean canUse(MethodProvider api) {
-        List<Skill>  equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
-        return requiredLevels == null || requiredLevels.stream().filter(f -> !equipSkills.contains(f.a)).noneMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b);
+        List<Skill> equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
+
+        return (addititionalConditions == null || addititionalConditions.getAsBoolean()) &&
+                (requiredLevels == null ||
+                requiredLevels.stream().filter(f -> !equipSkills.contains(f.a)).noneMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b));
     }
 
     public int requiredLevelSum() {
