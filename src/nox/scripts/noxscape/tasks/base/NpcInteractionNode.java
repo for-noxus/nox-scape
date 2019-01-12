@@ -1,21 +1,28 @@
 package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
+import nox.scripts.noxscape.core.api.CombatHelper;
 import nox.scripts.noxscape.core.interfaces.INameable;
+import nox.scripts.noxscape.tasks.base.combat.CombatPreferenceProfile;
 import nox.scripts.noxscape.util.Sleep;
+import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
+import org.osbot.rs07.api.ui.Skill;
 import sun.plugin.com.PropertyGetDispatcher;
+
+import java.util.Arrays;
 
 public class NpcInteractionNode extends NoxScapeNode {
 
     private String npcName;
     private String interactAction;
     private String[] dialogueOptions;
-    private boolean isCombat;
+    private CombatHelper combatHelper;
 
     public NpcInteractionNode interactWith(INameable npc) {
         this.npcName = npc.getName();
+
         return this;
     }
 
@@ -30,26 +37,38 @@ public class NpcInteractionNode extends NoxScapeNode {
         return this;
     }
 
-    public NpcInteractionNode markAsCombat() {
-        this.isCombat = true;
+    public NpcInteractionNode isCombat(CombatPreferenceProfile combatProfile) {
+        this.combatHelper = ctx.getCombatHelper(combatProfile);
         return this;
     }
 
     @Override
     public boolean isValid() {
-        if (npcName == null) {
-            abort("Queued up and NPCNode, and no NPC was set!");
+        if (npcName == null && combatHelper == null) {
+            abort("Queued up an NPCNode, but no NPCs were set!");
             return false;
         }
 
-        NPC targetNpc =  ctx.getNpcs().closest(f -> f.getName() != null && f.getName().equals(npcName));
-        Position targetPosition = targetNpc == null ? null : targetNpc.getPosition();
-        return targetNpc != null && targetPosition != null && ctx.myPosition().distance(targetPosition) < 10 && ctx.getMap().canReach(targetPosition);
+        return (combatHelper != null && combatHelper.isInCombatArea()) ||
+                (ctx.getNpcs().closest(f -> f.getPosition() != null && ctx.myPosition().distance(f.getPosition()) < 10 && ctx.getMap().canReach(f.getPosition())) != null);
     }
 
     @Override
     public int execute() throws InterruptedException {
-        NPC npc = ctx.getNpcs().closest(f -> f.getName().equals(npcName));
+        NPC npc;
+
+        if (combatHelper != null) {
+            if (combatHelper.hasFood()) {
+                if (!combatHelper.checkHealth()) {
+                    abort("Needed to eat, but was unable to for some reason");
+                    return 50;
+                }
+            }
+            npc = combatHelper.getNextTarget();
+
+        } else {
+            npc = ctx.getNpcs().closest(f -> f.getName().equals(npcName));
+        }
 
         if (npc == null) {
             abort("Unable to locate closest NPC named " + npcName);
@@ -61,9 +80,15 @@ public class NpcInteractionNode extends NoxScapeNode {
             return 5;
         }
 
-        if (dialogueOptions != null)
+        if (dialogueOptions != null) {
             Sleep.until(() -> ctx.getDialogues().inDialogue(), 10_000, 1_000);
-        else if (isCombat)
+            if (!ctx.getDialogues().inDialogue()) {
+                abort("Unable to get in dialogue with NPC " + npc.getName());
+                return 50;
+            } else {
+                ctx.getDialogues().completeDialogue(dialogueOptions);
+            }
+        } else if (combatHelper != null)
             Sleep.until(() -> ctx.getCombat().isFighting(), 10_000, 1_000);
 
         complete("Successfully interacted with (" + npcName + ")");
