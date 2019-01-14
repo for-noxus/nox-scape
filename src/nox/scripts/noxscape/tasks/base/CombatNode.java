@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
+import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.api.CombatHelper;
 import nox.scripts.noxscape.core.interfaces.ICombatable;
 import nox.scripts.noxscape.core.interfaces.INameable;
@@ -19,17 +20,17 @@ public class CombatNode extends NoxScapeNode {
     private CombatPreferenceProfile combatProfile;
     private CombatHelper combatHelper;
     private boolean shouldRunAway;
+
+    public CombatNode(ScriptContext ctx) {
+        super(ctx);
+    }
+
     private Position[] runAwayDestinations;
     private BooleanSupplier interruptCondition;
 
     public CombatNode withProfile(CombatPreferenceProfile profile) {
         combatProfile = profile;
         this.combatHelper = ctx.getCombatHelper(combatProfile);
-        return this;
-    }
-
-    public CombatNode shouldBeFighting(ICombatable npcToFight) {
-        this.npcToFight = npcToFight;
         return this;
     }
 
@@ -55,9 +56,12 @@ public class CombatNode extends NoxScapeNode {
 
     @Override
     public int execute() throws InterruptedException {
-        while (ctx.getCombat().isFighting()) {
-            if (interruptCondition.getAsBoolean())
+        Character beingFought = ctx.getCombat().getFighting();
+        while (ctx.getCombat().getCombat().isFighting()) { //Todo <-- This line NPE's sometimes???
+            if (interruptCondition != null && interruptCondition.getAsBoolean()) {
+                ctx.logClass(this, "Interrupting combat prematurely for break condition");
                 break;
+            }
 
             if (combatHelper.hasFood()) {
                 if (!combatHelper.checkHealth()) {
@@ -67,7 +71,9 @@ public class CombatNode extends NoxScapeNode {
             }
         }
 
-        complete("Finished fighting");
+        ctx.setTargetEntity(null);
+        notifyAction("Killed " + beingFought.getName());
+        complete("Finished fighting " + beingFought.getName());
         return NRandom.humanized();
     }
 }
