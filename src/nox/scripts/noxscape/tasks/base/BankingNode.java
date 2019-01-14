@@ -231,12 +231,12 @@ public class BankingNode extends NoxScapeNode {
                 .findFirst();
 
         Optional<BankItem> bestItemToBuy = set.stream().filter(BankItem::shouldBuy).sorted(Comparator.comparingInt(BankItem::getPriority).reversed()).findFirst();
-        bestItemToBuy.ifPresent(bankItem -> ctx.logClass(this, "Found best item to buy: " + bankItem.getName()));
         // If we have the item and we're not buying a better one, OR the best one IS our item
         if (itemToWithdraw.isPresent() && !bestItemToBuy.isPresent() || itemToWithdraw.isPresent() && itemToWithdraw.get().equals(bestItemToBuy.orElse(null))) {
             return itemToWithdraw.get();
         } else if (bestItemToBuy.isPresent() && !bestItemToBuy.get().equals(itemToWithdraw.orElse(null))) {
             // If we don't own our best item..
+            bestItemToBuy.ifPresent(bankItem -> ctx.logClass(this, "Found best item to buy: " + bankItem.getName()));
             return bestItemToBuy.get();
         } else {
             abort(String.format("Unable to locate any items belonging to set (%s)", set.get(0).getSet()));
