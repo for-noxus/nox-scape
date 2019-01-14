@@ -1,6 +1,7 @@
 package nox.scripts.noxscape.tasks.base;
 
 import nox.scripts.noxscape.core.NoxScapeNode;
+import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.api.CombatHelper;
 import nox.scripts.noxscape.core.interfaces.INameable;
 import nox.scripts.noxscape.tasks.base.combat.CombatPreferenceProfile;
@@ -9,6 +10,7 @@ import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.script.MethodProvider;
 import sun.plugin.com.PropertyGetDispatcher;
 
 import java.util.Arrays;
@@ -19,6 +21,11 @@ public class NpcInteractionNode extends NoxScapeNode {
     private String interactAction;
     private String[] dialogueOptions;
     private CombatHelper combatHelper;
+    private CombatPreferenceProfile combatProfile;
+
+    public NpcInteractionNode(ScriptContext ctx) {
+        super(ctx);
+    }
 
     public NpcInteractionNode interactWith(INameable npc) {
         this.npcName = npc.getName();
@@ -39,6 +46,8 @@ public class NpcInteractionNode extends NoxScapeNode {
 
     public NpcInteractionNode isCombat(CombatPreferenceProfile combatProfile) {
         this.combatHelper = ctx.getCombatHelper(combatProfile);
+        this.combatProfile = combatProfile;
+        this.interactAction = "Attack";
         return this;
     }
 
@@ -58,6 +67,10 @@ public class NpcInteractionNode extends NoxScapeNode {
         NPC npc;
 
         if (combatHelper != null) {
+            if (ctx.getCombatStyles().getCurrentStyle() != combatProfile.getStyle()) {
+                if (!ctx.getCombatStyles().setStyle(combatProfile.getStyle()))
+                    ctx.logClass(this, "Error setting combat style to " + combatProfile.getStyle());
+            }
             if (combatHelper.hasFood()) {
                 if (!combatHelper.checkHealth()) {
                     abort("Needed to eat, but was unable to for some reason");
@@ -75,8 +88,16 @@ public class NpcInteractionNode extends NoxScapeNode {
             return 5;
         }
 
+        ctx.setTargetEntity(npc);
+
+        if (!ctx.getMap().canReach(npc)) {
+            if (!ctx.getWalking().webWalk(npc.getPosition())) {
+                abort("Unable to walk to located NPC " + npc.getName());
+            }
+        }
+
         if (!npc.interact(interactAction)) {
-            abort(String.format("Unable to interact with NPC (%s) with action %s", npcName, interactAction));
+            abort(String.format("Unable to interact with NPC (%s) with action %s", npc.getName(), interactAction));
             return 5;
         }
 
@@ -91,7 +112,7 @@ public class NpcInteractionNode extends NoxScapeNode {
         } else if (combatHelper != null)
             Sleep.until(() -> ctx.getCombat().isFighting(), 10_000, 1_000);
 
-        complete("Successfully interacted with (" + npcName + ")");
+        complete("Successfully interacted with (" + npc.getName() + ")");
         return 100;
     }
 }
