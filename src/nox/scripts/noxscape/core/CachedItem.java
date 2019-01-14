@@ -8,30 +8,34 @@ import org.osbot.rs07.script.MethodProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 public class CachedItem implements INameable {
     private String name;
 
-    private final BooleanSupplier addititionalConditions;
+    private Predicate<MethodProvider> addititionalConditions;
 
     private List<Pair<Skill, Integer>> requiredLevels;
+
     public CachedItem(String name, Pair<Skill, Integer>... requiredLevels) {
         this(name, null, requiredLevels);
     }
-
-    public CachedItem(String name, BooleanSupplier addititionalConditions, Pair<Skill, Integer>... requiredLevels) {
+    public CachedItem(String name, Predicate<MethodProvider> addititionalConditions, Pair<Skill, Integer>... requiredLevels) {
         this.name = name;
         this.addititionalConditions = addititionalConditions;
-        this.requiredLevels = new ArrayList<>(Arrays.asList(requiredLevels));
+        this.requiredLevels = requiredLevels == null ? null : new ArrayList<>(Arrays.asList(requiredLevels));
     }
 
     public String getName() {
         return name;
     }
 
-    public BooleanSupplier getAddititionalConditions() {
+    public Predicate<MethodProvider> getAddititionalConditions() {
         return addititionalConditions;
+    }
+
+    public void setAddititionalConditions(Predicate<MethodProvider> addititionalConditions) {
+        this.addititionalConditions = addititionalConditions;
     }
 
     public int getLevelRequirement(Skill skill) {
@@ -49,21 +53,19 @@ public class CachedItem implements INameable {
 
     public boolean canEquip(MethodProvider api) {
         List<Skill> equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
-        return (addititionalConditions == null || addititionalConditions.getAsBoolean()) &&
-                (requiredLevels == null ||
-                !requiredLevels.stream().filter(f -> equipSkills.contains(f.a)).anyMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b));
+        return (addititionalConditions == null || addititionalConditions.test(api)) &&
+                (requiredLevels == null || requiredLevels.stream().filter(f -> equipSkills.contains(f.a)).noneMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b));
     }
 
     public boolean canUse(MethodProvider api) {
         List<Skill> equipSkills = Arrays.asList(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED);
 
-        return (addititionalConditions == null || addititionalConditions.getAsBoolean()) &&
-                (requiredLevels == null ||
-                requiredLevels.stream().filter(f -> !equipSkills.contains(f.a)).noneMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b));
+        return (addititionalConditions == null || addititionalConditions.test(api)) &&
+                (requiredLevels == null || requiredLevels.stream().filter(f -> !equipSkills.contains(f.a)).noneMatch(pair -> api.getSkills().getDynamic(pair.a) < pair.b));
     }
 
     public int requiredLevelSum() {
-        return requiredLevels.stream().map(m -> m.b).reduce(Integer::sum).get();
+        return requiredLevels == null ? 0 : requiredLevels.stream().map(m -> m.b).reduce(Integer::sum).get();
     }
 
     public static List<CachedItem> generateFromBaseMetals(String itemSuffix, Skill skill, int bronzeReq, int ironReq, int steelReq, int blackReq,
@@ -76,7 +78,7 @@ public class CachedItem implements INameable {
                 new CachedItem("Mithril " + itemSuffix, new Pair<>(skill, mithReq)),
                 new CachedItem("Adamant " + itemSuffix, new Pair<>(skill, adamantReq)),
                 new CachedItem("Rune " + itemSuffix, new Pair<>(skill, runeReq)),
-                new CachedItem("Dragon " + itemSuffix, new Pair<>(skill, dragonReq))
+                new CachedItem("Dragon " + itemSuffix, api -> api.getWorlds().isMembersWorld(), new Pair<>(skill, dragonReq))
         );
     }
 }
