@@ -18,8 +18,16 @@ public class CollectLootNode extends NoxScapeNode {
         return this;
     }
 
+    public CollectLootNode lootItems(List<String> itemsToLoot) {
+        this.itemsToLoot = itemsToLoot;
+        return this;
+    }
+
     @Override
     public boolean isValid() {
+        if (itemsToLoot == null || itemsToLoot.size() == 0)
+            throw new IllegalArgumentException("A LootNode was specified, but no items were specified to be picked up!");
+
         return getItemsToPickup().size() != 0;
     }
 
