@@ -29,6 +29,10 @@ public enum CombatStyle {
         return componentId;
     }
 
+    public boolean trainsSkill(Skill skill) {
+        return (skill == Skill.RANGED || skill == Skill.MAGIC) || skill  == this.skillTrained;
+    }
+
     public static CombatStyle forSkill(Skill skill) {
         switch(skill) {
             case ATTACK:
