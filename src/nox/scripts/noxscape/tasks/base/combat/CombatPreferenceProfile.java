@@ -53,11 +53,11 @@ public class CombatPreferenceProfile {
         return this;
     }
 
-    public CombatPreferenceProfile setNpcsToFight(ICombatable... npcs) {
-        if (Arrays.stream(npcs).anyMatch(a -> a.getLevel() <= 0 || a.getName() == null || a.getName() == ""))
+    public CombatPreferenceProfile setNpcsToFight(List<ICombatable> npcs) {
+        if (npcs.stream().anyMatch(a -> a.getLevel() <= 0 || a.getName() == null || a.getName() == ""))
             throw new IllegalArgumentException("ICombatable NPC submitted with either a blank name or invalid level");
 
-        npcsToFight = Arrays.asList(npcs);
+        npcsToFight = npcs;
         return this;
     }
 
