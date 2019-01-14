@@ -6,6 +6,7 @@ import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.StopWatcher;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
 import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
 import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
 import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
@@ -17,6 +18,8 @@ import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.ui.DebugPaint;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
+import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Skill;
@@ -25,6 +28,7 @@ import org.osbot.rs07.event.WebWalkEvent;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.Condition;
+import org.osbot.rs07.utility.ConditionalLoop;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -41,9 +45,12 @@ public class NoxScape extends Script {
         try {
             ctx = new ScriptContext(this, getDirectoryData());
             DecisionMaker.init(ctx);
-
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
+
+            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.ATTACK).levelsGained(), false);
+            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.STRENGTH).levelsGained(), false);
+            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
 
 //            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
 //            cfg.setItemsToHandle(new GEItem("Iron ore", GEAction.SELL, -1));
