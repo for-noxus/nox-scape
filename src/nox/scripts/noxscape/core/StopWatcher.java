@@ -65,6 +65,10 @@ public class StopWatcher implements MessageListener {
         return builder.amount;
     }
 
+    public Skill getSkillToTrain() {
+        return builder.skill;
+    }
+
     public int getTrackedAmount() {
         switch(builder.condition) {
             case XP_GAINED:
