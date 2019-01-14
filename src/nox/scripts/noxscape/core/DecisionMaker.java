@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sun.javafx.sg.prism.NGExternalNode;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.interfaces.INodeSupplier;
+import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
 import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
@@ -60,6 +61,7 @@ public final class DecisionMaker {
                 e.printStackTrace();
             }
         } else {
+            lastPoppedNode = null;
             nextNode = chooseNextMasterNode();
         }
 
@@ -130,8 +132,8 @@ public final class DecisionMaker {
     }
 
     public static void shutdown() {
-        if (lastPoppedNode != null)
-            addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), lastPoppedNode.isDependant);
+        if (ctx.getCurrentMasterNode() != null)
+            addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), lastPoppedNode != null && lastPoppedNode.isDependant);
 
         writeTasksToFile();
 
@@ -144,6 +146,7 @@ public final class DecisionMaker {
         addMasterNode(MiningMasterNode.class);
         addMasterNode(GrandExchangeMasterNode.class);
         addMasterNode(MoneyMakingMasterNode.class);
+        addMasterNode(CombatMasterNode.class);
 
         priorityNodes = readTaskFile();
 
