@@ -18,7 +18,7 @@ public enum WoodcuttingLocation implements IBankable, INameable, ILocateable {
     PORT_SARIM_OAKS("Oaks North of Port Sarim", BankLocation.PORTSARIM, new Position(3039, 3264, 0), WoodcuttingEntity.OAK),
     DRAYNOR_OAKS("Oak trees directly east of Draynor Bank", BankLocation.DRAYNOR, new Position(3100, 3240, 0), WoodcuttingEntity.OAK),
     LUMBRIDGE("Lumbridge, directly west of the castle.", BankLocation.LUMBRIDGE_UPPER, new Position(3190, 3220, 0), WoodcuttingEntity.TREE, WoodcuttingEntity.OAK),
-    DRAYNOR_WILLOWS("Draynor willows by the river", BankLocation.DRAYNOR, new Position(3085, 3236, 0), WoodcuttingEntity.WILLOW),
+    DRAYNOR_WILLOWS("Draynor willows by the river", BankLocation.DRAYNOR, new Position(3085, 3237, 0), WoodcuttingEntity.WILLOW),
     EDGEVILLE("Yews south of Edgeville bank", BankLocation.EDGEVILLE, new Position(3085, 3475, 0), WoodcuttingEntity.YEW),
     FALADOR_YEWS("Yews south of Falador", BankLocation.FALADOR_WEST, new Position[] { new Position(2998, 3313, 0), new Position(3018, 3316, 0), new Position(3041, 3320, 0) }, WoodcuttingEntity.YEW);
 
@@ -51,7 +51,7 @@ public enum WoodcuttingLocation implements IBankable, INameable, ILocateable {
     }
 
     public boolean containsTree(WoodcuttingEntity e) {
-        return Arrays.stream(this.treesInArea).anyMatch(e::equals);
+        return Arrays.asList(this.treesInArea).contains(e);
     }
 
     public Position centerPoint() {
