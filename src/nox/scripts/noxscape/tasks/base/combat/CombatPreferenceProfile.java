@@ -18,6 +18,7 @@ public class CombatPreferenceProfile {
     private int healthToEat;
     private boolean isExact;
     private boolean IsPercentHealthToEat;
+    private boolean attentive;
     private List<ICombatable> npcsToFight;
     private Area areaToFight;
 
@@ -53,6 +54,11 @@ public class CombatPreferenceProfile {
         return this;
     }
 
+    public CombatPreferenceProfile shouldBeAttentive(boolean attentive) {
+        this.attentive = attentive;
+        return this;
+    }
+
     public CombatPreferenceProfile setNpcsToFight(List<ICombatable> npcs) {
         if (npcs.stream().anyMatch(a -> a.getLevel() <= 0 || a.getName() == null || a.getName() == ""))
             throw new IllegalArgumentException("ICombatable NPC submitted with either a blank name or invalid level");
@@ -75,6 +81,10 @@ public class CombatPreferenceProfile {
         cutoff = cutoff = NRandom.fuzzedBounds(cutoff, lowerdev, upperdev);
 
         return currentHealth <= cutoff;
+    }
+
+    public boolean isAttentive() {
+        return attentive;
     }
 
     public List<Food> getFoods() {

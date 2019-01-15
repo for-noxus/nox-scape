@@ -69,7 +69,8 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
         CombatPreferenceProfile defaultCombatProfile = new CombatPreferenceProfile()
                 .fightWithStyle(configuration.styleToUse)
                 .fightWithin(configuration.getCombatLocation().getCombatArea())
-                .setNpcsToFight(configuration.getCombatLocation().getAsCombatable());
+                .setNpcsToFight(configuration.getCombatLocation().getAsCombatable())
+                .shouldBeAttentive(false);
 
         NoxScapeNode preExecutionWalkNode = new WalkingNode(ctx)
                 .toArea(configuration.getCombatLocation().getBank().getBankArea())
