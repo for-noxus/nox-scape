@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 public class NpcInteractionNode extends NoxScapeNode {
 
+    private final int MAX_INTERACTION_ATTEMPTS = 4;
+
     private String npcName;
     private String interactAction;
     private String[] dialogueOptions;
@@ -96,9 +98,14 @@ public class NpcInteractionNode extends NoxScapeNode {
             }
         }
 
-        if (!npc.interact(interactAction)) {
-            abort(String.format("Unable to interact with NPC (%s) with action %s", npc.getName(), interactAction));
-            return 5;
+        int interactAttempts = 0;
+        while (++interactAttempts <= MAX_INTERACTION_ATTEMPTS) {
+            if (!npc.interact(interactAction) && interactAttempts >= MAX_INTERACTION_ATTEMPTS) {
+                abort(String.format("Unable to interact with NPC (%s) with action %s", npc.getName(), interactAction));
+                return 5;
+            }
+            else
+                break;
         }
 
         if (dialogueOptions != null) {
