@@ -178,7 +178,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
     private CombatLocation getSuggestedCombatLocation() {
         return Arrays.stream(CombatLocation.values())
                 .filter(f -> f.getSuggestedCombatLevel() <= ctx.myPlayer().getCombatLevel())
-                .min(Comparator.comparingInt(loc -> ctx.myPosition().distance(loc.getCombatArea().getRandomPosition())))
+                .max(Comparator.comparingInt(loc -> loc.getSuggestedCombatLevel()))
                 .orElse(null);
     }
 
