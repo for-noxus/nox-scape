@@ -48,9 +48,8 @@ public class NoxScape extends Script {
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
 
-            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.ATTACK).levelsGained(), false);
-            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.STRENGTH).levelsGained(), false);
-            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
+            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(10, Skill.STRENGTH).levelsGained(), false);
+//            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
 
 //            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
 //            cfg.setItemsToHandle(new GEItem("Iron ore", GEAction.SELL, -1));
