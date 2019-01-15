@@ -28,7 +28,7 @@ public final class CombatItems {
     }
 
     public static List<CachedItem> scimitar() {
-        return CachedItem.generateFromBaseMetals("scimitar", Skill.DEFENCE, 0, 1, 5, 10, 20, 30, 40, 60);
+        return CachedItem.generateFromBaseMetals("scimitar", Skill.ATTACK, 0, 1, 5, 10, 20, 30, 40, 60);
     }
 
     public static List<CachedItem> amulets() {
