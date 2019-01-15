@@ -98,7 +98,8 @@ public final class DecisionMaker {
             return;
         }
 
-        ctx.logClass(DecisionMaker.class, "Added PriorityNode " + node.getSimpleName());
+        if (ctx != null)
+            ctx.logClass(DecisionMaker.class, "Added PriorityNode " + node.getSimpleName());
 
         QueuedNode newtask = new QueuedNode();
         newtask.isDependant = isDependent;
@@ -214,10 +215,15 @@ public final class DecisionMaker {
 
             Reader fileReader = new FileReader(logFile);
 
-            Gson gson = new Gson().newBuilder().registerTypeAdapter(QueuedNode.class, new QueuedNodeDeserializer()).create();
+            Gson gson = new Gson().newBuilder()
+                    .registerTypeAdapter(QueuedNode.class, new QueuedNodeDeserializer())
+                    .create();
 
             Stack<QueuedNode> stack = new Stack<>();
             QueuedNode[] nodes = gson.fromJson(fileReader, QueuedNode[].class);
+
+            if (nodes == null || nodes.length == 0)
+                return stack;
 
             stack.addAll(Arrays.asList(nodes));
 

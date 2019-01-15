@@ -48,7 +48,8 @@ public class NoxScape extends Script {
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
 
-//            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(4, Skill.DEFENCE).levelsGained(), false);
+            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
+//            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(3, Skill.STRENGTH).levelsGained(), false);
 //            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
 
 //            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
@@ -58,7 +59,7 @@ public class NoxScape extends Script {
 //            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(1, Skill.WOODCUTTING).levelsGained(), false);
 //            WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
 //            cfg.setTreeToChop(WoodcuttingEntity.TREE);
-            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, null, false);
+//            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, null, false);
 
 //            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
 //            cfg.setRockToMine(MiningEntity.IRON);
@@ -81,7 +82,7 @@ public class NoxScape extends Script {
             NoxScapeMasterNode<?> cmn = ctx.getCurrentMasterNode();
             // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
-                if (cmn != null && cmn.isCompleted()) {
+                if (cmn != null) {
                     log("Successfully completed MasterNode " + cmn.getMasterNodeInformation().getFriendlyName());
                     cmn.reset();
                 }
