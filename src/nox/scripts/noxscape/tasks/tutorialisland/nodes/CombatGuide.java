@@ -82,14 +82,14 @@ public class CombatGuide extends NoxScapeNode {
             case CLICK_EQUIPMENT: {
                 if (ctx.getTabs().getOpen() != Tab.EQUIPMENT) {
                     if (ctx.getTabs().open(Tab.EQUIPMENT))
-                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_CLICK_WORNITEMS), 5000, 1000);
+                        Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_CLICK_WORNITEMS, INSTRUCTIONS_EQUIP_DAGGER), 5000, 1000);
                 }
                 RS2Widget equippedItemsWidget = ctx.getWidgets().singleFilter(WIDGET_ROOT_EQUIPMENTSTATS, equipmentFilter);
                 if (equippedItemsWidget != null && equippedItemsWidget.interact()) {
                     Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_EQUIP_DAGGER), 5000, 800);
                 }
                 if (ctx.getInventory().contains("Bronze dagger")) {
-                    if (ctx.getInventory().interact("Wield", "Bronze dagger"))
+                    if (ctx.getInventory().interact("Equip", "Bronze dagger"))
                         Sleep.until(() -> TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOGUIDE2), 5000, 800);
                     else
                         logError("Unable to equip dagger");

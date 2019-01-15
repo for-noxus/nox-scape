@@ -33,7 +33,8 @@ public class CookGuide extends NoxScapeNode {
         boolean chefHinted = chef != null && arrow != null && arrow.getPosition() != null && arrow.getPosition().equals(chef.getPosition());
         boolean talkingToChef = chef != null && chef.isInteracting(ctx.myPlayer());
         boolean exitDoorHighlighted = arrow != null && arrow.getPosition() != null && arrow.getPosition().equals(new Position(POS_EXIT_DOOR));
-        return talkingToChef || chefHinted || TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON_PASTGATE, INSTRUCTIONS_TALKTOCHEF, INSTRUCTIONS_MAKEDOUGH, INSTRUCTIONS_COOKDOUGH, INSTRUCTIONS_MOVEON) || exitDoorHighlighted;
+        boolean hasDough = ctx.getInventory().contains("Bread dough");
+        return talkingToChef || chefHinted || hasDough || TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON_PASTGATE, INSTRUCTIONS_TALKTOCHEF, INSTRUCTIONS_MAKEDOUGH, INSTRUCTIONS_COOKDOUGH, INSTRUCTIONS_MOVEON) || exitDoorHighlighted;
     }
 
     @Override
@@ -98,7 +99,7 @@ public class CookGuide extends NoxScapeNode {
             return CookState.WALK_TO_DOOR;
         if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_TALKTOCHEF))
             return CookState.TALK_TO_CHEF;
-        if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MAKEDOUGH, INSTRUCTIONS_COOKDOUGH))
+        if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MAKEDOUGH, INSTRUCTIONS_COOKDOUGH) || ctx.getInventory().contains("Bread dough"))
             return CookState.MAKE_DOUGH;
         if (TutorialIslandUtil.isInstructionVisible(ctx, INSTRUCTIONS_MOVEON))
             return CookState.MOVEON;
