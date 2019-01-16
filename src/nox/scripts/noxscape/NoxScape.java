@@ -78,7 +78,6 @@ public class NoxScape extends Script {
     @Override
     public int onLoop() throws InterruptedException {
         try {
-            ctx.getWalking().webWalk(BankLocation.DRAYNOR.getBankArea());
             NoxScapeMasterNode<?> cmn = ctx.getCurrentMasterNode();
             // We either need a first node, or we need to move on to the next one
             if (cmn == null || cmn.isCompleted()) {
