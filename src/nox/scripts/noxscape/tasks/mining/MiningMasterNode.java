@@ -33,7 +33,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
                 "Mining",
                 "Mines ores at various locations",
                 Frequency.COMMON,
-                Duration.MEDIUM,
+                Duration.SHORT,
                 MasterNodeType.SKILLING);
     }
 
@@ -50,7 +50,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
 
         if (configuration.rockToMine == null) {
             configuration.rockToMine = Arrays.stream(MiningEntity.values())
-                .filter(f -> f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
+                .filter(f -> f != MiningEntity.CLAY && f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
                 .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
                 .get();
 
