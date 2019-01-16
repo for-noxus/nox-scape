@@ -59,7 +59,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
             }
         }
 
-        if (!configuration.getStyleToUse().trainsSkill(stopWatcher.getSkillToTrain())) {
+        if ((stopWatcher.getStopCondition() == StopCondition.XP_GAINED || stopWatcher.getStopCondition() == StopCondition.LEVELS_GAINED) && !configuration.getStyleToUse().trainsSkill(stopWatcher.getSkillToTrain())) {
             abort(String.format("Mismatch between preferred combat style (%s) and stopwatched skill (%s)", configuration.getStyleToUse().name(), stopWatcher.getSkillToTrain()));
             return;
         }
