@@ -122,7 +122,7 @@ public class BankingNode extends NoxScapeNode {
             Map<Boolean, List<BankItem>> belongsToSet = items.stream().collect(Collectors.partitioningBy(item -> item.getSet() != null));
 
             // Handle item sets
-            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::filterItemsFromSet).toArray(BankItem[]::new);
+            BankItem[] setItemsToWithdraw = belongsToSet.get(true).stream().collect(Collectors.groupingBy(BankItem::getSet)).values().stream().map(this::filterItemsFromSet).filter(Objects::nonNull).toArray(BankItem[]::new);
             belongsToSet.get(false).addAll(Arrays.asList(setItemsToWithdraw));
 
             // Deposit all deposit-items
