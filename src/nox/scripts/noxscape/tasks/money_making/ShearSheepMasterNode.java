@@ -53,7 +53,7 @@ public class ShearSheepMasterNode extends NoxScapeMasterNode implements IMoneyMa
 
         NoxScapeNode acquireShearesNode = new CollectLootNode()
                 .lootItems("Shears")
-                //todo: conditional execution ala .onlyExecuteIf(() -> !ctx.getInventory().contains("Shears"))
+                .onlyExecuteIf(() -> !ctx.getInventory().contains("Shears"))
                 .hasMessage("Acquiring shears");
     }
 
