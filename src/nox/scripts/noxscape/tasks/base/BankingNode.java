@@ -63,8 +63,7 @@ public class BankingNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         if ((items == null || items.size() == 0) && (!depositAllBackpackItems && !depositallWornItems)) {
             abort("Banking node added but no items were added for deposit/withdrawal");
             return false;

@@ -76,8 +76,7 @@ public class EntitySkillingNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         boolean isInArea = area != null && area.contains(ctx.myPosition());
         boolean isWithinBoundedRadius = centerTile != null && LocationUtils.manhattenDistance(centerTile, ctx.myPosition()) < radius;
 

@@ -21,8 +21,7 @@ public class TalkToGuide extends NoxScapeNode {
         super(children, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         HintArrow hint = ctx.getHintArrow();
         return hint != null && hint.getType() == HintArrow.HintArrowType.NPC && hint.getNPC().getName().equals(NPC_NAME_GUIDE);
     }

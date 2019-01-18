@@ -42,8 +42,7 @@ public class CombatGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         NPC questGuide = ctx.getNpcs().closest(NPC_NAME_COMBATGUIDE);
         HintArrow arrow = ctx.getHintArrow();
         boolean talkingToGuide = questGuide != null && questGuide.isInteracting(ctx.myPlayer());

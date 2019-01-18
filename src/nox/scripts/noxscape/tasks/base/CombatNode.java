@@ -56,8 +56,7 @@ public class CombatNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         return ctx.getCombat().isFighting() && combatHelper.hasFood();
     }
 

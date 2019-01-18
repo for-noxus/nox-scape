@@ -83,8 +83,7 @@ public class WalkingNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         boolean isExactWalk = destinationPosition == null || (isWebWalk && isExact) || walkingEventConfig == null || walkingEventConfig.apply(new WalkingEvent()).getMinDistanceThreshold() == 1;
         boolean playerByPosition = destinationPosition != null && ctx.myPosition().distance(destinationPosition) <= 8;
         boolean playerInArea = destinationArea != null && destinationArea.contains(ctx.myPosition());

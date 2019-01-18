@@ -22,8 +22,7 @@ public class WalkToFishingGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         NPC expert = ctx.getNpcs().closest(NPC_NAME_SURVIALEXPERT);
         return TutorialIslandUtil.isInstructionVisible(ctx,INSTRUCTIONS_MOVEON, INSTRUCTIONS_MOVEON2) && !ctx.getMap().isWithinRange(expert, 5);
     }

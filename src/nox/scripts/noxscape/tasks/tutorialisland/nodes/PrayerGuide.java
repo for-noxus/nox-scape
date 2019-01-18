@@ -29,8 +29,7 @@ public class PrayerGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         HintArrow arrow = ctx.getHintArrow();
         NPC prayerGuide = ctx.getNpcs().closest(NPC_NAME_PRAYERGUIDE);
 

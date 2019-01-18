@@ -32,8 +32,7 @@ public class MiningGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         NPC mineGuide = ctx.getNpcs().closest(NPC_MINEGUIDE_NAME);
         HintArrow arrow = ctx.getHintArrow();
 

@@ -34,8 +34,7 @@ public class CreateCharacter extends NoxScapeNode {
         super(next, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         return ctx.getWidgets().isVisible(WIDGET_ROOT_DISPLAYNAME) || ctx.getWidgets().isVisible(WIDGET_ROOT_DESIGNER);
     }
 

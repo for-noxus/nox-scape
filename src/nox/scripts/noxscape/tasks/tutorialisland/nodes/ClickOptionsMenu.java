@@ -30,8 +30,7 @@ public class ClickOptionsMenu extends NoxScapeNode {
         super(children, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         HintArrow arrow = ctx.getHintArrow();
         return arrow != null && arrow.getType() == HintArrow.HintArrowType.NONE && TutorialIslandUtil.isInstructionVisible(ctx, "click on the flashing spanner icon");
     }

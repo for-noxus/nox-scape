@@ -53,8 +53,7 @@ public class NpcInteractionNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         if (npcName == null && combatHelper == null) {
             abort("Queued up an NPCNode, but no NPCs were set!");
             return false;

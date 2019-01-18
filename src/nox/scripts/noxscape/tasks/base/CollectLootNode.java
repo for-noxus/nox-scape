@@ -23,8 +23,7 @@ public class CollectLootNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         if (itemsToLoot == null || itemsToLoot.size() == 0)
             throw new IllegalArgumentException("A LootNode was specified, but no items were specified to be picked up!");
 

@@ -38,8 +38,7 @@ public class BankGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         HintArrow arrow = ctx.getHintArrow();
         RS2Object pollBooth = ctx.getObjects().closest("Poll booth");
         NPC accountGuide = ctx.getNpcs().closest(NPC_NAME_ACCOUNTGUIDE);

@@ -26,8 +26,7 @@ public class QuestGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         NPC questGuide = ctx.getNpcs().closest(NPC_NAME_QUESTGUIDE);
         HintArrow arrow = ctx.getHintArrow();
         boolean talkingToGuide = questGuide != null && questGuide.isInteracting(ctx.myPlayer());

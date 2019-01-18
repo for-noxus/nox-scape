@@ -39,8 +39,7 @@ public class FishingGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         HintArrow arrow = ctx.getHintArrow();
         boolean isExpertHinted = arrow.getNPC() != null && arrow.getNPC().getName().equals(NPC_EXPERT_NAME);
         boolean shrimpsCaught = ctx.getWidgets().getWidgetContainingText("manage to catch some shrimp") != null;

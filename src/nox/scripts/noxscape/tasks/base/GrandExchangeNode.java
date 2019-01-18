@@ -31,8 +31,7 @@ public class GrandExchangeNode extends NoxScapeNode {
         return this;
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         return BankLocation.GRAND_EXCHANGE.getBankArea().contains(ctx.myPosition());
     }
 

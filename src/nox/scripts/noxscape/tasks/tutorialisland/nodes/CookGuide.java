@@ -26,8 +26,7 @@ public class CookGuide extends NoxScapeNode {
         super(child, ctx, message);
     }
 
-    @Override
-    public boolean isValid() {
+    protected boolean baseExecutionCondition() {
         HintArrow arrow = ctx.getHintArrow();
         NPC chef = ctx.getNpcs().closest(NPC_CHEF_NAME);
         boolean chefHinted = chef != null && arrow != null && arrow.getPosition() != null && arrow.getPosition().equals(chef.getPosition());
