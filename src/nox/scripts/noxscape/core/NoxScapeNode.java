@@ -7,6 +7,7 @@ import nox.scripts.noxscape.core.interfaces.IActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 public abstract class NoxScapeNode extends Node<NoxScapeNode> {
 
@@ -44,6 +45,16 @@ public abstract class NoxScapeNode extends Node<NoxScapeNode> {
     public NoxScapeNode hasChildren(List<NoxScapeNode> children) {
         super.hasChildren(children);
         return this;
+    }
+
+    @Override
+    public NoxScapeNode onlyExecuteIf(BooleanSupplier condition) {
+        return (NoxScapeNode) super.onlyExecuteIf(condition);
+    }
+
+    @Override
+    public NoxScapeNode andExecuteIf(BooleanSupplier condition) {
+        return (NoxScapeNode) super.andExecuteIf(condition);
     }
 
     @Override
