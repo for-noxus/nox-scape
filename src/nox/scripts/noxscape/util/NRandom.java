@@ -21,6 +21,7 @@ public final class NRandom {
         Random r = new Random();
         int lowerNum = (int) Math.round(mean - lowerDeviation * r.nextGaussian());
         int upperNum = (int) Math.round(mean + upperDeviation * r.nextGaussian());
+        upperNum = lowerNum >= upperNum ? lowerNum +1 : upperNum;
 
         return exact(lowerNum, upperNum);
     }
