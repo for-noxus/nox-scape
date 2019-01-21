@@ -65,7 +65,7 @@ public class CombatNode extends NoxScapeNode {
         Character beingFought = ctx.getCombat().getFighting();
         ctx.getTabs().open(Tab.INVENTORY);
 
-        if (!combatProfile.isAttentive() && NRandom.fuzzed(5, 2) == 2)
+        if (!combatProfile.isAttentive() && NRandom.fuzzed(5, 1) == 4)
             ctx.getMouse().moveOutsideScreen();
 
         while (ctx.getCombat().isFighting()) { //Todo <-- This line NPE's sometimes???
@@ -92,6 +92,16 @@ public class CombatNode extends NoxScapeNode {
 
         ctx.setTargetEntity(null);
         notifyAction("Killed " + beingFought.getName());
+
+        if (!ctx.getMouse().isOnScreen()) {
+            switch(NRandom.fuzzed(5, 2)) {
+                case 4: ctx.sleepH(); break;
+                case 3: ctx.sleepFuzzy(850, 50); break;
+                case 2: ctx.sleepFuzzy(2_000, 100);
+                case 1: ctx.sleepFuzzy(5_000, 300);
+                case 0: ctx.sleepFuzzy(15_000, 1000);
+            }
+        }
         complete("Finished fighting " + beingFought.getName());
         return combatProfile.isAttentive() ? NRandom.humanized() : NRandom.humanized(0.5);
     }
