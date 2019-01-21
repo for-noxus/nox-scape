@@ -6,6 +6,7 @@ import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.StopWatcher;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.base.combat.CombatLocation;
 import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
 import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
 import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
@@ -21,8 +22,10 @@ import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.Entity;
+import org.osbot.rs07.api.model.GroundItem;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.ui.Spells;
 import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.event.WebWalkEvent;
 import org.osbot.rs07.script.Script;
@@ -32,8 +35,10 @@ import org.osbot.rs07.utility.ConditionalLoop;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @ScriptManifest(name = "NoxScape", author = "Nox", version = 1.0, info = "", logo = "")
 public class NoxScape extends Script {
@@ -48,8 +53,11 @@ public class NoxScape extends Script {
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
 
-            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
-//            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(3, Skill.STRENGTH).levelsGained(), false);
+//            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, null, false);
+//            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
+            CombatMasterNode.Configuration cfg = new CombatMasterNode.Configuration();
+            cfg.setCombatLocation(CombatLocation.EDGEVILLE_MEN);
+            DecisionMaker.addPriorityTask(CombatMasterNode.class, cfg, null, false);
 //            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
 
 //            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
