@@ -63,12 +63,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
         BankItem[] axesToWithdraw = WoodcuttingItems.axes().stream()
                 .filter(f -> f.canUse(ctx))
-                .map(m -> {
-                    BankItem item = new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), m.canEquip(ctx));
-                    if (m.getLevelRequirement(Skill.WOODCUTTING) > 20)
-                        item.buyIfNecessary(1);
-                    return item;
-                })
+                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), m.canEquip(ctx)).buyIfNecessary(1))
                 .toArray(BankItem[]::new);
         BankItem logsToBank = new BankItem(configuration.treeToChop.producesItemName(), BankAction.DEPOSIT, 100);
 
