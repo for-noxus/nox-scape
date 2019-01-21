@@ -43,7 +43,6 @@ public final class DecisionMaker {
 
     public static NoxScapeMasterNode getNextMasterNode() {
         NoxScapeMasterNode nextNode = null;
-
         if (!priorityNodes.empty()) {
             try {
                 lastPoppedNode = priorityNodes.pop();
@@ -82,6 +81,7 @@ public final class DecisionMaker {
                 nextNode = suppliedNode;
             } else {
                 ctx.log(String.format("Node %s is a node supplier, but no node was given. Moving on.", nextNode.getMasterNodeInformation().getFriendlyName()));
+                clearDependentNodeStack();
                 nextNode.reset();
                 return getNextMasterNode();
             }
