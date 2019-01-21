@@ -156,7 +156,7 @@ public class BankingNode extends NoxScapeNode {
                 cfg.setItemsToHandle(itemsToBuy);
 
                 // If we need to buy from the GE, mark it as dependent on the MoneyMaking node. Otherwise, it is independent
-                int moneyToMake = Math.max((int)((totalPrice - totalCoins) * 1.25), NRandom.fuzzedBounds(4800, 200, 10_000, 1000)); // Let's always at least make a minimal amount
+                int moneyToMake = Math.max((int)((totalPrice - totalCoins) * 1.25), NRandom.fuzzedBounds(7_500, 200, 10_000, 1000)); // Let's always at least make a minimal amount
                 boolean isGeDependent = totalCoins <= (moneyToMake); // Play it safe with a 10% buffer
                 DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), true);
                 DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, isGeDependent);
