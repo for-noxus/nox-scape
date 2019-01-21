@@ -2,6 +2,7 @@ package nox.scripts.noxscape.tasks.base;
 
 import com.sun.net.httpserver.Authenticator;
 import nox.scripts.noxscape.core.NoxScapeNode;
+import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
 import org.osbot.rs07.api.model.GroundItem;
@@ -14,6 +15,10 @@ public class CollectLootNode extends NoxScapeNode {
 
     private List<String> itemsToLoot;
     private boolean shouldWait;
+
+    public CollectLootNode(ScriptContext ctx) {
+        super(ctx);
+    }
 
     public CollectLootNode lootItems(String... itemsToLoot) {
         this.itemsToLoot = Arrays.asList(itemsToLoot);
@@ -68,7 +73,6 @@ public class CollectLootNode extends NoxScapeNode {
 
         return ctx.getGroundItems().filter(f ->
                 itemsToLoot.contains(f.getName()) &&
-                        ctx.getMap().canReach(f) &&
                         (!isFull || (isFull && ctx.getInventory().contains(f.getName()) && f.getDefinition().getNotedId() == -1)));
     }
 }
