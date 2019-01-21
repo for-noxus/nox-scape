@@ -6,14 +6,11 @@ import nox.scripts.noxscape.core.api.CombatHelper;
 import nox.scripts.noxscape.core.interfaces.INameable;
 import nox.scripts.noxscape.tasks.base.combat.CombatPreferenceProfile;
 import nox.scripts.noxscape.util.Sleep;
-import org.osbot.rs07.api.Inventory;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
-import org.osbot.rs07.api.ui.Skill;
-import org.osbot.rs07.script.MethodProvider;
-import sun.plugin.com.PropertyGetDispatcher;
 
 import java.util.Arrays;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 public class NpcInteractionNode extends NoxScapeNode {
 
@@ -24,6 +21,10 @@ public class NpcInteractionNode extends NoxScapeNode {
     private String[] dialogueOptions;
     private CombatHelper combatHelper;
     private CombatPreferenceProfile combatProfile;
+    private BooleanSupplier postInteractWaitCondition;
+    private int postInteractTimeout;
+    private int postInteractInterval;
+    private Predicate<NPC> npcValidationCondition;
 
     public NpcInteractionNode(ScriptContext ctx) {
         super(ctx);
@@ -38,6 +39,18 @@ public class NpcInteractionNode extends NoxScapeNode {
     public NpcInteractionNode interactWith(INameable npc, String action) {
         this.npcName = npc.getName();
         this.interactAction = action;
+        return this;
+    }
+
+    public NpcInteractionNode afterInteractingWaitFor(BooleanSupplier condition, int timeout, int interval) {
+        this.postInteractWaitCondition = condition;
+        this.postInteractTimeout = timeout;
+        this.postInteractInterval = interval;
+        return this;
+    }
+
+    public NpcInteractionNode addNpcValidation(Predicate<NPC> condition) {
+        this.npcValidationCondition = condition;
         return this;
     }
 
@@ -81,7 +94,9 @@ public class NpcInteractionNode extends NoxScapeNode {
             npc = combatHelper.getNextTarget();
 
         } else {
-            npc = ctx.getNpcs().closest(f -> f.getName().equals(npcName));
+            npc = ctx.getNpcs().closest(f -> f.getName().equals(npcName) &&
+                    (npcValidationCondition == null || npcValidationCondition.test(f)) &&
+                    (interactAction == null || (f.getActions() != null && Arrays.asList(f.getActions()).contains(interactAction))));
         }
 
         if (npc == null) {
@@ -115,9 +130,14 @@ public class NpcInteractionNode extends NoxScapeNode {
             } else {
                 ctx.getDialogues().completeDialogue(dialogueOptions);
             }
-        } else if (combatHelper != null)
+        } else if (combatHelper != null) {
             Sleep.until(() -> ctx.getCombat().isFighting(), 10_000, 1_000);
 
+        } else if (postInteractWaitCondition != null) {
+            Sleep.until(postInteractWaitCondition, postInteractTimeout, postInteractInterval);
+        }
+
+        notifyAction("Interacted with " + npc.getName());
         complete("Successfully interacted with (" + npc.getName() + ")");
         return 100;
     }
