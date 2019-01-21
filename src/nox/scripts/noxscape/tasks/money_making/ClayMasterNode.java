@@ -12,6 +12,7 @@ import nox.scripts.noxscape.core.interfaces.INodeSupplier;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import org.osbot.rs07.api.ui.Message;
+import org.osbot.rs07.api.ui.Skill;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ClayMasterNode extends NoxScapeMasterNode implements IMoneyMaker, I
 
     @Override
     public boolean canExecute() {
-        return true;
+        return ctx.getSkills().getStatic(Skill.MINING) > 20;
     }
 
     @Override
