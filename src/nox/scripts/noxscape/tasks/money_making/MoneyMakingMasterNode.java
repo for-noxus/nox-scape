@@ -21,7 +21,8 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
     private NoxScapeMasterNode chosenMethod;
 
     private List<NoxScapeMasterNode> moneyMakingNodes = Arrays.asList(
-            new ClayMasterNode(ctx)
+            new ClayMasterNode(ctx),
+            new ShearSheepMasterNode(ctx)
     );
 
     public MoneyMakingMasterNode(ScriptContext ctx) {
@@ -56,13 +57,16 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
             return;
         }
 
-        if (stopWatcher.getStopCondition() == StopCondition.UNSET)
-            chosenMethod.setDefaultStopWatcher();
-
         chosenMethod.reset();
-        chosenMethod.setStopWatcher(stopWatcher);
-        chosenMethod.initializeNodes();
 
+        if (stopWatcher.getStopCondition() == StopCondition.UNSET || stopWatcher == null) {
+            chosenMethod.setDefaultStopWatcher();
+        }
+        else {
+            chosenMethod.setStopWatcher(stopWatcher);
+        }
+
+        chosenMethod.initializeNodes();
         List<GEItem> itemsToSell = ((IMoneyMaker)chosenMethod).itemsHarvestedForMoney().stream().map(m -> new GEItem(m, GEAction.SELL, -1)).collect(Collectors.toList());
         GrandExchangeMasterNode.Configuration geCfg = new GrandExchangeMasterNode.Configuration();
         geCfg.setItemsToHandle(itemsToSell);
