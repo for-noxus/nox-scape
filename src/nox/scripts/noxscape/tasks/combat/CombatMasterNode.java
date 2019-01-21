@@ -26,7 +26,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
                 "Combat",
                 "Fighting various monster",
                 Frequency.COMMON,
-                Duration.LONG,
+                ctx.myPlayer().getCombatLevel() <= 30 ? Duration.SHORT : ctx.myPlayer().getCombatLevel() <= 50 ? Duration.MEDIUM : Duration.LONG,
                 MasterNodeType.SKILLING);
     }
 
@@ -40,6 +40,9 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
         if (configuration == null)
             configuration = new CombatMasterNode.Configuration();
 
+        if (stopWatcher == null || stopWatcher.getStopCondition() == StopCondition.UNSET)
+            setDefaultStopWatcher();
+
         //Todo: Identify if our stopwatcher is magic/ranged, and if so, select an appropriate combatLocation
         //Todo: and build an appropriate CombatPreferenaceProfile, as well as getting the right BankItems
         if (configuration.getCombatLocation() == null) {
@@ -52,7 +55,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
             if (toTrain == Skill.STRENGTH || toTrain == Skill.ATTACK || toTrain == Skill.DEFENCE)
                 configuration.setStyleToUse(CombatStyle.forSkill(toTrain));
             else if (toTrain == null || toTrain == Skill.HITPOINTS)
-                configuration.setStyleToUse(getLoweestLevelCombatStyle());
+                configuration.setStyleToUse(getLowestLevelCombatStyle());
             else {
                 abort(String.format("Unsupported skill to train for CombatNode declared in StopWatcher (%s)", toTrain));
                 return;
@@ -156,7 +159,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
             if (text.contains("advanced your hitpoints"))
                 ctx.getScriptProgress().onLevelUp(Skill.HITPOINTS);
             else if (text.contains("advanced your"))
-                ctx.getScriptProgress().onLevelUp(stopWatcher.getSkillToTrain());
+                ctx.getScriptProgress().onLevelUp(configuration.getStyleToUse().getSkillTrained());
         }
     }
 
@@ -182,7 +185,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
                 .orElse(null);
     }
 
-    private CombatStyle getLoweestLevelCombatStyle() {
+    private CombatStyle getLowestLevelCombatStyle() {
         return Stream.of(new Pair<>(CombatStyle.ATTACK_ACCURATE, ctx.getSkills().getStatic(Skill.ATTACK)), new Pair<>(CombatStyle.STRENGTH_RAPID, ctx.getSkills().getStatic(Skill.STRENGTH)), new Pair<>(CombatStyle.DEFENCE_LONGRANGE, ctx.getSkills().getStatic(Skill.DEFENCE)))
                 .min(Comparator.comparingInt(Pair::getB))
                 .get().a;
