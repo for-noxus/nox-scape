@@ -69,6 +69,10 @@ public class ScriptContext extends MethodProvider {
 
     public NoxScapeNode getCurrentNode() { return currentMasterNode.getCurrentNode(); }
 
+    public void sleepFuzzy(int mean, int deviation) throws InterruptedException {
+        MethodProvider.sleep((long) NRandom.fuzzed(mean, deviation));
+    }
+
     public void sleepH() throws InterruptedException {
         MethodProvider.sleep((long) NRandom.humanized());
     }
