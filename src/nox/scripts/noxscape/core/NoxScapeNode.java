@@ -98,14 +98,23 @@ public abstract class NoxScapeNode extends Node<NoxScapeNode> {
     }
 
     protected void notifyItemAcquired(int itemId, int amount) {
+        if (listeners == null)
+            return;
+
         listeners.forEach(f -> f.onItemAcquired(itemId, amount));
     }
 
     protected void notifyAction(String action) {
+        if (listeners == null)
+            return;
+
         listeners.forEach(f -> f.onActionPerformed(action));
     }
 
     protected void notifyAction(String action, int amount) {
+        if (listeners == null)
+            return;
+
         listeners.forEach(f -> f.onActionPerformed(action, amount));
     }
 
