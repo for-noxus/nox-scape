@@ -64,7 +64,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
 
         BankItem[] axesToWithdraw = MiningItems.pickaxes().stream()
                 .filter(f -> f.canUse(ctx))
-                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.getLevelRequirement(Skill.MINING), m.canEquip(ctx)).buyIfNecessary(1))
+                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.getLevelRequirement(Skill.MINING), m.canEquip(ctx)).buyIfNecessary(configuration.purchaseNewPick, 1))
                 .toArray(BankItem[]::new);
 
         BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
