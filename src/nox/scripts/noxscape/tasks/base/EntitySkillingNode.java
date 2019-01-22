@@ -133,8 +133,16 @@ public class EntitySkillingNode extends NoxScapeNode {
             abort(String.format("Unable to interact with entity (%s) and action (%s), it contains \"%s\"", entity.getName(), skillableEntity.getInteractAction(), String.join(", ", entity.getActions())));
         }
 
-        if (!entity.interact(skillableEntity.getInteractAction())) {
-            abort(String.format("Error interacting interact with entity (%s) and action (%s)", entity.getName(), skillableEntity.getInteractAction()));
+        int interactionAttempts = 1;
+        while (interactionAttempts++ <= 10) {
+            if (entity.interact(skillableEntity.getInteractAction())) {
+                break;
+            } else if (interactionAttempts == 10){
+                abort(String.format("Error interacting interact with entity (%s) and action (%s)", entity.getName(), skillableEntity.getInteractAction()));
+                return 500;
+            }
+            ctx.logClass(this, "Error interacting, retrying...");
+            ctx.sleepHQuick();
         }
 
         long interactTime = System.currentTimeMillis();
