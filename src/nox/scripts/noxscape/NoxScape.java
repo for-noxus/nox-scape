@@ -56,7 +56,7 @@ public class NoxScape extends Script {
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, null, false);
 //            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
             CombatMasterNode.Configuration cfg = new CombatMasterNode.Configuration();
-            cfg.setCombatLocation(CombatLocation.EDGEVILLE_MEN);
+            cfg.setCombatLocation(CombatLocation.LUMBRIDGE_CHICKENS);
             DecisionMaker.addPriorityTask(CombatMasterNode.class, cfg, null, false);
 //            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
 
@@ -70,11 +70,11 @@ public class NoxScape extends Script {
 //            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, null, false);
 
 //            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
-//            cfg.setRockToMine(MiningEntity.IRON);
-//            cfg.setPurchaseNewPick(true);
+//            cfg.setRockToMine(MiningEntity.COPPER);
+//            cfg.setPurchaseNewPick(false);
 //            StopWatcher sw = StopWatcher.create(ctx).stopAfter(3, Skill.MINING).levelsGained();
-//
 //            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw, false);
+
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(500).gpMade(), false);
         } catch (Exception e) {
             log("Script failed to start.");
