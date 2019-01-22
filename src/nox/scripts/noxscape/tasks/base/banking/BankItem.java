@@ -33,7 +33,11 @@ public class BankItem implements INameable {
     }
 
     public BankItem buyIfNecessary(int amount) {
-        this.shouldBuy = true;
+        return buyIfNecessary(true, 1);
+    }
+
+    public BankItem buyIfNecessary(boolean shouldBuy, int amount) {
+        this.shouldBuy = shouldBuy;
         this.shouldBuyAmount = amount;
         return this;
     }
