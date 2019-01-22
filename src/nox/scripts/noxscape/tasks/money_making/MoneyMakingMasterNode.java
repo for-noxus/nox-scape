@@ -67,7 +67,7 @@ public class MoneyMakingMasterNode extends NoxScapeMasterNode implements INodeSu
         }
 
         chosenMethod.initializeNodes();
-        List<GEItem> itemsToSell = ((IMoneyMaker)chosenMethod).itemsHarvestedForMoney().stream().map(m -> new GEItem(m, GEAction.SELL, -1)).collect(Collectors.toList());
+        List<GEItem> itemsToSell = ((IMoneyMaker)chosenMethod).itemsHarvestedForMoney().stream().map(m -> new GEItem(m, GEAction.SELL, Integer.MAX_VALUE)).collect(Collectors.toList());
         GrandExchangeMasterNode.Configuration geCfg = new GrandExchangeMasterNode.Configuration();
         geCfg.setItemsToHandle(itemsToSell);
         DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, geCfg, null, true);

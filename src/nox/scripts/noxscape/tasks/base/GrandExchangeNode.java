@@ -55,7 +55,7 @@ public class GrandExchangeNode extends NoxScapeNode {
                     abort("Error selling GEItem " + item.getName());
                 return 5;
             }
-            notifyAction("Sold " + item.getName(), item.getAmount());
+            notifyAction("Sold " + item.getName(), amountToSell);
         }
 
         for (GEItem item: isForSale.get(false)) {
