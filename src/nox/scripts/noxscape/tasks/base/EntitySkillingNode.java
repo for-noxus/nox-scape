@@ -3,8 +3,6 @@ package nox.scripts.noxscape.tasks.base;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ISkillable;
-import nox.scripts.noxscape.tasks.mining.MiningEntity;
-import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Sleep;
@@ -18,9 +16,6 @@ import java.util.function.Predicate;
 
 public class EntitySkillingNode extends NoxScapeNode {
 
-    private Predicate<RS2Object> entityValidationCondition;
-    private Predicate<RS2Object> fnFindEntity;
-
     private ISkillable skillableEntity;
     private int postInteractWaitTimeout;
     private int postInteractWaitInterval;
@@ -32,7 +27,11 @@ public class EntitySkillingNode extends NoxScapeNode {
     private int radius;
     private Area area;
 
-    private int findAttempts = 0;
+    private Predicate<RS2Object> entityValidationCondition;
+    private Predicate<RS2Object> fnFindEntity = ent -> ent.getName().equals(skillableEntity.getName()) &&
+            ((area != null && area.contains(ent)) || (centerTile != null && LocationUtils.manhattenDistance(ent.getPosition(), centerTile) < radius));
+
+    private int previousInteractionAttempts = 0;
 
     public EntitySkillingNode(ScriptContext ctx) {
         super(ctx);
@@ -88,16 +87,12 @@ public class EntitySkillingNode extends NoxScapeNode {
         if (ctx.getInventory().isFull()) {
             if (powerFarming) {
                 ctx.getInventory().dropAllExcept(dropAllExcept);
-                ctx.sleep(0, 200);
+                ctx.sleepHQuick();
             } else {
                 this.complete("Inventory full, unable to acquire more " + skillableEntity.getName() + ".");
                 return NRandom.humanized();
             }
         }
-
-        if (fnFindEntity == null)
-            fnFindEntity = ent -> ent.getName().equals(skillableEntity.getName()) &&
-                    ((area != null && area.contains(ent)) || (centerTile != null && LocationUtils.manhattenDistance(ent.getPosition(), centerTile) < radius));
 
         if (ctx.getDialogues().isPendingContinuation())
             ctx.getDialogues().completeDialogue();
@@ -116,7 +111,7 @@ public class EntitySkillingNode extends NoxScapeNode {
             }
         }
 
-        findAttempts = 0;
+        previousInteractionAttempts = 0;
 
         ctx.setTargetEntity(entity);
 
@@ -133,16 +128,15 @@ public class EntitySkillingNode extends NoxScapeNode {
             abort(String.format("Unable to interact with entity (%s) and action (%s), it contains \"%s\"", entity.getName(), skillableEntity.getInteractAction(), String.join(", ", entity.getActions())));
         }
 
-        int interactionAttempts = 1;
-        while (interactionAttempts++ <= 10) {
+        while (previousInteractionAttempts++ <= 10) {
             if (entity.interact(skillableEntity.getInteractAction())) {
                 break;
-            } else if (interactionAttempts == 10){
+            } else if (previousInteractionAttempts == 10){
                 abort(String.format("Error interacting interact with entity (%s) and action (%s)", entity.getName(), skillableEntity.getInteractAction()));
                 return 500;
             }
             ctx.logClass(this, "Error interacting, retrying...");
-            ctx.sleepHQuick();
+            return NRandom.humanized();
         }
 
         long interactTime = System.currentTimeMillis();
