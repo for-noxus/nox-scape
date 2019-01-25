@@ -97,9 +97,9 @@ public class CombatNode extends NoxScapeNode {
             switch(NRandom.fuzzed(5, 2)) {
                 case 4: ctx.sleepH(); break;
                 case 3: ctx.sleepFuzzy(850, 50); break;
-                case 2: ctx.sleepFuzzy(2_000, 100);
-                case 1: ctx.sleepFuzzy(5_000, 300);
-                case 0: ctx.sleepFuzzy(15_000, 1000);
+                case 2: ctx.sleepFuzzy(2_000, 100); break;
+                case 1: ctx.sleepFuzzy(5_000, 300); break;
+                case 0: ctx.sleepFuzzy(15_000, 1000); break;
             }
         }
         complete("Finished fighting " + beingFought.getName());
