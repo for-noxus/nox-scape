@@ -20,6 +20,7 @@ public class CachedItem implements INameable {
     public CachedItem(String name, Pair<Skill, Integer>... requiredLevels) {
         this(name, null, requiredLevels);
     }
+
     public CachedItem(String name, Predicate<MethodProvider> addititionalConditions, Pair<Skill, Integer>... requiredLevels) {
         this.name = name;
         this.addititionalConditions = addititionalConditions;
