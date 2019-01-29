@@ -55,14 +55,12 @@ public class NoxScape extends Script {
 
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, null, false);
 //            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
-            CombatMasterNode.Configuration cfg = new CombatMasterNode.Configuration();
-            cfg.setCombatLocation(CombatLocation.LUMBRIDGE_CHICKENS);
-            DecisionMaker.addPriorityTask(CombatMasterNode.class, cfg, null, false);
 //            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
+            DecisionMaker.addPriorityTask(CombatMasterNode.class, null,null, false);
 
-//            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
-//            cfg.setItemsToHandle(new GEItem("Iron ore", GEAction.SELL, -1));
-//            DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, false);
+            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
+            cfg.setItemsToHandle(new GEItem("Clay", GEAction.SELL, Integer.MAX_VALUE));
+            DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, false);
 
 //            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(1, Skill.WOODCUTTING).levelsGained(), false);
 //            WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
@@ -70,9 +68,8 @@ public class NoxScape extends Script {
 //            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, null, false);
 
 //            MiningMasterNode.Configuration cfg = new MiningMasterNode.Configuration();
-//            cfg.setRockToMine(MiningEntity.COPPER);
-//            cfg.setPurchaseNewPick(false);
-//            StopWatcher sw = StopWatcher.create(ctx).stopAfter(3, Skill.MINING).levelsGained();
+//            cfg.setRockToMine(MiningEntity.CLAY);
+//            StopWatcher sw = StopWatcher.create(ctx).stopAfter(5000).gpMade();
 //            DecisionMaker.addPriorityTask(MiningMasterNode.class, cfg, sw, false);
 
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(500).gpMade(), false);
