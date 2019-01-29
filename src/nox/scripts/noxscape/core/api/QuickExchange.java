@@ -212,6 +212,7 @@ public class QuickExchange extends MethodProvider {
                     NRandom.exact(2, 7) * 100 +
                     NRandom.exact(1, 5) * 10 +
                     NRandom.exact(1, 5);
+            price = (int) Math.min(price, getInventory().getAmount("Coins"));
             return getGrandExchange().setOfferPrice(price);
         }
         RS2Widget widg = getWidgets().singleFilter(getGrandExchange().getInterfaceId(), increase ? increaseWidgetFilter : decreaseWidgetFilter);
