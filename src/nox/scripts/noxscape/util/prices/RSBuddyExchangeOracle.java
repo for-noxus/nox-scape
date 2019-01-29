@@ -16,10 +16,19 @@ import java.util.stream.Collectors;
 public class RSBuddyExchangeOracle {
 
     private static final Map<Integer, RSBuddyExchangePrice> JSON_BY_IDS = new HashMap<>();
-    private static final Map<String, RSBuddyExchangePrice> JSON_BY_NAMES = new WeakHashMap<>();
+    private static final Map<String, RSBuddyExchangePrice> JSON_BY_NAMES = new HashMap<>();
 
     private RSBuddyExchangeOracle() {
         super();
+    }
+
+    public static boolean isPopulated() {
+        return JSON_BY_NAMES.size() != 0;
+    }
+
+    public static void retrievePriceGuideIfNecessary() throws IOException {
+        if (!isPopulated())
+            retrievePriceGuide();
     }
 
     public static void retrievePriceGuide() throws IOException {
