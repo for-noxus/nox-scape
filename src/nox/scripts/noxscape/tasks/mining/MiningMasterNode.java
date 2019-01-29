@@ -49,11 +49,14 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
             configuration = new Configuration();
 
         if (configuration.rockToMine == null) {
-            configuration.rockToMine = Arrays.stream(MiningEntity.values())
-                .filter(f -> f != MiningEntity.CLAY && f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
-                .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
-                .get();
-
+            if (ctx.getSkills().getStatic(Skill.MINING) >= MiningEntity.COAL.getRequiredLevel()) {
+                configuration.rockToMine = MiningEntity.COAL;
+            } else {
+                configuration.rockToMine = Arrays.stream(MiningEntity.values())
+                        .filter(f -> f != MiningEntity.CLAY && f.getRequiredLevel() <= ctx.getSkills().getStatic(Skill.MINING))
+                        .max(Comparator.comparingInt(MiningEntity::getRequiredLevel))
+                        .get();
+            }
         } else if (configuration.rockToMine.getRequiredLevel() > ctx.getSkills().getStatic(Skill.MINING)) {
             abort("Unable to mine chosen rock: " + configuration.rockToMine.getName());
             return;
@@ -104,6 +107,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         NoxScapeNode toOreNode = new WalkingNode(ctx)
                 .toPosition(orePos)
                 .isExactWebWalk(true)
+                .andExecuteIf(() -> !ctx.getInventory().isFull())
                 .hasMessage("Walking to Ore (" + configuration.rockToMine.getName() + ")");
 
         BankLocation depositLocation = location.getDepositBox() != null ? location.getDepositBox() : location.getBank();
@@ -177,7 +181,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
     public static class Configuration {
         MiningEntity rockToMine;
 
-        boolean purchaseNewPick;
+        boolean purchaseNewPick = true;
 
         @Override
         public String toString() {
