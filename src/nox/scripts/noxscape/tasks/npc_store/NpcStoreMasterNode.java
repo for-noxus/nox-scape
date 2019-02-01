@@ -85,6 +85,11 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
                 .hasMessage("Grabbing items needed for NPC Store from the bank")
                 .forPipeline(NodePipeline.PRE_EXECUTION);
 
+        NoxScapeNode toNpcStoreNode = new WalkingNode(ctx)
+                .isWebWalk(true)
+                .toPosition(configuration.npcStoreLocation)
+                .hasMessage("Walking to NPC Store");
+
         NoxScapeNode npcStoreNode = new NpcStoreNode(ctx)
                 .purchaseItems(configuration.itemsToBuy)
                 .sellItems(configuration.itemsToSell)
@@ -101,8 +106,9 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
 
         preExecutionWalkNode.setChildNode(preExecutionBankNode);
         preExecutionBankNode.setChildNode(npcStoreNode);
+        toNpcStoreNode.setChildNode(npcStoreNode);
 
-        setNodes(Arrays.asList(preExecutionWalkNode, preExecutionBankNode, npcStoreNode, finishNode));
+        setNodes(Arrays.asList(preExecutionWalkNode, preExecutionBankNode, toNpcStoreNode, npcStoreNode, finishNode));
 
         ctx.logClass(this, String.format("Initialized %d nodes.", getNodes().size()));
     }
@@ -120,8 +126,7 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
         boolean needsToWithdrawGold = ctx.getInventory().getAmount("Coins") < costOfItems;
         boolean hasItemsToSell = (configuration.itemsToSell == null || configuration.itemsToSell.size() == 0) ||
                 (configuration.itemsToSell.stream().allMatch(a -> ctx.getInventory().contains(a.a)));
-
-        return needsToWithdrawGold && !hasItemsToSell;
+        return needsToWithdrawGold || !hasItemsToSell;
     }
 
     @Override
