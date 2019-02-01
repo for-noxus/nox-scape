@@ -127,7 +127,7 @@ public class NpcStoreNode extends NoxScapeNode {
         }
 
         RSBuddyExchangePrice item = RSBuddyExchangeOracle.getItemByName(itemToBuy.a);
-s
+
         if (item == null) {
             abort("Couldn't determine price for item " + itemToBuy.toString());
             return false;
