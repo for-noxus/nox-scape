@@ -1,18 +1,17 @@
 package nox.scripts.noxscape.core;
 
 import com.google.gson.Gson;
-import com.sun.javafx.sg.prism.NGExternalNode;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.interfaces.INodeSupplier;
 import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
 import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
+import nox.scripts.noxscape.tasks.npc_store.NpcStoreMasterNode;
 import nox.scripts.noxscape.tasks.tutorialisland.TutorialIslandMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.QueuedNodeDeserializer;
-import org.osbot.P;
 
 import java.io.*;
 import java.util.*;
@@ -148,6 +147,7 @@ public final class DecisionMaker {
         addMasterNode(GrandExchangeMasterNode.class);
         addMasterNode(MoneyMakingMasterNode.class);
         addMasterNode(CombatMasterNode.class);
+        addMasterNode(NpcStoreMasterNode.class);
 
         priorityNodes = readTaskFile();
 
