@@ -20,7 +20,7 @@ public class BankItem implements INameable {
     }
 
     public BankItem(String name, BankAction action, int amount, String set, int priority) {
-        this(name, action, amount, null, priority, false);
+        this(name, action, amount, set, priority, false);
     }
 
     public BankItem(String name, BankAction action, int amount, String set, int priority, boolean equip) {
