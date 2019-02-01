@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.tasks.base;
 
+import com.thoughtworks.xstream.mapper.ImmutableTypesMapper;
 import nox.scripts.noxscape.core.NoxScapeNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.tasks.base.NpcStore.NpcStoreLocation;
@@ -7,6 +8,7 @@ import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
+import nox.scripts.noxscape.util.prices.RSBuddyExchangePrice;
 import org.osbot.rs07.api.model.NPC;
 
 import java.io.IOException;
@@ -40,9 +42,10 @@ public class NpcStoreNode extends NoxScapeNode {
     @Override
     protected boolean baseExecutionCondition() {
         NPC storeNpc = getShopNpc();
+        ctx.logClass(this, (storeNpc == null) + "");
         return storeNpc != null &&
                 ctx.getMap().canReach(storeNpc) &&
-                (itemsToPurchase != null && itemsToPurchase.size() > 0 && ctx.getInventory().contains("Coins"));
+                ((itemsToPurchase == null || itemsToPurchase.size() == 0) || ctx.getInventory().contains("Coins"));
     }
 
     @Override
@@ -82,7 +85,7 @@ public class NpcStoreNode extends NoxScapeNode {
             }
         }
 
-        for (Pair<String, Integer> p : itemsToSell) {
+        for (Pair<String, Integer> p : itemsToPurchase) {
             if (!BuyItem(p)) {
                 abort("Error handling purchase of item " + p.a);
                 return 500;
@@ -107,6 +110,7 @@ public class NpcStoreNode extends NoxScapeNode {
                 ctx.logClass(this, String.format("Error selling item (%s) to store!", itemToSell.a));
                 return false;
             }
+            Sleep.until(() -> ctx.getInventory().getAmount(itemToSell.a) != prevAmt, 5000, 500);
             amt = amt - (int) (prevAmt - (ctx.getInventory().getAmount(itemToSell.a)));
         }
 
@@ -114,15 +118,22 @@ public class NpcStoreNode extends NoxScapeNode {
     }
 
     private boolean BuyItem(Pair<String, Integer> itemToBuy) {
-        if (itemToBuy == null)
+        if (itemToBuy == null || itemToBuy.a == null)
             return false;
 
-        if (ctx.getInventory().isFull()) {
+        if (ctx.getInventory().isFull() && (RSBuddyExchangeOracle.getItemDefinitionByName(itemToBuy.a).getNotedId() != -1)) {
             ctx.logClass(this, "Couldn't purchase item due to full inventory!");
             return false;
         }
 
-        long storePrice = RSBuddyExchangeOracle.getItemByName(itemToBuy.a).getStorePrice() * itemToBuy.b;
+        RSBuddyExchangePrice item = RSBuddyExchangeOracle.getItemByName(itemToBuy.a);
+s
+        if (item == null) {
+            abort("Couldn't determine price for item " + itemToBuy.toString());
+            return false;
+        }
+
+        long storePrice = item.getStorePrice() * itemToBuy.b;
 
         if (ctx.getInventory().getAmount("Coins") < storePrice) {
             ctx.logClass(this, String.format("Tried to buy %sx %s at %s, but didn't have enough gold (had %s)", itemToBuy.b, itemToBuy.a, storePrice, ctx.getInventory().getAmount("Coins")));
@@ -136,6 +147,7 @@ public class NpcStoreNode extends NoxScapeNode {
                 ctx.logClass(this, String.format("Error selling item (%s) to store!", itemToBuy.a));
                 return false;
             }
+            Sleep.until(() -> ctx.getInventory().getAmount(itemToBuy.a) != prevAmt, 5000, 500);
             amt = amt - (int) (ctx.getInventory().getAmount(itemToBuy.a) - prevAmt);
         }
 
