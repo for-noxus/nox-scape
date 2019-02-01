@@ -1,5 +1,7 @@
 package nox.scripts.noxscape.util.prices;
 
+import org.osbot.rs07.api.def.ItemDefinition;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,6 +54,15 @@ public class RSBuddyExchangeOracle {
         json = json.replaceAll("\\\\u0026", "&");
 
         processIntoJSONMap(json);
+    }
+
+    public static ItemDefinition getItemDefinitionByName(String name) {
+        if (name == null || name.equals(""))
+            return null;
+
+        RSBuddyExchangePrice item = getItemByName(name);
+
+        return item == null ? null : ItemDefinition.forId(item.getId());
     }
 
     private static String downloadSummary(String urlAddress) throws IOException {
