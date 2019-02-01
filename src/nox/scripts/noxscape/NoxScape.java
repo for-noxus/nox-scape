@@ -5,6 +5,7 @@ import nox.scripts.noxscape.core.DecisionMaker;
 import nox.scripts.noxscape.core.NoxScapeMasterNode;
 import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.StopWatcher;
+import nox.scripts.noxscape.tasks.base.NpcStore.NpcStoreLocation;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.base.combat.CombatLocation;
 import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
@@ -14,9 +15,11 @@ import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningEntity;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
+import nox.scripts.noxscape.tasks.npc_store.NpcStoreMasterNode;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingEntity;
 import nox.scripts.noxscape.tasks.woodcutting.WoodcuttingMasterNode;
 import nox.scripts.noxscape.ui.DebugPaint;
+import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.map.Area;
@@ -53,14 +56,18 @@ public class NoxScape extends Script {
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
 
+            NpcStoreMasterNode.Configuration cfg = new NpcStoreMasterNode.Configuration(NpcStoreLocation.GENERAL_STORE_VARROCK);
+            cfg.setItemsToSell(Arrays.asList(new Pair<>("Tin ore", 1)));
+            cfg.setItemsToBuy(Arrays.asList(new Pair<>("Tinderbox", 2)));
+            DecisionMaker.addPriorityTask(NpcStoreMasterNode.class, cfg, null, false);
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, null, false);
 //            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
 //            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
-            DecisionMaker.addPriorityTask(CombatMasterNode.class, null,null, false);
-
-            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
-            cfg.setItemsToHandle(new GEItem("Clay", GEAction.SELL, Integer.MAX_VALUE));
-            DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, false);
+//            DecisionMaker.addPriorityTask(CombatMasterNode.class, null,null, false);
+//
+//            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
+//            cfg.setItemsToHandle(new GEItem("Clay", GEAction.SELL, Integer.MAX_VALUE));
+//            DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, false);
 
 //            DecisionMaker.addPriorityTask(WoodcuttingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(1, Skill.WOODCUTTING).levelsGained(), false);
 //            WoodcuttingMasterNode.Configuration cfg = new WoodcuttingMasterNode.Configuration();
