@@ -6,14 +6,15 @@ import java.util.Objects;
 
 public class BankItem implements INameable {
 
-    private String name;
     private BankAction action;
-    private int amount;
+    private String name;
     private String set;
+    private int amount;
+    private int shouldBuyAmount;
     private int priority;
     private boolean equip;
-    private int shouldBuyAmount;
     private boolean shouldBuy;
+    private PurchaseLocation purchaseLocation;
 
     public BankItem(String name, BankAction action, int amount) {
         this(name, action, amount, null, 0);
@@ -32,13 +33,14 @@ public class BankItem implements INameable {
         this.equip = equip;
     }
 
-    public BankItem buyIfNecessary(int amount) {
-        return buyIfNecessary(true, 1);
+    public BankItem buyIfNecessary(int amount, PurchaseLocation purchaseLocation) {
+        return buyIfNecessary(true, amount, purchaseLocation);
     }
 
-    public BankItem buyIfNecessary(boolean shouldBuy, int amount) {
+    public BankItem buyIfNecessary(boolean shouldBuy, int amount, PurchaseLocation purchaseLocation) {
         this.shouldBuy = shouldBuy;
         this.shouldBuyAmount = amount;
+        this.purchaseLocation = purchaseLocation;
         return this;
     }
 
@@ -93,6 +95,10 @@ public class BankItem implements INameable {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    public PurchaseLocation getPurchaseLocation() {
+        return purchaseLocation;
     }
 
     @Override
