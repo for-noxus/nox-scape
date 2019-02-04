@@ -1,5 +1,6 @@
 package nox.scripts.noxscape.tasks.base.banking;
 
+import nox.scripts.noxscape.core.ScriptContext;
 import nox.scripts.noxscape.core.interfaces.ILocateable;
 import nox.scripts.noxscape.core.interfaces.INameable;
 import nox.scripts.noxscape.util.LocationUtils;
@@ -84,6 +85,15 @@ public enum BankLocation implements INameable, ILocateable {
         this.bankArea = bankArea;
         this.isF2P = isF2P;
         this.isDepositBox = isDepositBox;
+    }
+
+    public static BankLocation closestToMeOrDestination(ScriptContext ctx, Position destinationPosition) {
+        BankLocation closestToDestination = closestTo(ctx, destinationPosition, false);
+        BankLocation closestToPlayer = closestTo(ctx, ctx.myPosition(), false);
+
+        return closestToDestination.getPosition().distance(ctx.myPosition()) > closestToPlayer.getPosition().distance(ctx.myPosition()) ?
+                closestToPlayer :
+                closestToDestination;
     }
 
     public static BankLocation closestTo(MethodProvider ctx, Position pos, boolean isDepositBoxAcceptable) {
