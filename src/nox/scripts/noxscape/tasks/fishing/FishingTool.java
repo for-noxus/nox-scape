@@ -2,28 +2,30 @@ package nox.scripts.noxscape.tasks.fishing;
 
 import nox.scripts.noxscape.core.interfaces.INameable;
 
-public enum FishingEntity implements INameable {
-    NET("Netting", "Net", "Small fishing net"),
-    BAIT("Fishing", "Bait", "Fishing rod", "Fishing bait"),
-    FLY("Fly fishing", "Lure", "Fly fishing rod", "Feather"),
-    HARPOON("Harpooning", "Harpoon", "Harpoon"),
-    POT("Caging Lobs", "Cage", "Lobster pot");
+public enum FishingTool implements INameable {
+    NET("Netting", "Net", "Small fishing net", 1),
+    BAIT("Fishing", "Bait", "Fishing rod", "Fishing bait", 5),
+    FLY("Fly fishing", "Lure", "Fly fishing rod", "Feather", 20),
+    HARPOON("Harpooning", "Harpoon", "Harpoon", 40),
+    POT("Caging Lobs", "Cage", "Lobster pot", 35);
 
     private final String friendlyName;
     private final String actionName;
     private final String primaryItemName;
 
     private final String secondaryItemName;
+    private final int minLevel;
 
-    FishingEntity(String friendlyName, String actionName, String primaryItemName) {
-        this(friendlyName, actionName, primaryItemName, null);
+    FishingTool(String actionName, String friendlyName, String primaryItemName, int minLevel) {
+        this(actionName, friendlyName, primaryItemName, null, minLevel);
     }
 
-    FishingEntity(String friendlyName, String actionName, String primaryItemName, String secondaryItemName) {
+    FishingTool(String actionName, String friendlyName, String primaryItemName, String secondaryItemName, int minLevel) {
         this.friendlyName = friendlyName;
         this.actionName = actionName;
         this.primaryItemName = primaryItemName;
         this.secondaryItemName = secondaryItemName;
+        this.minLevel = minLevel;
     }
 
     @Override
@@ -41,5 +43,9 @@ public enum FishingEntity implements INameable {
 
     public String getSecondaryItemName() {
         return secondaryItemName;
+    }
+
+    public int getMinLevel() {
+        return minLevel;
     }
 }
