@@ -8,6 +8,7 @@ import nox.scripts.noxscape.tasks.base.NpcInteractionNode;
 import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
+import nox.scripts.noxscape.tasks.base.banking.PurchaseLocation;
 import nox.scripts.noxscape.tasks.base.combat.CombatLocation;
 import nox.scripts.noxscape.tasks.base.combat.CombatPreferenceProfile;
 import nox.scripts.noxscape.util.Pair;
@@ -175,7 +176,7 @@ public class CombatMasterNode extends NoxScapeMasterNode<CombatMasterNode.Config
     }
 
     private List<BankItem> getCombatItemsFromCachedItems(List<CachedItem> items, String set) {
-        return items.stream().filter(f -> f.canEquip(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, set, m.requiredLevelSum(), true).buyIfNecessary(1)).collect(Collectors.toList());
+        return items.stream().filter(f -> f.canEquip(ctx)).map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, set, m.requiredLevelSum(), true).buyIfNecessary(1, PurchaseLocation.GRAND_EXCHANGE)).collect(Collectors.toList());
     }
 
     private CombatLocation getSuggestedCombatLocation() {

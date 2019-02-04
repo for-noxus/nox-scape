@@ -10,6 +10,7 @@ import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.base.banking.PurchaseLocation;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.ui.Message;
@@ -63,7 +64,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
 
         BankItem[] axesToWithdraw = WoodcuttingItems.axes().stream()
                 .filter(f -> f.canUse(ctx))
-                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), m.canEquip(ctx)).buyIfNecessary(1))
+                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Woodcutting", m.requiredLevelSum(), m.canEquip(ctx)).buyIfNecessary(1, PurchaseLocation.GRAND_EXCHANGE))
                 .toArray(BankItem[]::new);
         BankItem logsToBank = new BankItem(configuration.treeToChop.producesItemName(), BankAction.DEPOSIT, 100);
 

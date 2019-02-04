@@ -13,6 +13,7 @@ import nox.scripts.noxscape.tasks.base.WalkingNode;
 import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.base.banking.PurchaseLocation;
 import nox.scripts.noxscape.util.LocationUtils;
 import nox.scripts.noxscape.util.NRandom;
 import org.osbot.rs07.api.map.Position;
@@ -67,7 +68,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
 
         BankItem[] axesToWithdraw = MiningItems.pickaxes().stream()
                 .filter(f -> f.canUse(ctx))
-                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.getLevelRequirement(Skill.MINING), m.canEquip(ctx)).buyIfNecessary(configuration.purchaseNewPick, 1))
+                .map(m -> new BankItem(m.getName(), BankAction.WITHDRAW, 1, "Mining", m.getLevelRequirement(Skill.MINING), m.canEquip(ctx)).buyIfNecessary(configuration.purchaseNewPick, 1, PurchaseLocation.GRAND_EXCHANGE))
                 .toArray(BankItem[]::new);
 
         BankItem oreToBank = new BankItem(configuration.rockToMine.producesItemName(), BankAction.DEPOSIT, 100);
