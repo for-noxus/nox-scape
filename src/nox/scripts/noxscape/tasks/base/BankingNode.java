@@ -1,21 +1,21 @@
 package nox.scripts.noxscape.tasks.base;
 
-import nox.scripts.noxscape.core.DecisionMaker;
-import nox.scripts.noxscape.core.NoxScapeNode;
-import nox.scripts.noxscape.core.ScriptContext;
-import nox.scripts.noxscape.core.StopWatcher;
+import nox.scripts.noxscape.core.*;
+import nox.scripts.noxscape.tasks.base.NpcStore.NpcStoreLocation;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
+import nox.scripts.noxscape.tasks.base.banking.PurchaseLocation;
 import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
 import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
 import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
+import nox.scripts.noxscape.tasks.npc_store.NpcStoreMasterNode;
 import nox.scripts.noxscape.util.NRandom;
+import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.model.Item;
-import org.osbot.rs07.script.Script;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,7 +26,7 @@ public class BankingNode extends NoxScapeNode {
     private BankLocation bankLocation;
     private List<BankItem> items = new ArrayList<>();
     private boolean depositAllBackpackItems = false;
-    private boolean depositallWornItems = false;
+    private boolean depositAllWornItems = false;
     private boolean noted = false;
 
     public BankingNode(ScriptContext ctx) {
@@ -54,7 +54,7 @@ public class BankingNode extends NoxScapeNode {
     }
 
     public BankingNode depositAllWornItems() {
-        this.depositallWornItems = true;
+        this.depositAllWornItems = true;
         return this;
     }
 
@@ -64,7 +64,7 @@ public class BankingNode extends NoxScapeNode {
     }
 
     protected boolean baseExecutionCondition() {
-        if ((items == null || items.size() == 0) && (!depositAllBackpackItems && !depositallWornItems)) {
+        if ((items == null || items.size() == 0) && (!depositAllBackpackItems && !depositAllWornItems)) {
             abort("Banking node added but no items were added for deposit/withdrawal");
             return false;
         }
@@ -93,7 +93,7 @@ public class BankingNode extends NoxScapeNode {
             Sleep.until(() -> ctx.getBank().isOpen(), 6000, 600);
         }
 
-        if (depositallWornItems && !ctx.getEquipment().isEmpty()) {
+        if (depositAllWornItems && !ctx.getEquipment().isEmpty()) {
             if (bankLocation.isDepositBox())
                 ctx.getDepositBox().depositWornItems();
             else
@@ -136,36 +136,19 @@ public class BankingNode extends NoxScapeNode {
 
             ScriptContext.sleep(NRandom.fuzzedBounds(50, 5, 150, 15));
 
-            // Only check this section if we've not equipped our eqip items and withdrawn our withdrawn items
-            List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream().filter(BankItem::isWithdraw).filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName()))).collect(Collectors.toList());
-            List<GEItem> itemsToBuy = itemsToWithdraw.stream().filter(BankItem::shouldBuy).filter(f -> ctx.getBank().getAmount(f.getName()) < f.getAmount()).map(m -> new GEItem(m.getName(), GEAction.BUY, m.shouldBuyAmount())).collect(Collectors.toList());
-            if (itemsToBuy.size() > 0) {
-                ctx.log("Need to buy " + itemsToBuy.size() + " item(s), calculating prices..");
-                try {
-                    RSBuddyExchangeOracle.retrievePriceGuide();
-                } catch (IOException e) {
-                    abort("Failed to retrieve prices.");
-                    ctx.log(Arrays.toString(e.getStackTrace()));
-                }
+            // Only check this section if we've not equipped our equip items and withdrawn our withdrawn items
+            List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream()
+                    .filter(BankItem::isWithdraw)
+                    .filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName())))
+                    .collect(Collectors.toList());
 
-                long totalPrice = itemsToBuy.stream().map(m -> RSBuddyExchangeOracle.getItemByName(m.getName()).getBuyPrice() * m.getAmount()).reduce(0, Integer::sum);
-                long totalCoins = ctx.getInventory().getAmount("Coins") + ctx.getBank().getAmount("Coins");
-                ctx.log(String.format("Total cost of items is %s, and we have %s", totalPrice, totalCoins));
+            List<BankItem> itemsToBuy = itemsToWithdraw.stream()
+                    .filter(BankItem::shouldBuy)
+                    .filter(f -> ctx.getBank().getAmount(f.getName()) < f.getAmount())
+                    .collect(Collectors.toList());
+            if (itemsToBuy.size() > 0)
+                return handleItemsToBuy(itemsToBuy);
 
-                GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
-                cfg.setItemsToHandle(itemsToBuy);
-
-                // If we need to buy from the GE, mark it as dependent on the MoneyMaking node. Otherwise, it is independent
-                int moneyToMake = Math.max((int)((totalPrice - totalCoins) * 1.25), NRandom.fuzzedBounds(7_500, 200, 10_000, 1000)); // Let's always at least make a minimal amount
-                boolean isGeDependent = totalCoins <= (moneyToMake); // Play it safe with a 10% buffer
-                DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), true);
-                DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, isGeDependent);
-                if (isGeDependent) {
-                    DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(moneyToMake).gpMade(), false);
-                }
-                abort("Needed to buy from GE: " + itemsToBuy.stream().map(m -> String.format("%sx %s", m.getAmount(), m.getName())).collect(Collectors.joining(", ")));
-                return 50;
-            }
             if (itemsToWithdraw.size() > 0) {
 
                 Map<Boolean, List<BankItem>> shouldEquip = itemsToWithdraw.stream().collect(Collectors.partitioningBy(BankItem::shouldEquip));
@@ -210,6 +193,58 @@ public class BankingNode extends NoxScapeNode {
         }
 
         return NRandom.humanized();
+    }
+
+    private int handleItemsToBuy(List<BankItem> itemsToBuy) {
+        ctx.log("Need to buy " + itemsToBuy.size() + " item(s), calculating prices..");
+        try {
+            RSBuddyExchangeOracle.retrievePriceGuide();
+        } catch (IOException e) {
+            abort("Failed to retrieve prices.");
+            ctx.log(Arrays.toString(e.getStackTrace()));
+        }
+
+        long totalPrice = itemsToBuy.stream()
+                .map(m -> m.getPurchaseLocation() == PurchaseLocation.GRAND_EXCHANGE ? RSBuddyExchangeOracle.getItemByName(m.getName()).getBuyPrice() * m.getAmount() :
+                          m.getPurchaseLocation() == PurchaseLocation.NPC_STORE ? RSBuddyExchangeOracle.getItemByName(m.getName()).getStorePrice() * m.getAmount() : 0)
+                .reduce(0, Integer::sum);
+        long totalCoins = ctx.getInventory().getAmount("Coins") + ctx.getBank().getAmount("Coins");
+        ctx.log(String.format("Total cost of items is %s, and we have %s", totalPrice, totalCoins));
+
+
+        // If we need to buy from the GE, mark it as dependent on the MoneyMaking node. Otherwise, it is independent
+        int moneyToMake = Math.max((int)((totalPrice - totalCoins) * 1.25), NRandom.fuzzedBounds(7_500, 200, 12_000, 1000)); // Let's always at least make a minimal amount
+        boolean needsToMakeMoney = totalCoins <= (moneyToMake); // Play it safe with a 10% buffer
+        DecisionMaker.addPriorityTask(ctx.getCurrentMasterNode().getClass(), ctx.getCurrentMasterNode().getConfiguration(), ctx.getCurrentMasterNode().getStopWatcher(), true);
+
+        List<BankItem> itemsToBuyFromGe = itemsToBuy.stream().filter(f -> f.getPurchaseLocation() == PurchaseLocation.GRAND_EXCHANGE).collect(Collectors.toList());
+        List<BankItem> itemsToBuyFromNpc = itemsToBuy.stream().filter(f -> f.getPurchaseLocation() == PurchaseLocation.NPC_STORE).collect(Collectors.toList());
+        if (itemsToBuyFromGe.size() > 0) {
+            GrandExchangeMasterNode.Configuration cfg = new GrandExchangeMasterNode.Configuration();
+            cfg.setItemsToHandle(itemsToBuyFromGe.stream().map(m -> new GEItem(m.getName(), GEAction.BUY, m.shouldBuyAmount())).collect(Collectors.toList()));
+            DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, needsToMakeMoney || itemsToBuyFromNpc.size() > 0);
+        }
+        if (itemsToBuyFromNpc.size() > 0) {
+            if (itemsToBuyFromNpc.stream().anyMatch(a -> NpcStoreLocation.forItem(a.getName()) == null)) {
+                abort(String.format("Unable to locate a store to purchase item from list %s", itemsToBuy.stream().map(BankItem::getName).collect(Collectors.joining(", "))));
+                return 500;
+            }
+            Map<NpcStoreLocation, List<BankItem>> itemsByLocation =  itemsToBuyFromNpc.stream().collect(Collectors.groupingBy(g -> NpcStoreLocation.forItem(g.getName())));
+            itemsByLocation.forEach((k, v) -> {
+                NpcStoreMasterNode.Configuration cfg = new NpcStoreMasterNode.Configuration(k);
+                cfg.setItemsToBuy(v.stream().map(m -> new Pair<>(m.getName(), m.getAmount())).collect(Collectors.toList()));
+                DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, needsToMakeMoney);
+            });
+        }
+        if (needsToMakeMoney) {
+            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(moneyToMake).gpMade(), false);
+        }
+        abort(String.format("Needed to buy %s items from GE (%s) and %s items from NPCs (%s): %s",
+                itemsToBuyFromGe.size(),
+                itemsToBuyFromGe.stream().map(m -> String.format("%sx %s", m.getAmount(), m.getName())).collect(Collectors.joining(", ")),
+                itemsToBuyFromNpc.size(),
+                itemsToBuyFromNpc.stream().map(m -> String.format("%sx %s", m.getAmount(), m.getName())).collect(Collectors.joining(", "))));
+        return 50;
     }
 
     private void equipItem(BankItem i) {
