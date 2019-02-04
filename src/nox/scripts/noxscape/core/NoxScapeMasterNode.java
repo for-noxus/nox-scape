@@ -14,7 +14,7 @@ public abstract class NoxScapeMasterNode<k> implements MessageListener {
 
     protected ScriptContext ctx;
 
-    protected MasterNodeInformation nodeInformation;
+    protected static MasterNodeInformation nodeInformation;
     protected k configuration;
     protected StopWatcher stopWatcher;
 
