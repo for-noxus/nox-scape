@@ -69,7 +69,7 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
             bankItems.add(new BankItem("Coins", BankAction.WITHDRAW, Integer.MAX_VALUE));
         }
 
-        BankLocation bankArea = getClosestBankLocation();
+        BankLocation bankArea = BankLocation.closestToMeOrDestination(ctx, configuration.npcStoreLocation.getPosition());
 
         NoxScapeNode preExecutionWalkNode = new WalkingNode(ctx)
                 .isWebWalk(true)
@@ -145,15 +145,6 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
                 .map(m -> RSBuddyExchangeOracle.getItemByName(m.a).getStorePrice() * m.b)
                 .mapToInt(m -> m)
                 .sum();
-    }
-
-    private BankLocation getClosestBankLocation() {
-        BankLocation closestToNpcStore = BankLocation.closestTo(ctx, configuration.npcStoreLocation.getPosition(), false);
-        BankLocation closestToPlayer = BankLocation.closestTo(ctx, ctx.myPosition(), false);
-
-        return closestToNpcStore.getPosition().distance(ctx.myPosition()) > closestToPlayer.getPosition().distance(ctx.myPosition()) ?
-                closestToPlayer :
-                closestToNpcStore;
     }
 
     public static class Configuration {
