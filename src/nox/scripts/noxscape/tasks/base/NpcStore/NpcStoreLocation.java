@@ -5,6 +5,8 @@ import nox.scripts.noxscape.core.interfaces.ILocateable;
 import nox.scripts.noxscape.core.interfaces.INameable;
 import org.osbot.rs07.api.map.Position;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -38,8 +40,21 @@ public enum NpcStoreLocation implements INameable, ILocateable {
         return npcName;
     }
 
-    public Supplier<List<CachedItem>> getShopItems() {
-        return shopItems;
+    public static NpcStoreLocation forItem(String itemName, Position fromPosition) {
+        return Arrays.stream(NpcStoreLocation.values())
+                .filter(f -> f.getShopItems().stream().anyMatch(a -> a.getName().equals(itemName)))
+                .min(Comparator.comparingInt(store -> store.getPosition().distance(fromPosition))   )
+                .orElse(null);
+    }
+
+    public static NpcStoreLocation forItem(String itemName) {
+        return Arrays.stream(NpcStoreLocation.values())
+                .filter(f -> f.getShopItems().stream().anyMatch(a -> a.getName().equals(itemName)))
+                .findAny().orElse(null);
+    }
+
+    public List<CachedItem> getShopItems() {
+        return shopItems.get();
     }
 
     @Override
