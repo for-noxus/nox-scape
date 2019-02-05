@@ -114,11 +114,12 @@ public class NpcInteractionNode extends NoxScapeNode {
 
         int interactAttempts = 0;
         while (++interactAttempts <= MAX_INTERACTION_ATTEMPTS) {
-            if (!npc.interact(interactAction) && interactAttempts >= MAX_INTERACTION_ATTEMPTS) {
-                abort(String.format("Unable to interact with NPC (%s) with action %s", npc.getName(), interactAction));
-                return 5;
-            }
-            else
+            if (!npc.interact(interactAction)) {
+                if (interactAttempts >= MAX_INTERACTION_ATTEMPTS) {
+                    abort(String.format("Unable to interact with NPC (%s) with action %s", npc.getName(), interactAction));
+                    return 5;
+                }
+            } else
                 break;
         }
 
