@@ -56,10 +56,10 @@ public class NoxScape extends Script {
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
 
-            NpcStoreMasterNode.Configuration cfg = new NpcStoreMasterNode.Configuration(NpcStoreLocation.GENERAL_STORE_VARROCK);
-            cfg.setItemsToSell(Arrays.asList(new Pair<>("Tin ore", 1)));
-            cfg.setItemsToBuy(Arrays.asList(new Pair<>("Tinderbox", 2)));
-            DecisionMaker.addPriorityTask(NpcStoreMasterNode.class, cfg, null, false);
+//            NpcStoreMasterNode.Configuration cfg = new NpcStoreMasterNode.Configuration(NpcStoreLocation.GENERAL_STORE_VARROCK);
+//            cfg.setItemsToSell(Arrays.asList(new Pair<>("Tin ore", 1)));
+//            cfg.setItemsToBuy(Arrays.asList(new Pair<>("Tinderbox", 2)));
+//            DecisionMaker.addPriorityTask(NpcStoreMasterNode.class, cfg, null, false);
 //            DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, null, false);
 //            DecisionMaker.addPriorityTask(MiningMasterNode.class, null, null, true);
 //            DecisionMaker.addPriorityTask(CombatMasterNode.class, null, StopWatcher.create(ctx).stopAfter(5, Skill.DEFENCE).levelsGained(), false);
