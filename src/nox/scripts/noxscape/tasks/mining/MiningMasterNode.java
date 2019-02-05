@@ -166,7 +166,8 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
             if (message.getMessage().toLowerCase().contains("advanced your mining level")) {
                 ctx.getScriptProgress().onLevelUp(Skill.MINING);
             }
-            if ( message.getMessage().toLowerCase().contains("you manage to mine some")) {
+
+            if (message.getMessage().toLowerCase().contains("you manage to mine some")) {
 
                 Item item = ctx.getInventory().getItem(configuration.rockToMine.producesItemName());
                 if (item == null) {
