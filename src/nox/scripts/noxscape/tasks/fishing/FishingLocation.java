@@ -14,6 +14,9 @@ public enum FishingLocation implements INameable, ILocateable, IBankable {
     NET_DRAYNOR("Small net at Draynor", FishingTool.NET, null, new Position(3086, 3230, 0), BankLocation.DRAYNOR);
 
     private final String friendlyName;
+
+    private final String fishSpotName;
+
     private final FishingTool fishingTool;
     private final FishingTool tertiaryEntity;
     private final Position position;
@@ -25,8 +28,12 @@ public enum FishingLocation implements INameable, ILocateable, IBankable {
     }
 
     FishingLocation(String friendlyName, FishingTool fishingTool, FishingTool tertiaryEntity, Position position, BankLocation closestBank, Predicate<ScriptContext> condition) {
+        this(friendlyName, "Fishing spot", fishingTool, tertiaryEntity, position, closestBank, condition);
+    }
 
+    FishingLocation(String friendlyName, String fishSpotName, FishingTool fishingTool, FishingTool tertiaryEntity, Position position, BankLocation closestBank, Predicate<ScriptContext> condition) {
         this.friendlyName = friendlyName;
+        this.fishSpotName = fishSpotName;
         this.fishingTool = fishingTool;
         this.tertiaryEntity = tertiaryEntity;
         this.position = position;
@@ -36,6 +43,10 @@ public enum FishingLocation implements INameable, ILocateable, IBankable {
 
     public FishingTool getFishingTool() {
         return fishingTool;
+    }
+
+    public String getFishingSpotName() {
+        return fishSpotName;
     }
 
     public FishingTool getTertiaryEntity() {
