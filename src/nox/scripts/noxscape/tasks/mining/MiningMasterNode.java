@@ -33,7 +33,7 @@ public class MiningMasterNode extends NoxScapeMasterNode<MiningMasterNode.Config
         nodeInformation = new MasterNodeInformation(
                 "Mining",
                 "Mines ores at various locations",
-                Frequency.COMMON,
+                Frequency.UNCOMMON,
                 Duration.SHORT,
                 MasterNodeType.SKILLING);
     }

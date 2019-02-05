@@ -28,7 +28,7 @@ public class WoodcuttingMasterNode<k> extends NoxScapeMasterNode<WoodcuttingMast
         nodeInformation = new MasterNodeInformation(
                 "Woodcutting",
                 "Cuts trees for logs at various locations",
-                Frequency.COMMON,
+                Frequency.UNCOMMON,
                 Duration.MEDIUM,
                 MasterNodeType.SKILLING);
         configuration = new Configuration();
