@@ -28,6 +28,7 @@ public class BankingNode extends NoxScapeNode {
     private boolean depositAllBackpackItems = false;
     private boolean depositAllWornItems = false;
     private boolean noted = false;
+    private List<String> depositAllExceptItems;
 
     public BankingNode(ScriptContext ctx) {
         super(ctx);
@@ -60,6 +61,11 @@ public class BankingNode extends NoxScapeNode {
 
     public BankingNode depositAllBackpackItems() {
         this.depositAllBackpackItems = true;
+        return this;
+    }
+
+    public BankingNode depositAllExcept(List<String> itemNames) {
+        this.depositAllExceptItems = itemNames;
         return this;
     }
 
@@ -109,6 +115,13 @@ public class BankingNode extends NoxScapeNode {
             ctx.sleepHQuick();
         }
 
+        if (depositAllExceptItems != null && depositAllExceptItems.size() > 0) {
+            if (bankLocation.isDepositBox())
+                ctx.getDepositBox().depositAllExcept(this.depositAllExceptItems.toArray(new String[0]));
+            else
+                ctx.getBank().depositAllExcept(this.depositAllExceptItems.toArray(new String[0]));
+        }
+
         if (items != null) {
             if (!noted && !bankLocation.isDepositBox()) {
                 if (!ctx.getBank().enableMode(Bank.BankMode.WITHDRAW_ITEM)) {
@@ -139,7 +152,7 @@ public class BankingNode extends NoxScapeNode {
             // Only check this section if we've not equipped our equip items and withdrawn our withdrawn items
             List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream()
                     .filter(BankItem::isWithdraw)
-                    .filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && !ctx.getInventory().contains(a.getName())))
+                    .filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && (!ctx.getInventory().contains(a.getName()) || ctx.getInventory().getAmount(a.getName()) < a.getAmount())))
                     .collect(Collectors.toList());
 
             List<BankItem> itemsToBuy = itemsToWithdraw.stream()
@@ -239,7 +252,7 @@ public class BankingNode extends NoxScapeNode {
         if (needsToMakeMoney) {
             DecisionMaker.addPriorityTask(MoneyMakingMasterNode.class, null, StopWatcher.create(ctx).stopAfter(moneyToMake).gpMade(), false);
         }
-        abort(String.format("Needed to buy %s items from GE (%s) and %s items from NPCs (%s): %s",
+        abort(String.format("Needed to buy %s items from GE (%s) and %s items from NPCs (%s)",
                 itemsToBuyFromGe.size(),
                 itemsToBuyFromGe.stream().map(m -> String.format("%sx %s", m.getAmount(), m.getName())).collect(Collectors.joining(", ")),
                 itemsToBuyFromNpc.size(),
