@@ -24,6 +24,7 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.ui.Tab;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -156,6 +157,7 @@ public class ShearSheepMasterNode extends NoxScapeMasterNode implements IMoneyMa
     public void onMessage(Message message) throws InterruptedException {
         if (message.getType() == Message.MessageType.GAME) {
             if (message.getMessage().equals("You get some wool.")) {
+                ctx.getTabs().open(Tab.INVENTORY);
                 Item wool = ctx.getInventory().getItem("Wool");
                 if (wool == null)
                     ctx.log("Unable to register acquisition of wool!");
