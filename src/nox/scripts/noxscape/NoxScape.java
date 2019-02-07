@@ -9,6 +9,8 @@ import nox.scripts.noxscape.tasks.base.NpcStore.NpcStoreLocation;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.base.combat.CombatLocation;
 import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
+import nox.scripts.noxscape.tasks.fishing.FishingLocation;
+import nox.scripts.noxscape.tasks.fishing.FishingMasterNode;
 import nox.scripts.noxscape.tasks.grand_exchange.GEAction;
 import nox.scripts.noxscape.tasks.grand_exchange.GEItem;
 import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
@@ -55,6 +57,9 @@ public class NoxScape extends Script {
             DecisionMaker.init(ctx);
             if (!getSettings().areRoofsEnabled())
                 getKeyboard().typeString("::toggleroofs");
+
+            FishingMasterNode.Configuration cfg = new FishingMasterNode.Configuration(FishingLocation.NET_MUSA_POINT);
+            DecisionMaker.addPriorityTask(FishingMasterNode.class, cfg, StopWatcher.create(ctx).stopAfter(10, Skill.FISHING).levelsGained(), false);
 
 //            NpcStoreMasterNode.Configuration cfg = new NpcStoreMasterNode.Configuration(NpcStoreLocation.GENERAL_STORE_VARROCK);
 //            cfg.setItemsToSell(Arrays.asList(new Pair<>("Tin ore", 1)));
