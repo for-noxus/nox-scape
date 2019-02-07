@@ -136,6 +136,10 @@ public class RSBuddyExchangeOracle {
                 .orElse(null);
     }
 
+    public static String toDebugString() {
+        return String.format("RSBuddyExchangeOracle - Name Size(%d), Id Size(%d)", JSON_BY_NAMES.size(), JSON_BY_IDS.size());
+    }
+
     private static RSBuddyExchangePrice parse(String jsonStr, Pattern itemPattern) {
         Matcher m = itemPattern.matcher(jsonStr);
 
