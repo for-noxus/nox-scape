@@ -15,12 +15,16 @@ import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.base.banking.PurchaseLocation;
+import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FishingMasterNode extends NoxScapeMasterNode<FishingMasterNode.Configuration> {
 
@@ -55,6 +59,10 @@ public class FishingMasterNode extends NoxScapeMasterNode<FishingMasterNode.Conf
 
         BankItem fishingTool = new BankItem(configuration.fishingLocation.getFishingTool().getPrimaryItemName(), BankAction.WITHDRAW, 1).buyIfNecessary(1, PurchaseLocation.NPC_STORE);
         BankItem fishingSupplement = new BankItem(configuration.fishingLocation.getFishingTool().getSecondaryItemName(), BankAction.WITHDRAW, 2000).buyIfNecessary(2000, PurchaseLocation.GRAND_EXCHANGE);
+        List<BankItem> bankItems = new ArrayList<>();
+        bankItems.add(fishingTool);
+        if (configuration.fishingLocation.getFishingTool().getSecondaryItemName() != null)
+            bankItems.add(fishingSupplement);
 
         BankLocation bankLocation = BankLocation.closestToMeOrDestination(ctx, configuration.fishingLocation.getBank().getPosition());
 
@@ -67,7 +75,7 @@ public class FishingMasterNode extends NoxScapeMasterNode<FishingMasterNode.Conf
         NoxScapeNode preExecutionBankNode = new BankingNode(ctx)
                 .bankingAt(bankLocation)
                 .depositAllWornItems()
-                .handlingItems(Arrays.asList(fishingTool, fishingSupplement))
+                .handlingItems(bankItems)
                 .hasMessage("Withdrawing Fishing Items")
                 .forPipeline(NodePipeline.PRE_EXECUTION);
 
@@ -88,7 +96,7 @@ public class FishingMasterNode extends NoxScapeMasterNode<FishingMasterNode.Conf
 
         NoxScapeNode bankNode = new BankingNode(ctx)
                 .bankingAt(configuration.fishingLocation.getBank())
-                .depositAllExcept(Arrays.asList(fishingTool.getName(), fishingSupplement.getName()))
+                .depositAllExcept(bankItems.stream().map(BankItem::getName).collect(Collectors.toList()))
                 .hasMessage("Depositing fish");
 
         NoxScapeNode postExecutionWalkNode = new WalkingNode(ctx)
@@ -112,7 +120,14 @@ public class FishingMasterNode extends NoxScapeMasterNode<FishingMasterNode.Conf
 
     @Override
     public boolean requiresPreExecution() {
-        return false;
+        boolean hasPrimaryItem = ctx.getInventory().contains(configuration.fishingLocation.getFishingTool().getPrimaryItemName());
+        boolean hasSecondaryItem = configuration.fishingLocation.getFishingTool().getSecondaryItemName() == null || ctx.getInventory().contains(configuration.fishingLocation.getFishingTool().getSecondaryItemName());
+        boolean onlyContainsFishingItems = ctx.getInventory().onlyContains(f -> f != null && f.getName() != null &&
+                (f.getName().equals(configuration.fishingLocation.getFishingTool().getPrimaryItemName()) ||
+                 f.getName().equals(configuration.fishingLocation.getFishingTool().getSecondaryItemName()) ||
+                 configuration.fishingLocation.getFishingTool().getPossibleFish().contains(f.getName())));
+
+        return !hasPrimaryItem || !hasSecondaryItem || !onlyContainsFishingItems;
     }
 
     @Override
