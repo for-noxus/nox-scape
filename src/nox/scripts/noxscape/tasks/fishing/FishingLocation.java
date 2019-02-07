@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 public enum FishingLocation implements INameable, ILocateable, IBankable {
     NET_MUSA_POINT("Small net at Musa Point", FishingTool.NET, null, new Position(2995, 3165, 0), BankLocation.PORTSARIM),
-    NET_DRAYNOR("Small net at Draynor", FishingTool.NET, null, new Position(3086, 3230, 0), BankLocation.DRAYNOR);
+    NET_DRAYNOR("Small net at Draynor", FishingTool.NET, null, new Position(3086, 3230, 0), BankLocation.DRAYNOR, ctx -> ctx.getCombat().getCombatLevel() > 28);
 
     private final String friendlyName;
 
@@ -24,7 +24,7 @@ public enum FishingLocation implements INameable, ILocateable, IBankable {
     private final Predicate<ScriptContext> condition;
 
     FishingLocation(String friendlyName, FishingTool fishingTool, FishingTool tertiaryEntity, Position position, BankLocation closestBank) {
-        this(friendlyName, fishingTool, tertiaryEntity, position, closestBank, ctx -> true);
+        this(friendlyName, fishingTool, tertiaryEntity, position, closestBank, null);
     }
 
     FishingLocation(String friendlyName, FishingTool fishingTool, FishingTool tertiaryEntity, Position position, BankLocation closestBank, Predicate<ScriptContext> condition) {
@@ -54,7 +54,7 @@ public enum FishingLocation implements INameable, ILocateable, IBankable {
     }
 
     public boolean meetsCondition(ScriptContext ctx) {
-        return condition.test(ctx);
+        return condition == null || condition.test(ctx);
     }
 
     @Override
