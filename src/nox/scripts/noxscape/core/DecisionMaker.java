@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import nox.scripts.noxscape.core.enums.Frequency;
 import nox.scripts.noxscape.core.interfaces.INodeSupplier;
 import nox.scripts.noxscape.tasks.combat.CombatMasterNode;
+import nox.scripts.noxscape.tasks.fishing.FishingMasterNode;
 import nox.scripts.noxscape.tasks.grand_exchange.GrandExchangeMasterNode;
 import nox.scripts.noxscape.tasks.mining.MiningMasterNode;
 import nox.scripts.noxscape.tasks.money_making.MoneyMakingMasterNode;
@@ -148,6 +149,7 @@ public final class DecisionMaker {
         addMasterNode(MoneyMakingMasterNode.class);
         addMasterNode(CombatMasterNode.class);
         addMasterNode(NpcStoreMasterNode.class);
+        addMasterNode(FishingMasterNode.class);
 
         priorityNodes = readTaskFile();
 
