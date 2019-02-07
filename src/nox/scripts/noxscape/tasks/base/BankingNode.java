@@ -14,6 +14,7 @@ import nox.scripts.noxscape.util.NRandom;
 import nox.scripts.noxscape.util.Pair;
 import nox.scripts.noxscape.util.Sleep;
 import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
+import nox.scripts.noxscape.util.prices.RSBuddyExchangePrice;
 import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.model.Item;
 
@@ -151,6 +152,7 @@ public class BankingNode extends NoxScapeNode {
 
             // Only check this section if we've not equipped our equip items and withdrawn our withdrawn items
             List<BankItem> itemsToWithdraw = belongsToSet.get(false).stream()
+                    .filter(Objects::nonNull)
                     .filter(BankItem::isWithdraw)
                     .filter(a -> (a.shouldEquip() && !ctx.getEquipment().contains(a.getName())) || (!a.shouldEquip() && (!ctx.getInventory().contains(a.getName()) || ctx.getInventory().getAmount(a.getName()) < a.getAmount())))
                     .collect(Collectors.toList());
@@ -159,6 +161,7 @@ public class BankingNode extends NoxScapeNode {
                     .filter(BankItem::shouldBuy)
                     .filter(f -> ctx.getBank().getAmount(f.getName()) < f.getAmount())
                     .collect(Collectors.toList());
+
             if (itemsToBuy.size() > 0)
                 return handleItemsToBuy(itemsToBuy);
 
@@ -209,9 +212,9 @@ public class BankingNode extends NoxScapeNode {
     }
 
     private int handleItemsToBuy(List<BankItem> itemsToBuy) {
-        ctx.log("Need to buy " + itemsToBuy.size() + " item(s), calculating prices..");
+        ctx.log(String.format("Need to buy %d item(s) (%s), calculating prices..", itemsToBuy.size(), itemsToBuy.stream().map(BankItem::getName).collect(Collectors.joining(","))));
         try {
-            RSBuddyExchangeOracle.retrievePriceGuide();
+            RSBuddyExchangeOracle.retrievePriceGuideIfNecessary();
         } catch (IOException e) {
             abort("Failed to retrieve prices.");
             ctx.log(Arrays.toString(e.getStackTrace()));
