@@ -2,30 +2,35 @@ package nox.scripts.noxscape.tasks.fishing;
 
 import nox.scripts.noxscape.core.interfaces.INameable;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum FishingTool implements INameable {
-    NET("Netting", "Net", "Small fishing net", 1),
-    BAIT("Fishing", "Bait", "Fishing rod", "Fishing bait", 5),
-    FLY("Fly fishing", "Lure", "Fly fishing rod", "Feather", 20),
-    HARPOON("Harpooning", "Harpoon", "Harpoon", 40),
-    POT("Caging Lobs", "Cage", "Lobster pot", 35);
+    NET("Netting", "Net", "Small fishing net", 1, Arrays.asList("Shrimps")),
+    BAIT("Fishing", "Bait", "Fishing rod", "Fishing bait", 5, Arrays.asList("Sardines", "Herring", "Pike")),
+    FLY("Fly fishing", "Lure", "Fly fishing rod", "Feather", 20, Arrays.asList("Trout, Salmon")),
+    HARPOON("Harpooning", "Harpoon", "Harpoon", 40, Arrays.asList("Tuna, Swordfish")),
+    POT("Caging Lobs", "Cage", "Lobster pot", 35, Arrays.asList("Lobster"));
 
     private final String friendlyName;
+
     private final String actionName;
     private final String primaryItemName;
-
     private final String secondaryItemName;
-    private final int minLevel;
 
-    FishingTool(String actionName, String friendlyName, String primaryItemName, int minLevel) {
-        this(actionName, friendlyName, primaryItemName, null, minLevel);
+    private final int minLevel;
+    private final List<String> possibleFish;
+    FishingTool(String actionName, String friendlyName, String primaryItemName, int minLevel, List<String> possibleFish) {
+        this(actionName, friendlyName, primaryItemName, null, minLevel, possibleFish);
     }
 
-    FishingTool(String actionName, String friendlyName, String primaryItemName, String secondaryItemName, int minLevel) {
+    FishingTool(String actionName, String friendlyName, String primaryItemName, String secondaryItemName, int minLevel, List<String> possibleFish) {
         this.friendlyName = friendlyName;
         this.actionName = actionName;
         this.primaryItemName = primaryItemName;
         this.secondaryItemName = secondaryItemName;
         this.minLevel = minLevel;
+        this.possibleFish = possibleFish;
     }
 
     @Override
@@ -47,5 +52,9 @@ public enum FishingTool implements INameable {
 
     public int getMinLevel() {
         return minLevel;
+    }
+
+    public List<String> getPossibleFish() {
+        return possibleFish;
     }
 }
