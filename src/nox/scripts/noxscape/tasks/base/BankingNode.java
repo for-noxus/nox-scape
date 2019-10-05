@@ -249,7 +249,7 @@ public class BankingNode extends NoxScapeNode {
             itemsByLocation.forEach((k, v) -> {
                 NpcStoreMasterNode.Configuration cfg = new NpcStoreMasterNode.Configuration(k);
                 cfg.setItemsToBuy(v.stream().map(m -> new Pair<>(m.getName(), m.getAmount())).collect(Collectors.toList()));
-                DecisionMaker.addPriorityTask(GrandExchangeMasterNode.class, cfg, null, needsToMakeMoney);
+                DecisionMaker.addPriorityTask(NpcStoreMasterNode.class, cfg, null, needsToMakeMoney);
             });
         }
         if (needsToMakeMoney) {

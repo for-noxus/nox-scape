@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum FishingTool implements INameable {
-    NET("Netting", "Net", "Small fishing net", 1, Arrays.asList("Shrimps")),
+    NET("Netting", "Small fishing net", "Small fishing net", 1, Arrays.asList("Shrimps")),
     BAIT("Fishing", "Bait", "Fishing rod", "Fishing bait", 5, Arrays.asList("Sardines", "Herring", "Pike")),
     FLY("Fly fishing", "Lure", "Fly fishing rod", "Feather", 20, Arrays.asList("Trout, Salmon")),
     HARPOON("Harpooning", "Harpoon", "Harpoon", 40, Arrays.asList("Tuna, Swordfish")),
@@ -14,19 +14,19 @@ public enum FishingTool implements INameable {
 
     private final String friendlyName;
 
-    private final String actionName;
+    private final String verbName;
     private final String primaryItemName;
     private final String secondaryItemName;
 
     private final int minLevel;
     private final List<String> possibleFish;
-    FishingTool(String actionName, String friendlyName, String primaryItemName, int minLevel, List<String> possibleFish) {
-        this(actionName, friendlyName, primaryItemName, null, minLevel, possibleFish);
+    FishingTool(String verbName, String friendlyName, String primaryItemName, int minLevel, List<String> possibleFish) {
+        this(verbName, friendlyName, primaryItemName, null, minLevel, possibleFish);
     }
 
-    FishingTool(String actionName, String friendlyName, String primaryItemName, String secondaryItemName, int minLevel, List<String> possibleFish) {
+    FishingTool(String verbName, String friendlyName, String primaryItemName, String secondaryItemName, int minLevel, List<String> possibleFish) {
         this.friendlyName = friendlyName;
-        this.actionName = actionName;
+        this.verbName = verbName;
         this.primaryItemName = primaryItemName;
         this.secondaryItemName = secondaryItemName;
         this.minLevel = minLevel;
@@ -38,8 +38,8 @@ public enum FishingTool implements INameable {
         return friendlyName;
     }
 
-    public String getActionName() {
-        return actionName;
+    public String getVerbName() {
+        return verbName;
     }
 
     public String getPrimaryItemName() {

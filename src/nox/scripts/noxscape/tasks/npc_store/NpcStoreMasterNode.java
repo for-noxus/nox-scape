@@ -17,9 +17,10 @@ import nox.scripts.noxscape.util.prices.RSBuddyExchangeOracle;
 import org.osbot.rs07.api.ui.Message;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+        import java.util.List;
+        import java.util.stream.Collectors;
 
 public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Configuration> {
 
@@ -42,9 +43,7 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
     public void initializeNodes() {
         ctx.logClass(this, "Initializing NPC Store MasterNode");
 
-        if (configuration == null ||
-                ((configuration.itemsToBuy == null || configuration.itemsToBuy.size() == 0) &&
-                  configuration.itemsToSell == null || configuration.itemsToSell.size() == 0)) {
+        if (configuration == null || (configuration.itemsToBuy.size() == 0 && configuration.itemsToSell.size() == 0)) {
             abort("NPC Store MasterNode was assigned no items. Aborting");
             return;
         }
@@ -135,12 +134,12 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
     }
 
     private long getCostOfItems() throws IOException {
-        if (configuration.itemsToBuy == null || configuration.itemsToBuy.size() == 0)
+        if (configuration.itemsToBuy.size() == 0)
             return 0;
 
         RSBuddyExchangeOracle.retrievePriceGuideIfNecessary();
 
-        return configuration.itemsToSell
+        return configuration.itemsToBuy
                 .stream()
                 .map(m -> RSBuddyExchangeOracle.getItemByName(m.a).getStorePrice() * m.b)
                 .mapToInt(m -> m)
@@ -148,8 +147,8 @@ public class NpcStoreMasterNode extends NoxScapeMasterNode<NpcStoreMasterNode.Co
     }
 
     public static class Configuration {
-        List<Pair<String, Integer>> itemsToSell;
-        List<Pair<String, Integer>> itemsToBuy;
+        List<Pair<String, Integer>> itemsToSell = new ArrayList<>();
+        List<Pair<String, Integer>> itemsToBuy = new ArrayList<>();
         NpcStoreLocation npcStoreLocation;
 
         public Configuration(NpcStoreLocation npcStoreLocation) {

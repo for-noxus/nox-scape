@@ -15,11 +15,9 @@ import nox.scripts.noxscape.tasks.base.banking.BankAction;
 import nox.scripts.noxscape.tasks.base.banking.BankItem;
 import nox.scripts.noxscape.tasks.base.banking.BankLocation;
 import nox.scripts.noxscape.tasks.base.banking.PurchaseLocation;
-import org.osbot.rs07.api.Bank;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -85,9 +83,10 @@ public class FishingMasterNode extends NoxScapeMasterNode<FishingMasterNode.Conf
                 .hasMessage("Walking to fishing area");
 
         NoxScapeNode fishNode = new NpcInteractionNode(ctx)
-                .interactWith(() -> configuration.fishingLocation.getFishingSpotName(), configuration.fishingLocation.getFishingTool().getActionName())
+                .interactWith(() -> configuration.fishingLocation.getFishingSpotName(), configuration.fishingLocation.getFishingTool().getName())
                 .afterInteractingWaitFor(() -> ctx.myPlayer().isAnimating(), 600, 600)
-                .hasMessage(configuration.fishingLocation.getFishingTool().getActionName());
+                .onlyExecuteIf(() -> ctx.getNpcs().closest(f -> f.getName().equals(configuration.fishingLocation.getFishingSpotName())) != null)
+                .hasMessage(configuration.fishingLocation.getFishingTool().getVerbName());
 
         NoxScapeNode toBankNode = new WalkingNode(ctx)
                 .isWebWalk(true)

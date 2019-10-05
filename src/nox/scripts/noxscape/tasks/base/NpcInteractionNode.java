@@ -73,7 +73,7 @@ public class NpcInteractionNode extends NoxScapeNode {
         }
 
         return (combatHelper != null && combatHelper.isInCombatArea()) ||
-                (ctx.getNpcs().closest(f -> f.getPosition() != null && ctx.myPosition().distance(f.getPosition()) < 10 && ctx.getMap().canReach(f.getPosition())) != null);
+                (ctx.getNpcs().closest(f -> f.getName().equals(npcName) && f.getPosition() != null && ctx.getMap().canReach(f.getPosition())) != null);
     }
 
     @Override
